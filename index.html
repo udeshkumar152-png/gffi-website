@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GFFI - Global Financial Fragility Index</title>
+    <meta name="description" content="Real-time financial fragility index based on entropy. Predict market crises 24 months in advance.">
+    <meta name="keywords" content="GFFI, financial crisis prediction, entropy finance, stock market risk, Nifty analysis">
+    <link rel="stylesheet" href="style.css">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="container nav-container">
+            <a href="/" class="logo">
+                <span class="logo-gffi">GFFI</span>
+                <span class="logo-text">Analytics</span>
+            </a>
+            <ul class="nav-menu">
+                <li><a href="index.html" class="active">Home</a></li>
+                <li><a href="about.html">About GFFI</a></li>
+                <li><a href="blog.html">Blog</a></li>
+                <li><a href="#gffi-data">Live Data</a></li>
+                <li><a href="contact.html">Contact</a></li>
+            </ul>
+            <div class="nav-buttons">
+                <a href="#premium" class="btn btn-premium">Premium <i class="fas fa-crown"></i></a>
+                <button class="mobile-menu"><i class="fas fa-bars"></i></button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container hero-container">
+            <div class="hero-content">
+                <span class="hero-badge">Published Research · AUC 0.921</span>
+                <h1>Predict Financial Crises <span class="highlight">24 Months</span> in Advance</h1>
+                <p class="hero-text">GFFI (Global Financial Fragility Index) uses entropy-based AI to detect market fragility before crashes. Trusted by researchers and validated on 2008, 2020, and 2022 crises.</p>
+                <div class="hero-buttons">
+                    <a href="#gffi-data" class="btn btn-primary"><i class="fas fa-chart-line"></i> View Live Dashboard</a>
+                    <a href="about.html" class="btn btn-secondary"><i class="fas fa-book"></i> Read Research</a>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat">
+                        <span class="stat-number">0.921</span>
+                        <span class="stat-label">AUC Score</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number">24</span>
+                        <span class="stat-label">Months Lead Time</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number">17</span>
+                        <span class="stat-label">Countries</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number">100%</span>
+                        <span class="stat-label">Crisis Detection</span>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-image">
+                <img src="assets/gffi-logo.png" alt="GFFI Dashboard Preview" onerror="this.src='https://via.placeholder.com/400x400?text=GFFI+Dashboard'">
+            </div>
+        </div>
+    </section>
+
+    <!-- Live GFFI Dashboard Section -->
+    <section id="gffi-data" class="dashboard-section">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-badge">Live Data</span>
+                <h2>🌍 Global Financial Fragility Index</h2>
+                <p>Real-time GFFI values based on market entropy and banking capital ratios</p>
+            </div>
+
+            <!-- Global Metrics Cards -->
+            <div class="global-metrics">
+                <div class="metric-card global-gffi">
+                    <div class="metric-icon"><i class="fas fa-globe"></i></div>
+                    <div class="metric-content">
+                        <span class="metric-label">Global GFFI</span>
+                        <span class="metric-value" id="global-gffi">63.5</span>
+                        <span class="metric-status status-watch">🟡 WATCH</span>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon"><i class="fas fa-chart-line"></i></div>
+                    <div class="metric-content">
+                        <span class="metric-label">Market Status</span>
+                        <span class="metric-value">Bullish 📈</span>
+                        <span class="metric-date" id="current-date"></span>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon"><i class="fas fa-shield-alt"></i></div>
+                    <div class="metric-content">
+                        <span class="metric-label">Risk Level</span>
+                        <span class="metric-value">Low 🟢</span>
+                        <span class="metric-date">17 Countries</span>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon"><i class="fas fa-clock"></i></div>
+                    <div class="metric-content">
+                        <span class="metric-label">Last Update</span>
+                        <span class="metric-value" id="update-time">10 Mar 2026</span>
+                        <span class="metric-date" id="update-time-hm">07:17 AM</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Country Grid -->
+            <h3 class="section-subtitle">🌎 Country-wise GFFI</h3>
+            <div class="country-grid" id="country-grid">
+                <!-- Countries will be loaded via JavaScript -->
+            </div>
+
+            <!-- GFFI Chart Placeholder -->
+            <div class="chart-container">
+                <h3>📈 GFFI Time Series</h3>
+                <div class="chart-placeholder">
+                    <img src="https://via.placeholder.com/800x300?text=GFFI+Chart+Loading..." alt="GFFI Chart">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Blog Preview Section -->
+    <section class="blog-preview">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-badge">Latest Updates</span>
+                <h2>📝 Finance Blog & Analysis</h2>
+                <p>Daily market insights powered by GFFI</p>
+            </div>
+            <div class="blog-grid" id="blog-posts">
+                <!-- Blog posts loaded via JavaScript -->
+            </div>
+            <div class="view-all">
+                <a href="blog.html" class="btn btn-outline">View All Posts <i class="fas fa-arrow-right"></i></a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Newsletter Section -->
+    <section class="newsletter">
+        <div class="container">
+            <div class="newsletter-content">
+                <h2>Get Daily GFFI Updates</h2>
+                <p>Free daily email with GFFI values, market analysis, and top stock picks</p>
+                <form class="newsletter-form" id="newsletter-form">
+                    <input type="email" placeholder="Your email address" required>
+                    <button type="submit" class="btn btn-primary">Subscribe Free</button>
+                </form>
+                <p class="form-note">No spam. Unsubscribe anytime.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <div class="footer-logo">GFFI Analytics</div>
+                    <p>Predicting financial crises with entropy-based AI. Published research with 0.921 AUC.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                        <a href="#"><i class="fab fa-telegram"></i></a>
+                        <a href="#"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                <div class="footer-col">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="about.html">About GFFI</a></li>
+                        <li><a href="blog.html">Blog</a></li>
+                        <li><a href="#gffi-data">Live Data</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="#">Research Paper</a></li>
+                        <li><a href="#">GFFI Methodology</a></li>
+                        <li><a href="#">FAQ</a></li>
+                        <li><a href="#">Premium Services</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Contact</h4>
+                    <ul>
+                        <li><i class="fas fa-envelope"></i> udeshkumar152@gmail.com</li>
+                        <li><i class="fas fa-map-marker-alt"></i> Raipur, India</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 GFFI Analytics. All rights reserved. | Based on published research (DOI: 10.5281/zenodo.18859370)</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
