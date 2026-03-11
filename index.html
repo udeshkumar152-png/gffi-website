@@ -213,3 +213,293 @@
     <script src="script.js"></script>
 </body>
 </html>
+<head>
+    <!-- आपकी existing lines के बाद यह add करें -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<!-- Charts Section -->
+<div class="charts-container">
+    <h3>📊 GFFI Analytics</h3>
+    
+    <div class="chart-row">
+        <div class="chart-box">
+            <h4>Global GFFI Trend (Last 30 Days)</h4>
+            <canvas id="trendChart"></canvas>
+        </div>
+        
+        <div class="chart-box">
+            <h4>Country Comparison</h4>
+            <canvas id="countryChart"></canvas>
+        </div>
+    </div>
+    
+    <div class="chart-row">
+        <div class="chart-box">
+            <h4>Risk Distribution</h4>
+            <canvas id="riskChart"></canvas>
+        </div>
+        
+        <div class="chart-box">
+            <h4>Top 5 Risky Countries</h4>
+            <canvas id="topRiskChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- CSS for charts -->
+<style>
+.charts-container {
+    margin: 30px 0;
+    padding: 20px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.chart-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.chart-box {
+    padding: 15px;
+    background: #f9f9f9;
+    border-radius: 8px;
+}
+
+.chart-box h4 {
+    margin-bottom: 15px;
+    color: #333;
+}
+
+@media (max-width: 768px) {
+    .chart-row {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+<script>
+// ============================================
+// CHART DATA (यह daily update होगा)
+// ============================================
+
+// Last 30 days GFFI data (example - replace with real data)
+const last30Days = [63.2, 63.5, 63.8, 64.1, 63.9, 63.7, 64.0, 64.3, 64.5, 64.2,
+                    63.8, 63.5, 63.2, 63.0, 63.3, 63.6, 63.9, 64.2, 64.4, 64.1,
+                    63.7, 63.4, 63.1, 63.5, 63.8, 64.1, 63.9, 63.6, 63.3, 63.5];
+
+// Date labels
+const dates = [];
+for(let i = 30; i > 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    dates.push(d.toLocaleDateString('en-IN', {day: 'numeric', month: 'short'}));
+}
+
+// Country data from your existing data
+const chartCountries = countryData.map(c => c.name);
+const chartGffi = countryData.map(c => c.gffi);
+const chartColors = countryData.map(c => 
+    c.status === 'critical' ? '#ef4444' :
+    c.status === 'alert' ? '#f59e0b' :
+    c.status === 'warning' ? '#fbbf24' : '#22c55e'
+);
+
+// Risk distribution
+const riskCounts = {
+    critical: countryData.filter(c => c.status === 'critical').length,
+    alert: countryData.filter(c => c.status === 'alert').length,
+    watch: countryData.filter(c => c.status === 'warning').length,
+    normal: countryData.filter(c => c.status === 'success').length
+};
+
+// Top 5 risky countries
+const topRisky = [...countryData]
+    .sort((a,b) => b.gffi - a.gffi)
+    .slice(0, 5);
+
+// ============================================
+// CHART 1: Trend Chart
+// ============================================
+new Chart(document.getElementById('trendChart'), {
+    type: 'line',
+    data: {
+        labels: dates,
+        datasets: [{
+            label: 'Global GFFI',
+            data: last30Days,
+            borderColor: '#2563eb',
+            backgroundColor: 'rgba(37, 99, 235, 0.1)',
+            tension: 0.4,
+            fill: true,
+            pointRadius: 3,
+            pointHoverRadius: 5
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { display: false },
+            tooltip: { mode: 'index', intersect: false }
+        },
+        scales: {
+            y: {
+                beginAtZero: false,
+                min: 55,
+                max: 75,
+                grid: { color: 'rgba(0,0,0,0.05)' }
+            }
+        }
+    }
+});
+
+// ============================================
+// CHART 2: Country Comparison Bar Chart
+// ============================================
+new Chart(document.getElementById('countryChart'), {
+    type: 'bar',
+    data: {
+        labels: chartCountries,
+        datasets: [{
+            label: 'GFFI',
+            data: chartGffi,
+            backgroundColor: chartColors,
+            borderRadius: 5
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { display: false }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                max: 100,
+                grid: { color: 'rgba(0,0,0,0.05)' }
+            }
+        }
+    }
+});
+
+// ============================================
+// CHART 3: Risk Distribution Pie Chart
+// ============================================
+new Chart(document.getElementById('riskChart'), {
+    type: 'doughnut',
+    data: {
+        labels: ['CRITICAL', 'ALERT', 'WATCH', 'NORMAL'],
+        datasets: [{
+            data: [riskCounts.critical, riskCounts.alert, riskCounts.watch, riskCounts.normal],
+            backgroundColor: ['#ef4444', '#f59e0b', '#fbbf24', '#22c55e'],
+            borderWidth: 0
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { position: 'bottom' }
+        },
+        cutout: '60%'
+    }
+});
+
+// ============================================
+// CHART 4: Top 5 Risky Countries
+// ============================================
+new Chart(document.getElementById('topRiskChart'), {
+    type: 'bar',
+    data: {
+        labels: topRisky.map(c => c.name),
+        datasets: [{
+            label: 'GFFI',
+            data: topRisky.map(c => c.gffi),
+            backgroundColor: '#ef4444',
+            borderRadius: 5
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { display: false }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                max: 100,
+                grid: { color: 'rgba(0,0,0,0.05)' }
+            }
+        }
+    }
+});
+
+// ============================================
+// Add Summary Statistics
+// ============================================
+const summaryHTML = `
+    <div class="summary-stats">
+        <div class="stat-item">
+            <span class="stat-label">Average GFFI</span>
+            <span class="stat-value">${(chartGffi.reduce((a,b) => a+b,0)/chartGffi.length).toFixed(1)}</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-label">Highest Risk</span>
+            <span class="stat-value">${topRisky[0].name} (${topRisky[0].gffi})</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-label">Lowest Risk</span>
+            <span class="stat-value">${countryData.sort((a,b) => a.gffi - b.gffi)[0].name} (${countryData.sort((a,b) => a.gffi - b.gffi)[0].gffi})</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-label">Volatility</span>
+            <span class="stat-value">${(Math.max(...last30Days) - Math.min(...last30Days)).toFixed(1)}</span>
+        </div>
+    </div>
+`;
+
+// Add summary stats after charts
+document.querySelector('.charts-container').insertAdjacentHTML('beforeend', summaryHTML);
+
+// CSS for summary stats
+const style = document.createElement('style');
+style.textContent = `
+    .summary-stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 15px;
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid #e5e7eb;
+    }
+    
+    .stat-item {
+        text-align: center;
+        padding: 10px;
+        background: #f3f4f6;
+        border-radius: 8px;
+    }
+    
+    .stat-label {
+        display: block;
+        font-size: 0.85rem;
+        color: #6b7280;
+        margin-bottom: 5px;
+    }
+    
+    .stat-value {
+        display: block;
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #1f2937;
+    }
+    
+    @media (max-width: 640px) {
+        .summary-stats {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+`;
+document.head.appendChild(style);
+</script>
