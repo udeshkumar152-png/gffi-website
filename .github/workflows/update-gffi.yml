@@ -43,10 +43,10 @@ jobs:
             exit 1
           fi
       
-      - name: 💾 Commit changes
-        run: |
-          git config --global user.name 'GFFI Bot'
-          git config --global user.email 'gffi-bot@users.noreply.github.com'
-          git add script.js
-          git diff --quiet && git diff --staged --quiet || git commit -m "🤖 Daily GFFI update - $(date +'%Y-%m-%d')"
-          git push
+      - name: 💾 Commit and push changes
+  run: |
+    git config --global user.name 'GFFI Bot'
+    git config --global user.email 'gffi-bot@users.noreply.github.com'
+    git pull --rebase origin main  # पहले remote changes ले लो
+    git add script.js
+    git diff --quiet && git diff --staged --quiet || (git commit -m "🤖 Daily GFFI update - $(date +'%Y-%m-%d')" && git push)
