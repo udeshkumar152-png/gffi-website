@@ -58,3 +58,37 @@ with open('script.js', 'w', encoding='utf-8') as f:
 
 print("✅ script.js updated successfully")
 print(f"🌍 Global GFFI: {global_gffi:.1f}")
+# Charts data generation
+def generate_charts_data():
+    """Generate random walk data for last 30 days"""
+    import random
+    import numpy as np
+    
+    # Start from current GFFI
+    current = global_gffi
+    data = []
+    
+    # Generate realistic random walk
+    for i in range(30):
+        change = random.uniform(-0.5, 0.5)
+        current += change
+        # Keep within reasonable range
+        current = max(58, min(72, current))
+        data.append(round(current, 1))
+    
+    return data[::-1]  # Reverse to show oldest first
+
+# In update_script_js function, add this:
+def update_script_js(country_data, global_gffi):
+    # ... existing code ...
+    
+    # Generate charts data
+    charts_data = generate_charts_data()
+    
+    js_content += f"""
+// Charts data (auto-generated)
+const chartTrendData = {charts_data};
+const chartDates = {[f"'{d}'" for d in dates]};
+"""
+    
+    # ... rest of the code ...
