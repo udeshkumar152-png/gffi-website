@@ -38,10 +38,15 @@ jobs:
         run: |
           python scripts/update_gffi.py
       
-      - name: 💾 Commit and push changes
+           - name: 💾 Commit and push changes
         run: |
           git config --global user.name 'GFFI Bot'
           git config --global user.email 'gffi-bot@users.noreply.github.com'
-          git pull --rebase origin main
           git add script.js
-          git diff --quiet && git diff --staged --quiet || (git commit -m "🤖 Daily GFFI update - $(date +'%Y-%m-%d')" && git push)
+          if git diff --quiet && git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "🤖 Daily GFFI update - $(date +'%Y-%m-%d')"
+            git pull --rebase origin main || echo "Rebase failed, trying force push..."
+            git push origin main
+          fi
