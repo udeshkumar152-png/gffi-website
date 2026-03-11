@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true   # 👈 यह line add करें
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   update-gffi-data:
@@ -23,30 +23,25 @@ jobs:
         with:
           python-version: '3.10'
       
-      # ... बाकी steps वैसे ही रहेंगे
-      
       - name: 📦 Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install yfinance pandas numpy
       
-      - name: 🔄 Check scripts folder
+      - name: 🔍 Debug - List files
         run: |
+          pwd
+          ls -la
           ls -la scripts/ || echo "scripts folder not found"
       
       - name: 🔄 Run GFFI update script
         run: |
-          if [ -f "scripts/update_gffi.py" ]; then
-            python scripts/update_gffi.py
-          else
-            echo "❌ scripts/update_gffi.py not found!"
-            exit 1
-          fi
+          python scripts/update_gffi.py
       
       - name: 💾 Commit and push changes
-  run: |
-    git config --global user.name 'GFFI Bot'
-    git config --global user.email 'gffi-bot@users.noreply.github.com'
-    git pull --rebase origin main  # पहले remote changes ले लो
-    git add script.js
-    git diff --quiet && git diff --staged --quiet || (git commit -m "🤖 Daily GFFI update - $(date +'%Y-%m-%d')" && git push)
+        run: |
+          git config --global user.name 'GFFI Bot'
+          git config --global user.email 'gffi-bot@users.noreply.github.com'
+          git pull --rebase origin main
+          git add script.js
+          git diff --quiet && git diff --staged --quiet || (git commit -m "🤖 Daily GFFI update - $(date +'%Y-%m-%d')" && git push)
