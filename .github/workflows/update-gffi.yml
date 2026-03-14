@@ -46,6 +46,6 @@ jobs:
             echo "No changes to commit"
           else
             git commit -m "🤖 Daily GFFI update - $(date +'%Y-%m-%d')"
-            git pull --rebase origin main || echo "Rebase failed"
+            git pull --rebase origin main
             git push origin main
           fi
