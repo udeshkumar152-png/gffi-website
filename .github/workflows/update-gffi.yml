@@ -35,10 +35,9 @@ jobs:
           ls -la scripts/ || echo "scripts folder not found"
       
       - name: 🔄 Run GFFI update script
-        run: |
-          python scripts/update_gffi.py
+        run: python scripts/update_gffi.py
       
-           - name: 💾 Commit and push changes
+      - name: 💾 Commit and push changes
         run: |
           git config --global user.name 'GFFI Bot'
           git config --global user.email 'gffi-bot@users.noreply.github.com'
@@ -47,6 +46,6 @@ jobs:
             echo "No changes to commit"
           else
             git commit -m "🤖 Daily GFFI update - $(date +'%Y-%m-%d')"
-            git pull --rebase origin main || echo "Rebase failed, trying force push..."
+            git pull --rebase origin main || echo "Rebase failed"
             git push origin main
           fi
