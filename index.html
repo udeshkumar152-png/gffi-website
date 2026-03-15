@@ -79,40 +79,44 @@
             </div>
 
             <!-- Global Metrics Cards -->
-            <div class="global-metrics">
-                <div class="metric-card global-gffi">
-                    <div class="metric-icon"><i class="fas fa-globe"></i></div>
-                    <div class="metric-content">
-                        <span class="metric-label">Global GFFI</span>
-                        <span class="metric-value" id="global-gffi">63.5</span>
-                        <span class="metric-status status-watch">🟡 WATCH</span>
-                    </div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-icon"><i class="fas fa-chart-line"></i></div>
-                    <div class="metric-content">
-                        <span class="metric-label">Market Status</span>
-                        <span class="metric-value">Bullish 📈</span>
-                        <span class="metric-date" id="current-date"></span>
-                    </div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-icon"><i class="fas fa-shield-alt"></i></div>
-                    <div class="metric-content">
-                        <span class="metric-label">Risk Level</span>
-                        <span class="metric-value">Low 🟢</span>
-                        <span class="metric-date">17 Countries</span>
-                    </div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-icon"><i class="fas fa-clock"></i></div>
-                    <div class="metric-content">
-                        <span class="metric-label">Last Update</span>
-                        <span class="metric-value" id="update-time">15 Mar 2026</span>
-                        <span class="metric-date" id="update-time-hm">11:00 AM</span>
-                    </div>
-                </div>
+            <!-- Global Metrics Cards with Live Status -->
+<div class="global-metrics">
+    <div class="metric-card global-gffi">
+        <div class="metric-icon"><i class="fas fa-globe"></i></div>
+        <div class="metric-content">
+            <span class="metric-label">Global GFFI</span>
+            <div class="update-status" style="display: flex; align-items: baseline; flex-wrap: wrap; gap: 10px;">
+                <span class="metric-value" id="global-gffi" style="font-size: 2rem; font-weight: bold;">63.5</span>
+                <span style="margin-left: 10px; font-size: 1rem; color: #6c757d;">Global GFFI</span>
+                <span style="margin-left: 20px; font-size: 0.9rem; padding: 5px 10px; background: #e8f5e9; border-radius: 20px; color: #2e7d32;" id="live-status">🟢 लाइव | अंतिम अपडेट: कुछ ही देर में</span>
             </div>
+        </div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-icon"><i class="fas fa-chart-line"></i></div>
+        <div class="metric-content">
+            <span class="metric-label">Market Status</span>
+            <span class="metric-value">Bullish 📈</span>
+            <span class="metric-date" id="current-date"></span>
+        </div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-icon"><i class="fas fa-shield-alt"></i></div>
+        <div class="metric-content">
+            <span class="metric-label">Risk Level</span>
+            <span class="metric-value">Low 🟢</span>
+            <span class="metric-date">17 Countries</span>
+        </div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-icon"><i class="fas fa-clock"></i></div>
+        <div class="metric-content">
+            <span class="metric-label">Last Update</span>
+            <span class="metric-value" id="update-time">15 Mar 2026</span>
+            <span class="metric-date" id="update-time-hm">11:00 AM</span>
+        </div>
+    </div>
+</div>
 
             <!-- Country Grid -->
             <h3 class="section-subtitle">🌎 Country-wise GFFI</h3>
