@@ -169,7 +169,148 @@ function updateDashboard() {
         });
         countryGrid.innerHTML = html;
     }
+    // ============================================
+// INDIA MARKET DATA
+// ============================================
+
+// Real-time India market data
+const indiaMarketData = {
+    nifty: 77566,
+    sensex: 77566,
+    vix: 23.36,
+    indiaGFFI: 64.7,
+    advance: 850,
+    decline: 1650,
+    marketStatus: 'bearish',
+    fearLevel: 'extreme'
+};
+
+// Sector performance data
+const sectorPerformance = [
+    { name: 'Banking', change: -2.3, status: 'bearish' },
+    { name: 'IT', change: +0.5, status: 'bullish' },
+    { name: 'Pharma', change: -0.2, status: 'neutral' },
+    { name: 'Auto', change: -1.5, status: 'bearish' },
+    { name: 'FMCG', change: +0.8, status: 'bullish' },
+    { name: 'Energy', change: -1.8, status: 'bearish' },
+    { name: 'Metals', change: -2.1, status: 'bearish' },
+    { name: 'Realty', change: -0.5, status: 'neutral' }
+];
+
+// Update India market dashboard
+function updateIndiaMarket() {
+    // Update Nifty
+    const niftyEl = document.getElementById('nifty-value');
+    if (niftyEl) niftyEl.textContent = indiaMarketData.nifty.toLocaleString();
     
+    const niftyChange = document.getElementById('nifty-change');
+    if (niftyChange) {
+        niftyChange.textContent = '-1.71%';
+        niftyChange.className = 'card-change negative';
+    }
+    
+    // Update Sensex
+    const sensexEl = document.getElementById('sensex-value');
+    if (sensexEl) sensexEl.textContent = indiaMarketData.sensex.toLocaleString();
+    
+    const sensexChange = document.getElementById('sensex-change');
+    if (sensexChange) {
+        sensexChange.textContent = '-1.71%';
+        sensexChange.className = 'card-change negative';
+    }
+    
+    // Update VIX
+    const vixEl = document.getElementById('vix-value');
+    if (vixEl) vixEl.textContent = indiaMarketData.vix.toFixed(2);
+    
+    const vixChange = document.getElementById('vix-change');
+    if (vixChange) {
+        vixChange.textContent = '+17.58%';
+        vixChange.className = 'card-change negative';
+    }
+    
+    // Update India GFFI
+    const indiaGFFIEl = document.getElementById('india-gffi');
+    if (indiaGFFIEl) indiaGFFIEl.textContent = indiaMarketData.indiaGFFI;
+    
+    const indiaStatus = document.getElementById('india-status');
+    if (indiaStatus) {
+        if (indiaMarketData.indiaGFFI >= 75) {
+            indiaStatus.textContent = '🔴 CRITICAL';
+            indiaStatus.style.color = '#dc3545';
+        } else if (indiaMarketData.indiaGFFI >= 65) {
+            indiaStatus.textContent = '🟠 ALERT';
+            indiaStatus.style.color = '#fd7e14';
+        } else if (indiaMarketData.indiaGFFI >= 58) {
+            indiaStatus.textContent = '🟡 WATCH';
+            indiaStatus.style.color = '#ffc107';
+        } else {
+            indiaStatus.textContent = '🟢 SUCCESS';
+            indiaStatus.style.color = '#28a745';
+        }
+    }
+    
+    // Update market status
+    const marketStatusEl = document.getElementById('market-status');
+    if (marketStatusEl) {
+        marketStatusEl.textContent = '🔴 BEARISH';
+        marketStatusEl.style.color = '#dc3545';
+    }
+    
+    const fearLevelEl = document.getElementById('fear-level');
+    if (fearLevelEl) {
+        fearLevelEl.textContent = '😱 EXTREME FEAR';
+        fearLevelEl.style.color = '#dc3545';
+    }
+    
+    const advDeclEl = document.getElementById('adv-decl');
+    if (advDeclEl) {
+        advDeclEl.textContent = `${indiaMarketData.advance} / ${indiaMarketData.decline}`;
+    }
+    
+    // Update sector tags
+    updateSectorTags();
+}
+
+// Update sector performance tags
+function updateSectorTags() {
+    const sectorTagsEl = document.getElementById('sector-tags');
+    if (!sectorTagsEl) return;
+    
+    let html = '';
+    sectorPerformance.forEach(sector => {
+        let bgColor, textColor;
+        if (sector.status === 'bullish') {
+            bgColor = '#d4edda';
+            textColor = '#155724';
+        } else if (sector.status === 'bearish') {
+            bgColor = '#f8d7da';
+            textColor = '#721c24';
+        } else {
+            bgColor = '#fff3cd';
+            textColor = '#856404';
+        }
+        
+        const changeIcon = sector.change > 0 ? '▲' : '▼';
+        const changeColor = sector.change > 0 ? '#155724' : '#721c24';
+        
+        html += `
+            <span class="sector-tag" style="background: ${bgColor}; color: ${textColor};">
+                ${sector.name} ${changeIcon} ${Math.abs(sector.change)}%
+            </span>
+        `;
+    });
+    
+    sectorTagsEl.innerHTML = html;
+}
+
+// Add these function calls to updateDashboard()
+function updateDashboard() {
+    // ... existing code ...
+    
+    // Add this line at the end
+    updateIndiaMarket();
+}
     // Render new features
     renderSectorAnalysis();
     renderStockPicks();
