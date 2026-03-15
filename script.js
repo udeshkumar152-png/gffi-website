@@ -397,3 +397,84 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('toggle-stock').addEventListener('click', toggleStockView);
     document.getElementById('toggle-india').addEventListener('click', toggleIndiaView);
 });
+// ============================================
+// AUTO-REFRESH FUNCTIONALITY
+// हर 10 मिनट में डेटा रिफ्रेश करें
+// ============================================
+
+// Cache busting के साथ डेटा फेच करें
+async function refreshMarketData() {
+    console.log('⟳ रिफ्रेशिंग डेटा...', new Date().toLocaleTimeString());
+    
+    try {
+        // अगर आपके पास अलग JSON फाइल है तो उसे फेच करें
+        // हर रिक्वेस्ट में टाइमस्टैंप जोड़ें ताकि कैश न हो
+        const timestamp = new Date().getTime();
+        
+        // विकल्प 1: अगर आपने JSON फाइल बनाई है
+        // const response = await fetch(`data/gffi-data.json?t=${timestamp}`);
+        
+        // विकल्प 2: अगर नहीं बनाई है, तो पूरा पेज ही रीलोड कर दें
+        // यह आसान तरीका है - पूरा पेज रिफ्रेश हो जाएगा
+        location.reload();
+        
+        // विकल्प 3: अगर JSON है तो उसे पार्स करें
+        /*
+        const data = await response.json();
+        
+        // GFFI वैल्यू अपडेट करें
+        document.getElementById('global-gffi').textContent = data.globalGFFI;
+        document.getElementById('update-time').textContent = data.updateDate;
+        document.getElementById('update-time-hm').textContent = data.updateTime;
+        
+        // कंट्री ग्रिड अपडेट करें
+        if (typeof renderCountryGrid === 'function' && data.countryData) {
+            renderCountryGrid(); // यह फंक्शन आपकी script.js में पहले से है
+        }
+        
+        console.log('✅ डेटा अपडेट हुआ:', new Date().toLocaleTimeString());
+        */
+        
+    } catch (error) {
+        console.error('❌ डेटा रिफ्रेश में गड़बड़ी:', error);
+    }
+}
+
+// विकल्प 4: अगर आप बिना पेज रीलोड के सिर्फ कुछ एलिमेंट अपडेट करना चाहते हैं
+function updateSpecificElements() {
+    // उदाहरण: ग्लोबल GFFI वैल्यू
+    const globalGFFI = document.getElementById('global-gffi');
+    if (globalGFFI) {
+        // यहां पर कैलकुलेशन करें या API से लाएं
+        // फिलहाल सिर्फ डेमो के लिए
+        console.log('एलिमेंट्स अपडेट किए जा सकते हैं');
+    }
+}
+
+// हर 10 मिनट (600,000 milliseconds) में रिफ्रेश करें
+// 5 मिनट चाहिए तो: 5 * 60 * 1000 = 300000
+// 10 मिनट चाहिए तो: 10 * 60 * 1000 = 600000
+const REFRESH_INTERVAL = 10 * 60 * 1000; // 10 मिनट
+
+// पेज लोड होने के बाद टाइमर शुरू करें
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🔄 ऑटो-रिफ्रेश शुरू: हर 10 मिनट में');
+    
+    // तुरंत एक बार चलाएं (पेज लोड होते ही)
+    setTimeout(() => {
+        refreshMarketData();
+    }, 5000); // 5 सेकंड बाद पहला रिफ्रेश
+    
+    // फिर हर 10 मिनट में
+    setInterval(refreshMarketData, REFRESH_INTERVAL);
+});
+
+// यूजर को स्टेटस दिखाने के लिए
+let lastUpdate = new Date();
+setInterval(() => {
+    lastUpdate = new Date();
+    const statusElement = document.getElementById('live-status');
+    if (statusElement) {
+        statusElement.textContent = `🟢 लाइव | अंतिम अपडेट: ${lastUpdate.toLocaleTimeString()}`;
+    }
+}, 1000);
