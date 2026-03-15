@@ -502,3 +502,56 @@ if __name__ == "__main__":
     success = main()
     if not success:
         sys.exit(1)
+        # Add this function to your existing update_gffi.py
+
+def fetch_india_market_data():
+    """Fetch live India market data"""
+    try:
+        print("📊 Fetching India market data...")
+        
+        # Nifty 50
+        nifty = yf.Ticker("^NSEI")
+        nifty_hist = nifty.history(period="5d")
+        
+        # Sensex
+        sensex = yf.Ticker("^BSESN")
+        sensex_hist = sensex.history(period="5d")
+        
+        # India VIX
+        vix = yf.Ticker("^INDIAVIX")
+        vix_hist = vix.history(period="5d")
+        
+        market_data = {}
+        
+        # Process Nifty
+        if not nifty_hist.empty:
+            nifty_current = nifty_hist['Close'].iloc[-1]
+            nifty_prev = nifty_hist['Close'].iloc[-2] if len(nifty_hist) > 1 else nifty_current
+            nifty_change = ((nifty_current - nifty_prev) / nifty_prev) * 100
+            market_data['nifty'] = round(nifty_current, 2)
+            market_data['nifty_change'] = round(nifty_change, 2)
+            print(f"   ✅ Nifty: {nifty_current:.2f} ({nifty_change:+.2f}%)")
+        
+        # Process Sensex
+        if not sensex_hist.empty:
+            sensex_current = sensex_hist['Close'].iloc[-1]
+            sensex_prev = sensex_hist['Close'].iloc[-2] if len(sensex_hist) > 1 else sensex_current
+            sensex_change = ((sensex_current - sensex_prev) / sensex_prev) * 100
+            market_data['sensex'] = round(sensex_current, 2)
+            market_data['sensex_change'] = round(sensex_change, 2)
+            print(f"   ✅ Sensex: {sensex_current:.2f} ({sensex_change:+.2f}%)")
+        
+        # Process VIX
+        if not vix_hist.empty:
+            vix_current = vix_hist['Close'].iloc[-1]
+            vix_prev = vix_hist['Close'].iloc[-2] if len(vix_hist) > 1 else vix_current
+            vix_change = ((vix_current - vix_prev) / vix_prev) * 100
+            market_data['vix'] = round(vix_current, 2)
+            market_data['vix_change'] = round(vix_change, 2)
+            print(f"   ✅ India VIX: {vix_current:.2f} ({vix_change:+.2f}%)")
+        
+        return market_data
+        
+    except Exception as e:
+        print(f"⚠️ Error fetching India data: {e}")
+        return None
