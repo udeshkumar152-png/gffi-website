@@ -67,11 +67,166 @@ const stockPicks = {
 };
 
 // ============================================
-// RENDER FUNCTIONS
+// INDIA MARKET DATA
 // ============================================
+const indiaMarketData = {
+    nifty: 77566,
+    sensex: 77566,
+    vix: 23.36,
+    nifty_change: -1.71,
+    sensex_change: -1.71,
+    vix_change: 17.58,
+    advance: 850,
+    decline: 1650
+};
+
+// ============================================
+// TABLE VIEW FUNCTIONS
+// ============================================
+
+// Country Grid Toggle
+function toggleCountryView() {
+    const grid = document.getElementById('country-grid');
+    const btn = document.getElementById('toggle-country');
+    
+    if (grid.classList.contains('table-view')) {
+        grid.classList.remove('table-view');
+        btn.textContent = '📊 Switch to Table View';
+        renderCountryGrid();
+    } else {
+        grid.classList.add('table-view');
+        btn.textContent = '🖼️ Switch to Grid View';
+        
+        let html = '<table class="data-table"><tr><th>Country</th><th>GFFI</th><th>Status</th></tr>';
+        countryData.forEach(c => {
+            let statusClass = c.status === 'success' ? 'status-success' : 
+                             c.status === 'warning' ? 'status-warning' : 'status-alert';
+            html += `<tr>
+                <td>${c.flag} ${c.name}</td>
+                <td><strong>${c.gffi}</strong></td>
+                <td><span class="${statusClass}">${c.status.toUpperCase()}</span></td>
+            </tr>`;
+        });
+        html += '</table>';
+        grid.innerHTML = html;
+    }
+}
+
+// Sector Table Toggle
+function toggleSectorView() {
+    const grid = document.getElementById('sector-grid');
+    const btn = document.getElementById('toggle-sector');
+    
+    if (grid.classList.contains('table-view')) {
+        grid.classList.remove('table-view');
+        btn.textContent = '📊 Switch to Table View';
+        renderSectorAnalysis();
+    } else {
+        grid.classList.add('table-view');
+        btn.textContent = '🖼️ Switch to Grid View';
+        
+        let html = '<table class="data-table"><tr><th>Sector</th><th>GFFI</th><th>Status</th><th>Trend</th><th>Top Stocks</th></tr>';
+        sectorData.forEach(s => {
+            let statusClass = s.gffi >= 70 ? 'status-critical' : 
+                             s.gffi >= 65 ? 'status-alert' : 
+                             s.gffi >= 58 ? 'status-watch' : 'status-success';
+            let statusText = s.gffi >= 70 ? 'CRITICAL' : 
+                            s.gffi >= 65 ? 'ALERT' : 
+                            s.gffi >= 58 ? 'WATCH' : 'SAFE';
+            let trendIcon = s.trend === 'up' ? '📈' : s.trend === 'down' ? '📉' : '➡️';
+            
+            html += `<tr>
+                <td><strong>${s.name}</strong></td>
+                <td><strong>${s.gffi.toFixed(1)}</strong></td>
+                <td><span class="${statusClass}">${statusText}</span></td>
+                <td>${trendIcon}</td>
+                <td>${s.stocks.slice(0, 3).join(', ')}</td>
+            </tr>`;
+        });
+        html += '</table>';
+        grid.innerHTML = html;
+    }
+}
+
+// Stock Picks Table Toggle
+function toggleStockView() {
+    const container = document.getElementById('stock-picks-container');
+    const btn = document.getElementById('toggle-stock');
+    const safeDiv = document.getElementById('safe-picks');
+    const riskyDiv = document.getElementById('risky-picks');
+    const watchDiv = document.getElementById('watch-picks');
+    
+    if (container.classList.contains('table-view')) {
+        container.classList.remove('table-view');
+        btn.textContent = '📊 Switch to Table View';
+        renderStockPicks();
+    } else {
+        container.classList.add('table-view');
+        btn.textContent = '🖼️ Switch to Grid View';
+        
+        let html = '<table class="data-table"><tr><th>Category</th><th>Symbol</th><th>GFFI</th><th>Action</th><th>Reason</th></tr>';
+        
+        stockPicks.safe.forEach(s => {
+            html += `<tr><td>🟢 SAFE</td><td><strong>${s.symbol}</strong></td><td>${s.gffi}</td><td><span class="stock-action buy">${s.action}</span></td><td>${s.reason}</td></tr>`;
+        });
+        stockPicks.risky.forEach(s => {
+            html += `<tr><td>🔴 RISKY</td><td><strong>${s.symbol}</strong></td><td>${s.gffi}</td><td><span class="stock-action sell">${s.action}</span></td><td>${s.reason}</td></tr>`;
+        });
+        stockPicks.watch.forEach(s => {
+            html += `<tr><td>🟡 WATCH</td><td><strong>${s.symbol}</strong></td><td>${s.gffi}</td><td><span class="stock-action watch">${s.action}</span></td><td>${s.reason}</td></tr>`;
+        });
+        
+        html += '</table>';
+        
+        // Hide individual divs and show table
+        safeDiv.style.display = 'none';
+        riskyDiv.style.display = 'none';
+        watchDiv.style.display = 'none';
+        
+        let tableDiv = document.getElementById('stock-table');
+        if (!tableDiv) {
+            tableDiv = document.createElement('div');
+            tableDiv.id = 'stock-table';
+            container.appendChild(tableDiv);
+        }
+        tableDiv.innerHTML = html;
+    }
+}
+
+// India Dashboard Table
+function renderIndiaTable() {
+    const container = document.querySelector('.india-cards');
+    const btn = document.getElementById('toggle-india');
+    
+    if (container.classList.contains('table-view')) {
+        container.classList.remove('table-view');
+        btn.textContent = '📊 Switch to Table View';
+        renderIndiaMarket();
+    } else {
+        container.classList.add('table-view');
+        btn.textContent = '🖼️ Switch to Cards View';
+        
+        let html = '<table class="data-table"><tr><th>Indicator</th><th>Value</th><th>Change</th></tr>';
+        html += `<tr><td>📈 Nifty 50</td><td><strong>${indiaMarketData.nifty.toLocaleString()}</strong></td><td class="${indiaMarketData.nifty_change < 0 ? 'negative' : 'positive'}">${indiaMarketData.nifty_change > 0 ? '+' : ''}${indiaMarketData.nifty_change}%</td></tr>`;
+        html += `<tr><td>📊 Sensex</td><td><strong>${indiaMarketData.sensex.toLocaleString()}</strong></td><td class="${indiaMarketData.sensex_change < 0 ? 'negative' : 'positive'}">${indiaMarketData.sensex_change > 0 ? '+' : ''}${indiaMarketData.sensex_change}%</td></tr>`;
+        html += `<tr><td>⚡ India VIX</td><td><strong>${indiaMarketData.vix.toFixed(2)}</strong></td><td class="${indiaMarketData.vix_change > 0 ? 'negative' : 'positive'}">${indiaMarketData.vix_change > 0 ? '+' : ''}${indiaMarketData.vix_change}%</td></tr>`;
+        
+        const indiaData = countryData.find(c => c.name === 'India');
+        html += `<tr><td>🛡️ India GFFI</td><td><strong>${indiaData.gffi}</strong></td><td><span class="status-${indiaData.status}">${indiaData.status.toUpperCase()}</span></td></tr>`;
+        html += '</table>';
+        
+        container.innerHTML = html;
+    }
+}
+
+// ============================================
+// RENDER FUNCTIONS (Original)
+// ============================================
+
 function renderCountryGrid() {
     const grid = document.getElementById('country-grid');
     if (!grid) return;
+    
     let html = '';
     countryData.forEach(c => {
         html += `<div class="country-card">
@@ -87,14 +242,18 @@ function renderCountryGrid() {
 function renderSectorAnalysis() {
     const grid = document.getElementById('sector-grid');
     if (!grid) return;
+    
     let html = '';
     sectorData.forEach(s => {
         let bg = s.gffi >= 70 ? '#ffcccc' : s.gffi >= 65 ? '#fff3cd' : s.gffi >= 58 ? '#d4edda' : '#cce5ff';
         let color = s.gffi >= 70 ? '#990000' : s.gffi >= 65 ? '#856404' : s.gffi >= 58 ? '#155724' : '#004085';
+        let trendIcon = s.trend === 'up' ? '📈' : s.trend === 'down' ? '📉' : '➡️';
+        let statusText = s.gffi >= 70 ? '🔴 HIGH' : s.gffi >= 65 ? '🟠 ALERT' : s.gffi >= 58 ? '🟡 WATCH' : '🟢 SAFE';
+        
         html += `<div class="sector-card" style="background:${bg};color:${color};">
-            <div class="sector-name">${s.name} ${s.trend==='up'?'📈':s.trend==='down'?'📉':'➡️'}</div>
+            <div class="sector-name">${s.name} ${trendIcon}</div>
             <div class="sector-gffi">${s.gffi.toFixed(1)}</div>
-            <div class="sector-status">${s.gffi>=70?'🔴 HIGH':s.gffi>=65?'🟠 ALERT':s.gffi>=58?'🟡 WATCH':'🟢 SAFE'}</div>
+            <div class="sector-status">${statusText}</div>
             <div style="font-size:0.8rem">${s.stocks.slice(0,3).join(', ')}</div>
         </div>`;
     });
@@ -102,30 +261,208 @@ function renderSectorAnalysis() {
 }
 
 function renderStockPicks() {
-    const safe = document.getElementById('safe-picks');
-    if (safe) safe.innerHTML = stockPicks.safe.map(s => 
-        `<div class="stock-item"><span>${s.symbol}</span> <span>${s.gffi}</span> <span class="stock-action buy">${s.action}</span></div>
-         <div style="font-size:0.8rem">${s.reason}</div>`).join('');
+    const safeDiv = document.getElementById('safe-picks');
+    if (safeDiv) {
+        safeDiv.style.display = 'block';
+        safeDiv.innerHTML = stockPicks.safe.map(s => 
+            `<div class="stock-item"><span class="stock-symbol">${s.symbol}</span> <span class="stock-gffi">${s.gffi}</span> <span class="stock-action buy">${s.action}</span></div>
+             <div style="font-size:0.8rem; color:#6c757d;">${s.reason}</div>`
+        ).join('');
+    }
     
-    const risky = document.getElementById('risky-picks');
-    if (risky) risky.innerHTML = stockPicks.risky.map(s => 
-        `<div class="stock-item"><span>${s.symbol}</span> <span>${s.gffi}</span> <span class="stock-action sell">${s.action}</span></div>
-         <div style="font-size:0.8rem">${s.reason}</div>`).join('');
+    const riskyDiv = document.getElementById('risky-picks');
+    if (riskyDiv) {
+        riskyDiv.style.display = 'block';
+        riskyDiv.innerHTML = stockPicks.risky.map(s => 
+            `<div class="stock-item"><span class="stock-symbol">${s.symbol}</span> <span class="stock-gffi">${s.gffi}</span> <span class="stock-action sell">${s.action}</span></div>
+             <div style="font-size:0.8rem; color:#6c757d;">${s.reason}</div>`
+        ).join('');
+    }
     
-    const watch = document.getElementById('watch-picks');
-    if (watch) watch.innerHTML = stockPicks.watch.map(s => 
-        `<div class="stock-item"><span>${s.symbol}</span> <span>${s.gffi}</span> <span class="stock-action watch">${s.action}</span></div>
-         <div style="font-size:0.8rem">${s.reason}</div>`).join('');
+    const watchDiv = document.getElementById('watch-picks');
+    if (watchDiv) {
+        watchDiv.style.display = 'block';
+        watchDiv.innerHTML = stockPicks.watch.map(s => 
+            `<div class="stock-item"><span class="stock-symbol">${s.symbol}</span> <span class="stock-gffi">${s.gffi}</span> <span class="stock-action watch">${s.action}</span></div>
+             <div style="font-size:0.8rem; color:#6c757d;">${s.reason}</div>`
+        ).join('');
+    }
+    
+    // Remove any existing table
+    const existingTable = document.getElementById('stock-table');
+    if (existingTable) existingTable.remove();
 }
+
+function renderIndiaMarket() {
+    const container = document.querySelector('.india-cards');
+    container.classList.remove('table-view');
+    
+    let html = `
+        <div class="india-card nifty-card">
+            <div class="card-icon">📈</div>
+            <div class="card-content">
+                <span class="card-label">Nifty 50</span>
+                <span class="card-value" id="nifty-value">${indiaMarketData.nifty.toLocaleString()}</span>
+                <span class="card-change ${indiaMarketData.nifty_change < 0 ? 'negative' : 'positive'}">${indiaMarketData.nifty_change > 0 ? '+' : ''}${indiaMarketData.nifty_change}%</span>
+            </div>
+        </div>
+        <div class="india-card sensex-card">
+            <div class="card-icon">📊</div>
+            <div class="card-content">
+                <span class="card-label">Sensex</span>
+                <span class="card-value" id="sensex-value">${indiaMarketData.sensex.toLocaleString()}</span>
+                <span class="card-change ${indiaMarketData.sensex_change < 0 ? 'negative' : 'positive'}">${indiaMarketData.sensex_change > 0 ? '+' : ''}${indiaMarketData.sensex_change}%</span>
+            </div>
+        </div>
+        <div class="india-card vix-card">
+            <div class="card-icon">⚡</div>
+            <div class="card-content">
+                <span class="card-label">India VIX</span>
+                <span class="card-value" id="vix-value">${indiaMarketData.vix.toFixed(2)}</span>
+                <span class="card-change ${indiaMarketData.vix_change > 0 ? 'negative' : 'positive'}">${indiaMarketData.vix_change > 0 ? '+' : ''}${indiaMarketData.vix_change}%</span>
+            </div>
+        </div>
+        <div class="india-card gffi-card">
+            <div class="card-icon">🛡️</div>
+            <div class="card-content">
+                <span class="card-label">India GFFI</span>
+                <span class="card-value" id="india-gffi">${countryData.find(c => c.name === 'India').gffi}</span>
+                <span class="card-status status-${countryData.find(c => c.name === 'India').status}">${countryData.find(c => c.name === 'India').status === 'success' ? '🟢 SUCCESS' : '🟡 WATCH'}</span>
+            </div>
+        </div>
+    `;
+    
+    container.innerHTML = html;
+    
+    // Update status bar
+    document.getElementById('market-status').textContent = indiaMarketData.nifty_change < 0 ? '🔴 BEARISH' : '🟢 BULLISH';
+    
+    if (indiaMarketData.vix > 25) document.getElementById('fear-level').textContent = '😱 EXTREME FEAR';
+    else if (indiaMarketData.vix > 20) document.getElementById('fear-level').textContent = '😨 FEAR';
+    else document.getElementById('fear-level').textContent = '😐 NEUTRAL';
+    
+    document.getElementById('adv-decl').textContent = `${indiaMarketData.advance} / ${indiaMarketData.decline}`;
+}
+
+// ============================================
+// ADD TOGGLE BUTTONS TO HTML
+// ============================================
+
+function addToggleButtons() {
+    // Country toggle
+    const countrySection = document.querySelector('.country-grid');
+    if (countrySection && !document.getElementById('toggle-country')) {
+        const btn = document.createElement('button');
+        btn.id = 'toggle-country';
+        btn.className = 'toggle-btn';
+        btn.textContent = '📊 Switch to Table View';
+        btn.onclick = toggleCountryView;
+        countrySection.parentNode.insertBefore(btn, countrySection);
+    }
+    
+    // Sector toggle
+    const sectorSection = document.getElementById('sector-grid');
+    if (sectorSection && !document.getElementById('toggle-sector')) {
+        const btn = document.createElement('button');
+        btn.id = 'toggle-sector';
+        btn.className = 'toggle-btn';
+        btn.textContent = '📊 Switch to Table View';
+        btn.onclick = toggleSectorView;
+        sectorSection.parentNode.insertBefore(btn, sectorSection);
+    }
+    
+    // Stock toggle
+    const stockSection = document.getElementById('stock-picks-container');
+    if (stockSection && !document.getElementById('toggle-stock')) {
+        const btn = document.createElement('button');
+        btn.id = 'toggle-stock';
+        btn.className = 'toggle-btn';
+        btn.textContent = '📊 Switch to Table View';
+        btn.onclick = toggleStockView;
+        stockSection.parentNode.insertBefore(btn, stockSection);
+    }
+    
+    // India toggle
+    const indiaSection = document.querySelector('.india-cards');
+    if (indiaSection && !document.getElementById('toggle-india')) {
+        const btn = document.createElement('button');
+        btn.id = 'toggle-india';
+        btn.className = 'toggle-btn';
+        btn.textContent = '📊 Switch to Table View';
+        btn.onclick = renderIndiaTable;
+        indiaSection.parentNode.insertBefore(btn, indiaSection);
+    }
+}
+
+// ============================================
+// CSS STYLES
+// ============================================
+
+const styles = `
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    font-family: Arial, sans-serif;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.data-table th {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-weight: bold;
+    padding: 12px;
+    text-align: left;
+}
+.data-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #e0e0e0;
+}
+.data-table tr:hover {
+    background-color: #f5f5f5;
+}
+.status-success { background: #d4edda; color: #155724; padding: 4px 8px; border-radius: 4px; }
+.status-warning { background: #fff3cd; color: #856404; padding: 4px 8px; border-radius: 4px; }
+.status-alert { background: #ffe5d0; color: #9a3412; padding: 4px 8px; border-radius: 4px; }
+.status-critical { background: #f8d7da; color: #721c24; padding: 4px 8px; border-radius: 4px; }
+.positive { color: #00a65a; font-weight: bold; }
+.negative { color: #dd4b39; font-weight: bold; }
+.toggle-btn {
+    margin: 10px 0;
+    padding: 8px 16px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: transform 0.3s;
+}
+.toggle-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102,126,234,0.4);
+}
+`;
+
+// Add styles to document
+const styleSheet = document.createElement("style");
+styleSheet.textContent = styles;
+document.head.appendChild(styleSheet);
 
 // ============================================
 // INITIALIZE
 // ============================================
-document.addEventListener('DOMContentLoaded', function() {
+
+function updateDashboard() {
     document.getElementById('global-gffi').textContent = globalGFFI;
     document.getElementById('update-time').textContent = updateDate;
     document.getElementById('update-time-hm').textContent = updateTime;
+    
     renderCountryGrid();
     renderSectorAnalysis();
     renderStockPicks();
-});
+    renderIndiaMarket();
+    addToggleButtons();
+}
+
+document.addEventListener('DOMContentLoaded', updateDashboard);
