@@ -130,7 +130,168 @@
             </div>
         </div>
     </section>
+<!-- Sector Analysis Section -->
+<div class="sector-analysis">
+    <h3>🏭 Sector-wise GFFI Analysis</h3>
+    <div class="sector-grid" id="sector-grid">
+        <!-- Sectors will be loaded via JavaScript -->
+    </div>
+</div>
 
+<style>
+.sector-analysis {
+    margin: 40px 0;
+    padding: 20px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.sector-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.sector-card {
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+    transition: transform 0.3s;
+}
+
+.sector-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.sector-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.sector-gffi {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.sector-status {
+    font-size: 0.9rem;
+    padding: 3px 8px;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+@media (max-width: 768px) {
+    .sector-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+</style>
+    <!-- Stock Picks Section -->
+<div class="stock-picks">
+    <h3>📈 Top Stock Picks based on GFFI</h3>
+    
+    <div class="picks-container">
+        <div class="picks-box safe-picks">
+            <h4>🟢 SAFE PICKS (Low GFFI)</h4>
+            <div id="safe-picks" class="picks-list">
+                <!-- Safe stocks will be loaded here -->
+            </div>
+        </div>
+        
+        <div class="picks-box risky-picks">
+            <h4>🔴 RISKY PICKS (High GFFI)</h4>
+            <div id="risky-picks" class="picks-list">
+                <!-- Risky stocks will be loaded here -->
+            </div>
+        </div>
+        
+        <div class="picks-box watch-picks">
+            <h4>🟡 WATCHLIST (Momentum Stocks)</h4>
+            <div id="watch-picks" class="picks-list">
+                <!-- Watchlist stocks will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.stock-picks {
+    margin: 40px 0;
+    padding: 20px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.picks-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.picks-box {
+    padding: 15px;
+    border-radius: 8px;
+    background: #f8f9fa;
+}
+
+.safe-picks { border-left: 4px solid #28a745; }
+.risky-picks { border-left: 4px solid #dc3545; }
+.watch-picks { border-left: 4px solid #ffc107; }
+
+.picks-box h4 {
+    margin-bottom: 15px;
+    font-size: 1rem;
+}
+
+.picks-list {
+    list-style: none;
+    padding: 0;
+}
+
+.stock-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.stock-item:last-child {
+    border-bottom: none;
+}
+
+.stock-symbol {
+    font-weight: 600;
+}
+
+.stock-gffi {
+    font-weight: 700;
+}
+
+.stock-action {
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.buy { background: #d4edda; color: #155724; }
+.sell { background: #f8d7da; color: #721c24; }
+.watch { background: #fff3cd; color: #856404; }
+
+@media (max-width: 768px) {
+    .picks-container {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
     <!-- Blog Preview Section -->
     <section class="blog-preview">
         <div class="container">
