@@ -1,240 +1,103 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GFFI - Global Financial Fragility Index</title>
-    <meta name="description" content="Real-time financial fragility index based on entropy. Predict market crises 24 months in advance.">
-    <meta name="keywords" content="GFFI, financial crisis prediction, entropy finance, stock market risk, Nifty analysis">
-    <link rel="stylesheet" href="style.css">
-    <!-- Font Awesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
-<body>
-    <!-- Navigation Bar -->
-    <nav class="navbar">
-        <div class="container nav-container">
-            <a href="/" class="logo">
-                <span class="logo-gffi">GFFI</span>
-                <span class="logo-text">Analytics</span>
-            </a>
-            <ul class="nav-menu">
-                <li><a href="index.html" class="active">Home</a></li>
-                <li><a href="#gffi-data">Live Data</a></li>
-                <li><a href="#sector-analysis">Sectors</a></li>
-                <li><a href="#stock-picks">Stock Picks</a></li>
-            </ul>
-        </div>
-    </nav>
-
-    <!-- Hero Section -->
-    <section class="hero">
-        <div class="container hero-container">
-            <div class="hero-content">
-                <span class="hero-badge">Published Research · AUC 0.921</span>
-                <h1>Predict Financial Crises <span class="highlight">24 Months</span> in Advance</h1>
-                <p class="hero-text">GFFI (Global Financial Fragility Index) uses entropy-based AI to detect market fragility before crashes. Trusted by researchers and validated on 2008, 2020, and 2022 crises.</p>
-                <div class="hero-buttons">
-                    <a href="#gffi-data" class="btn btn-primary"><i class="fas fa-chart-line"></i> View Live Dashboard</a>
-                </div>
-                <div class="hero-stats">
-                    <div class="stat">
-                        <span class="stat-number">0.921</span>
-                        <span class="stat-label">AUC Score</span>
-                    </div>
-                    <div class="stat">
-                        <span class="stat-number">24</span>
-                        <span class="stat-label">Months Lead Time</span>
-                    </div>
-                    <div class="stat">
-                        <span class="stat-number">17</span>
-                        <span class="stat-label">Countries</span>
-                    </div>
-                    <div class="stat">
-                        <span class="stat-number">100%</span>
-                        <span class="stat-label">Crisis Detection</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Live GFFI Dashboard Section -->
-    <section id="gffi-data" class="dashboard-section">
-        <div class="container">
-            <div class="section-header">
-                <span class="section-badge">Live Data</span>
-                <h2>🌍 Global Financial Fragility Index</h2>
-                <p>Real-time GFFI values based on market entropy and banking capital ratios</p>
-            </div>
-
-            <!-- Global Metrics Cards -->
-            <div class="global-metrics">
-                <div class="metric-card global-gffi">
-                    <div class="metric-icon"><i class="fas fa-globe"></i></div>
-                    <div class="metric-content">
-                        <span class="metric-label">Global GFFI</span>
-                        <span class="metric-value" id="global-gffi">63.5</span>
-                        <span class="metric-status status-watch">🟡 WATCH</span>
-                    </div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-icon"><i class="fas fa-chart-line"></i></div>
-                    <div class="metric-content">
-                        <span class="metric-label">Market Status</span>
-                        <span class="metric-value">Bullish 📈</span>
-                        <span class="metric-date" id="current-date"></span>
-                    </div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-icon"><i class="fas fa-shield-alt"></i></div>
-                    <div class="metric-content">
-                        <span class="metric-label">Risk Level</span>
-                        <span class="metric-value">Low 🟢</span>
-                        <span class="metric-date">17 Countries</span>
-                    </div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-icon"><i class="fas fa-clock"></i></div>
-                    <div class="metric-content">
-                        <span class="metric-label">Last Update</span>
-                        <span class="metric-value" id="update-time">15 Mar 2026</span>
-                        <span class="metric-date" id="update-time-hm">11:00 AM</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Country Grid -->
-            <h3 class="section-subtitle">🌎 Country-wise GFFI</h3>
-            <div class="country-grid" id="country-grid">
-                <!-- Countries will be loaded via JavaScript -->
-            </div>
-        </div>
-    </section>
-
-    <!-- Sector Analysis Section -->
-    <section id="sector-analysis" class="sector-analysis-section">
-        <div class="container">
-            <h3>🏭 Sector-wise GFFI Analysis</h3>
-            <div class="sector-grid" id="sector-grid">
-                <!-- Sectors will be loaded via JavaScript -->
-            </div>
-        </div>
-    </section>
-
-    <!-- Stock Picks Section -->
-    <section id="stock-picks" class="stock-picks-section">
-        <div class="container">
-            <h3>📈 Top Stock Picks based on GFFI</h3>
-            <div class="picks-container">
-                <div class="picks-box safe-picks">
-                    <h4>🟢 SAFE PICKS (Low GFFI)</h4>
-                    <div id="safe-picks" class="picks-list"></div>
-                </div>
-                <div class="picks-box risky-picks">
-                    <h4>🔴 RISKY PICKS (High GFFI)</h4>
-                    <div id="risky-picks" class="picks-list"></div>
-                </div>
-                <div class="picks-box watch-picks">
-                    <h4>🟡 WATCHLIST (Momentum Stocks)</h4>
-                    <div id="watch-picks" class="picks-list"></div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- India Market Dashboard -->
-    <section class="india-market-section">
-        <div class="container">
-            <h3>🇮🇳 India Market Dashboard</h3>
-            <div class="india-cards">
-                <div class="india-card nifty-card">
-                    <div class="card-icon">📈</div>
-                    <div class="card-content">
-                        <span class="card-label">Nifty 50</span>
-                        <span class="card-value" id="nifty-value">77,566</span>
-                        <span class="card-change" id="nifty-change">-1.71%</span>
-                    </div>
-                </div>
-                <div class="india-card sensex-card">
-                    <div class="card-icon">📊</div>
-                    <div class="card-content">
-                        <span class="card-label">Sensex</span>
-                        <span class="card-value" id="sensex-value">77,566</span>
-                        <span class="card-change" id="sensex-change">-1.71%</span>
-                    </div>
-                </div>
-                <div class="india-card vix-card">
-                    <div class="card-icon">⚡</div>
-                    <div class="card-content">
-                        <span class="card-label">India VIX</span>
-                        <span class="card-value" id="vix-value">23.36</span>
-                        <span class="card-change" id="vix-change">+17.58%</span>
-                    </div>
-                </div>
-                <div class="india-card gffi-card">
-                    <div class="card-icon">🛡️</div>
-                    <div class="card-content">
-                        <span class="card-label">India GFFI</span>
-                        <span class="card-value" id="india-gffi">64.7</span>
-                        <span class="card-status" id="india-status">🟢 SUCCESS</span>
-                    </div>
-                </div>
-            </div>
-            <div class="market-status-bar">
-                <div class="status-item">
-                    <span class="status-label">Market Status:</span>
-                    <span class="status-value" id="market-status">🔴 BEARISH</span>
-                </div>
-                <div class="status-item">
-                    <span class="status-label">Fear Level:</span>
-                    <span class="status-value" id="fear-level">😱 EXTREME FEAR</span>
-                </div>
-                <div class="status-item">
-                    <span class="status-label">Advance/Decline:</span>
-                    <span class="status-value" id="adv-decl">850 / 1650</span>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Blog Section -->
-    <section class="blog-preview">
-        <div class="container">
-            <h2>📝 Finance Blog & Analysis</h2>
-            <div class="blog-grid" id="blog-posts">
-                <div class="blog-card">
-                    <div class="blog-image">📊</div>
-                    <div class="blog-content">
-                        <span class="blog-date">15 Mar 2026</span>
-                        <h3>GFFI Signals: India at Critical Level</h3>
-                        <p>India VIX spikes 17% as GFFI crosses 65. What this means for investors...</p>
-                    </div>
-                </div>
-                <div class="blog-card">
-                    <div class="blog-image">🧮</div>
-                    <div class="blog-content">
-                        <span class="blog-date">14 Mar 2026</span>
-                        <h3>Understanding Entropy in Finance</h3>
-                        <p>How Shannon entropy predicts market crashes better than traditional indicators.</p>
-                    </div>
-                </div>
-                <div class="blog-card">
-                    <div class="blog-image">🛡️</div>
-                    <div class="blog-content">
-                        <span class="blog-date">13 Mar 2026</span>
-                        <h3>Top 5 Safe Stocks for March</h3>
-                        <p>Based on GFFI analysis, these stocks show lowest fragility scores.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <script src="script.js"></script>
-</body>
-</html>
+// Auto-generated by GFFI Bot on 2026-03-15 03:40:38
+const countryData = [
+  {
+    "flag": "\ud83c\uddfa\ud83c\uddf8",
+    "name": "USA",
+    "gffi": 51.5,
+    "status": "success"
+  },
+  {
+    "flag": "\ud83c\udde9\ud83c\uddea",
+    "name": "Germany",
+    "gffi": 52.7,
+    "status": "success"
+  },
+  {
+    "flag": "\ud83c\uddeb\ud83c\uddf7",
+    "name": "France",
+    "gffi": 52.4,
+    "status": "success"
+  },
+  {
+    "flag": "\ud83c\uddef\ud83c\uddf5",
+    "name": "Japan",
+    "gffi": 54.0,
+    "status": "success"
+  },
+  {
+    "flag": "\ud83c\uddec\ud83c\udde7",
+    "name": "UK",
+    "gffi": 52.1,
+    "status": "success"
+  },
+  {
+    "flag": "\ud83c\udde8\ud83c\uddf3",
+    "name": "China",
+    "gffi": 51.4,
+    "status": "success"
+  },
+  {
+    "flag": "\ud83c\uddee\ud83c\uddf3",
+    "name": "India",
+    "gffi": 52.1,
+    "status": "success"
+  },
+  {
+    "flag": "\ud83c\udde7\ud83c\uddf7",
+    "name": "Brazil",
+    "gffi": 52.8,
+    "status": "success"
+  },
+  {
+    "flag": "\ud83c\uddff\ud83c\udde6",
+    "name": "S. Africa",
+    "gffi": 56.0,
+    "status": "success"
+  },
+  {
+    "flag": "\ud83c\udde8\ud83c\udde6",
+    "name": "Canada",
+    "gffi": 51.8,
+    "status": "success"
+  },
+  {
+    "flag": "\ud83c\uddee\ud83c\uddf9",
+    "name": "Italy",
+    "gffi": 52.9,
+    "status": "success"
+  },
+  {
+    "flag": "\ud83c\udde6\ud83c\uddfa",
+    "name": "Australia",
+    "gffi": 52.0,
+    "status": "success"
+  },
+  {
+    "flag": "\ud83c\uddf0\ud83c\uddf7",
+    "name": "S. Korea",
+    "gffi": 60.0,
+    "status": "warning"
+  },
+  {
+    "flag": "\ud83c\uddf8\ud83c\uddec",
+    "name": "Singapore",
+    "gffi": 52.2,
+    "status": "success"
+  },
+  {
+    "flag": "\ud83c\uddf2\ud83c\uddfd",
+    "name": "Mexico",
+    "gffi": 52.7,
+    "status": "success"
+  },
+  {
+    "flag": "\ud83c\udde6\ud83c\uddf7",
+    "name": "Argentina",
+    "gffi": 54.7,
+    "status": "success"
+  }
+];
+const globalGFFI = 53.2;
+const updateDate = '15 Mar 2026';
+const updateTime = '03:40 AM';
+// ... (rest of your sector data) ...
