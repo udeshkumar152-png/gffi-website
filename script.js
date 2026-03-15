@@ -23,31 +23,157 @@ const globalGFFI = 63.5;
 const updateDate = '15 Mar 2026';
 const updateTime = '11:00 AM';
 
-function updateDashboard() {
-    const globalEl = document.getElementById('global-gffi');
-    if (globalEl) globalEl.textContent = globalGFFI;
+// Sector data
+const sectorData = [
+    { name: 'Banking & Financials', gffi: 68.5, trend: 'up', stocks: ['HDFC Bank', 'ICICI Bank', 'SBI', 'Kotak Bank'] },
+    { name: 'Information Technology', gffi: 58.2, trend: 'down', stocks: ['TCS', 'Infosys', 'HCL Tech', 'Wipro'] },
+    { name: 'Pharmaceuticals', gffi: 55.8, trend: 'stable', stocks: ['Sun Pharma', 'Cipla', 'Dr Reddy', 'Divis Labs'] },
+    { name: 'Automobile', gffi: 62.1, trend: 'up', stocks: ['Maruti', 'Tata Motors', 'M&M', 'Bajaj Auto'] },
+    { name: 'Energy', gffi: 65.4, trend: 'up', stocks: ['Reliance', 'ONGC', 'BPCL', 'IOC'] },
+    { name: 'FMCG', gffi: 52.3, trend: 'down', stocks: ['ITC', 'HUL', 'Britannia', 'Nestle'] },
+    { name: 'Metals', gffi: 64.7, trend: 'up', stocks: ['Tata Steel', 'JSW Steel', 'Hindalco', 'Coal India'] },
+    { name: 'Telecom', gffi: 59.5, trend: 'stable', stocks: ['Bharti Airtel', 'Reliance Jio', 'Vodafone Idea'] },
+];
+
+// Stock picks
+const stockPicks = {
+    safe: [
+        { symbol: 'ITC', name: 'ITC Ltd', gffi: 52.3, action: 'BUY', reason: 'Low volatility, strong fundamentals' },
+        { symbol: 'HUL', name: 'Hindustan Unilever', gffi: 53.1, action: 'BUY', reason: 'Defensive play, consistent returns' },
+        { symbol: 'TCS', name: 'Tata Consultancy', gffi: 54.2, action: 'BUY', reason: 'Stable IT major, good dividends' },
+        { symbol: 'CIPLA', name: 'Cipla Ltd', gffi: 54.8, action: 'BUY', reason: 'Pharma safe haven' },
+        { symbol: 'BRITANNIA', name: 'Britannia', gffi: 55.1, action: 'BUY', reason: 'FMCG resilience' },
+    ],
+    risky: [
+        { symbol: 'YESBANK', name: 'Yes Bank', gffi: 78.5, action: 'SELL', reason: 'High volatility, weak fundamentals' },
+        { symbol: 'ADANIGREEN', name: 'Adani Green', gffi: 76.2, action: 'SELL', reason: 'Overvalued, high debt' },
+        { symbol: 'VEDL', name: 'Vedanta', gffi: 74.3, action: 'SELL', reason: 'Commodity risk, high GFFI' },
+        { symbol: 'IDEA', name: 'Vodafone Idea', gffi: 72.8, action: 'SELL', reason: 'High debt, negative outlook' },
+        { symbol: 'ZOMATO', name: 'Zomato', gffi: 71.5, action: 'SELL', reason: 'Overvalued, profit concerns' },
+    ],
+    watch: [
+        { symbol: 'RELIANCE', name: 'Reliance Ind', gffi: 62.5, action: 'WATCH', reason: 'Strong but expensive' },
+        { symbol: 'HDFCBANK', name: 'HDFC Bank', gffi: 63.2, action: 'WATCH', reason: 'Quality but valuations high' },
+        { symbol: 'INFY', name: 'Infosys', gffi: 59.8, action: 'WATCH', reason: 'IT momentum, but global risks' },
+        { symbol: 'MARUTI', name: 'Maruti Suzuki', gffi: 61.4, action: 'WATCH', reason: 'Auto recovery play' },
+        { symbol: 'TATAMOTORS', name: 'Tata Motors', gffi: 62.9, action: 'WATCH', reason: 'EV potential, debt concerns' },
+    ]
+};
+
+// Render sector cards
+function renderSectorAnalysis() {
+    const sectorGrid = document.getElementById('sector-grid');
+    if (!sectorGrid) return;
     
-    const dateEl = document.getElementById('update-time');
-    if (dateEl) dateEl.textContent = updateDate;
-    
-    const timeEl = document.getElementById('update-time-hm');
-    if (timeEl) timeEl.textContent = updateTime;
-    
-    const grid = document.getElementById('country-grid');
-    if (grid) {
-        let html = '';
-        countryData.forEach(c => {
-            html += `
-                <div class="country-card">
-                    <div class="country-flag">${c.flag}</div>
-                    <div class="country-name">${c.name}</div>
-                    <div class="country-gffi">${c.gffi}</div>
-                    <span class="country-status status-${c.status}">${c.status.toUpperCase()}</span>
+    let html = '';
+    sectorData.forEach(sector => {
+        let bgColor, textColor;
+        if (sector.gffi >= 70) {
+            bgColor = '#ffcccc'; textColor = '#990000';
+        } else if (sector.gffi >= 65) {
+            bgColor = '#fff3cd'; textColor = '#856404';
+        } else if (sector.gffi >= 58) {
+            bgColor = '#d4edda'; textColor = '#155724';
+        } else {
+            bgColor = '#cce5ff'; textColor = '#004085';
+        }
+        
+        const trendIcon = sector.trend === 'up' ? '📈' : sector.trend === 'down' ? '📉' : '➡️';
+        
+        html += `
+            <div class="sector-card" style="background: ${bgColor}; color: ${textColor};">
+                <div class="sector-name">${sector.name} ${trendIcon}</div>
+                <div class="sector-gffi">${sector.gffi.toFixed(1)}</div>
+                <div class="sector-status">${sector.gffi >= 70 ? '🔴 HIGH' : sector.gffi >= 65 ? '🟠 ALERT' : sector.gffi >= 58 ? '🟡 WATCH' : '🟢 SAFE'}</div>
+                <div style="font-size: 0.8rem; margin-top: 8px;">
+                    <strong>Top Picks:</strong> ${sector.stocks.slice(0, 3).join(', ')}
                 </div>
+            </div>
+        `;
+    });
+    
+    sectorGrid.innerHTML = html;
+}
+
+// Render stock picks
+function renderStockPicks() {
+    const safeDiv = document.getElementById('safe-picks');
+    if (safeDiv) {
+        let html = '';
+        stockPicks.safe.forEach(stock => {
+            html += `
+                <div class="stock-item">
+                    <span class="stock-symbol">${stock.symbol}</span>
+                    <span class="stock-gffi">${stock.gffi}</span>
+                    <span class="stock-action buy">${stock.action}</span>
+                </div>
+                <div style="font-size: 0.8rem; color: #6c757d; margin-bottom: 5px;">${stock.reason}</div>
             `;
         });
-        grid.innerHTML = html;
+        safeDiv.innerHTML = html;
+    }
+    
+    const riskyDiv = document.getElementById('risky-picks');
+    if (riskyDiv) {
+        let html = '';
+        stockPicks.risky.forEach(stock => {
+            html += `
+                <div class="stock-item">
+                    <span class="stock-symbol">${stock.symbol}</span>
+                    <span class="stock-gffi">${stock.gffi}</span>
+                    <span class="stock-action sell">${stock.action}</span>
+                </div>
+                <div style="font-size: 0.8rem; color: #6c757d; margin-bottom: 5px;">${stock.reason}</div>
+            `;
+        });
+        riskyDiv.innerHTML = html;
+    }
+    
+    const watchDiv = document.getElementById('watch-picks');
+    if (watchDiv) {
+        let html = '';
+        stockPicks.watch.forEach(stock => {
+            html += `
+                <div class="stock-item">
+                    <span class="stock-symbol">${stock.symbol}</span>
+                    <span class="stock-gffi">${stock.gffi}</span>
+                    <span class="stock-action watch">${stock.action}</span>
+                </div>
+                <div style="font-size: 0.8rem; color: #6c757d; margin-bottom: 5px;">${stock.reason}</div>
+            `;
+        });
+        watchDiv.innerHTML = html;
     }
 }
 
+// Main update function
+function updateDashboard() {
+    // Update global GFFI
+    document.getElementById('global-gffi').textContent = globalGFFI;
+    document.getElementById('update-time').textContent = updateDate;
+    document.getElementById('update-time-hm').textContent = updateTime;
+    
+    // Update country grid
+    const countryGrid = document.getElementById('country-grid');
+    if (countryGrid) {
+        let html = '';
+        countryData.forEach(country => {
+            html += `
+                <div class="country-card">
+                    <div class="country-flag">${country.flag}</div>
+                    <div class="country-name">${country.name}</div>
+                    <div class="country-gffi">${country.gffi}</div>
+                    <span class="country-status status-${country.status}">${country.status.toUpperCase()}</span>
+                </div>
+            `;
+        });
+        countryGrid.innerHTML = html;
+    }
+    
+    // Render new features
+    renderSectorAnalysis();
+    renderStockPicks();
+}
+
+// Run when page loads
 document.addEventListener('DOMContentLoaded', updateDashboard);
