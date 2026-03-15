@@ -555,3 +555,19 @@ def fetch_india_market_data():
     except Exception as e:
         print(f"⚠️ Error fetching India data: {e}")
         return None
+# update_gffi.py के अंत में यह जोड़ें
+import json
+
+# मान लो आपका डेटा इन वेरिएबल्स में है
+output_data = {
+    "globalGFFI": global_gffi,
+    "updateDate": "15 Mar 2026",
+    "updateTime": "11:00 AM",
+    "countryData": country_data,  # आपका कंट्री डेटा
+    "sectorData": sector_data,    # सेक्टर डेटा
+    "indiaMarketData": india_data # इंडिया डेटा
+}
+
+# JSON फाइल सेव करें
+with open('data/gffi-data.json', 'w') as f:
+    json.dump(output_data, f, indent=2)
