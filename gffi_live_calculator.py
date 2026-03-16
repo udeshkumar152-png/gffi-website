@@ -107,7 +107,7 @@ class GFFILiveCalculator:
             'Mexico': '🇲🇽', 'Italy': '🇮🇹', 'Argentina': '🇦🇷',
         }
         return flags.get(country_name, '🌍')
-            def fetch_yahoo_data(self, symbol):
+                def fetch_yahoo_data(self, symbol):
         try:
             print(f"   📥 Fetching Yahoo data for {symbol}...")
             
@@ -145,6 +145,9 @@ class GFFILiveCalculator:
             print(f"   ⚠️ No data for {symbol} after trying all periods")
             return None
             
+        except Exception as e:
+            print(f"   ❌ Error: {str(e)}")
+            return None            
         except Exception as e:
             print(f"   ❌ Error: {str(e)}")
             return None
