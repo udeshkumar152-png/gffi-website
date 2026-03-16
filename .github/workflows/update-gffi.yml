@@ -1,9 +1,9 @@
-name: Hourly GFFI Live Update
+name: Hourly GFFI Update
 
 on:
   schedule:
-    - cron: '*/60 * * * *'   # हर 60 मिनट में
-  workflow_dispatch:          # मैन्युअली चलाने के लिए
+    - cron: '*/60 * * * *'
+  workflow_dispatch:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -13,26 +13,26 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    
+
     steps:
       - name: 📥 Checkout repository
         uses: actions/checkout@v4
-      
+
       - name: 🐍 Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
-      
+
       - name: 📦 Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-      
+
       - name: 🔄 Run GFFI Live Calculator
         env:
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
         run: python gffi_live_calculator.py
-      
+
       - name: 💾 Commit and push changes
         run: |
           git config --global user.name 'GFFI Bot'
@@ -44,5 +44,4 @@ jobs:
             git commit -m "🤖 Live GFFI update - $(date +'%Y-%m-%d %H:%M')"
             git pull --rebase origin main
             git push origin main
-            echo "✅ Data.js updated successfully!"
           fi
