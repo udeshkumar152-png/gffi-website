@@ -1,9 +1,3 @@
-def calculate_country_gffi(self, country_name):
-    print(f"🔍 Processing {country_name}...")
-    if country_name not in self.country_symbols:
-        print(f"   ⚠️ {country_name} not in symbols")
-        return None
-    # ... बाकी कोड
 #!/usr/bin/env python3
 """
 GFFI Live Calculator
@@ -107,8 +101,9 @@ class GFFILiveCalculator:
             'Mexico': '🇲🇽', 'Italy': '🇮🇹', 'Argentina': '🇦🇷',
         }
         return flags.get(country_name, '🌍')
-            def fetch_yahoo_data(self, symbol):
-               try:
+    
+    def fetch_yahoo_data(self, symbol):
+        try:
             print(f"   📥 Fetching Yahoo data for {symbol}...")
             
             # Create ticker with custom session and headers
@@ -148,10 +143,20 @@ class GFFILiveCalculator:
         except Exception as e:
             print(f"   ❌ Error: {str(e)}")
             return None
-        
-    except Exception as e:
-        print(f"   ❌ Error: {str(e)}")
-        return None
+    
+    def fetch_fred_data(self, series_id):
+        if not self.fred_api_key:
+            return None
+        try:
+            end = datetime.now()
+            start = end - timedelta(days=3*365)
+            data = web.DataReader(series_id, 'fred', start, end, api_key=self.fred_api_key)
+            if data.empty:
+                return None
+            return {'latest_value': float(data.iloc[-1, 0])}
+        except:
+            return None
+    
     def calculate_entropy(self, returns_series):
         returns = returns_series.dropna().values
         returns = returns[~np.isinf(returns)]
