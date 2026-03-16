@@ -1,3 +1,9 @@
+def calculate_country_gffi(self, country_name):
+    print(f"🔍 Processing {country_name}...")
+    if country_name not in self.country_symbols:
+        print(f"   ⚠️ {country_name} not in symbols")
+        return None
+    # ... बाकी कोड
 #!/usr/bin/env python3
 """
 GFFI Live Calculator
