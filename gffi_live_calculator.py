@@ -107,49 +107,51 @@ class GFFILiveCalculator:
             'Mexico': '🇲🇽', 'Italy': '🇮🇹', 'Argentina': '🇦🇷',
         }
         return flags.get(country_name, '🌍')
-    
-  def fetch_yahoo_data(self, symbol):
-    try:
-        print(f"   📥 Fetching Yahoo data for {symbol}...")
-        
-        # Create ticker with custom session and headers
-        import requests
-        session = requests.Session()
-        session.headers.update({
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.5',
-            'Accept-Encoding': 'gzip, deflate',
-            'Connection': 'keep-alive',
-            'Upgrade-Insecure-Requests': '1',
-        })
-        
-        # Use session with yfinance
-        ticker = yf.Ticker(symbol, session=session)
-        
-        # Try with different periods if 6mo fails
-        for period in ['1mo', '3mo', '6mo', '1y']:
-            try:
-                data = ticker.history(period=period)
-                if not data.empty:
-                    print(f"   ✅ Got {len(data)} days of data (period={period})")
-                    prices = data['Adj Close'] if 'Adj Close' in data.columns else data['Close']
-                    returns = prices.pct_change().dropna() * 100
-                    return {
-                        'prices': prices, 
-                        'returns': returns, 
-                        'last_price': float(prices.iloc[-1])
-                    }
-            except:
-                continue
-        
-        print(f"   ⚠️ No data for {symbol} after trying all periods")
-        return None
+            def fetch_yahoo_data(self, symbol):
+        try:
+            print(f"   📥 Fetching Yahoo data for {symbol}...")
+            
+            # Create ticker with custom session and headers
+            import requests
+            session = requests.Session()
+            session.headers.update({
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                'Accept-Language': 'en-US,en;q=0.5',
+                'Accept-Encoding': 'gzip, deflate',
+                'Connection': 'keep-alive',
+                'Upgrade-Insecure-Requests': '1',
+            })
+            
+            # Use session with yfinance
+            ticker = yf.Ticker(symbol, session=session)
+            
+            # Try with different periods if 6mo fails
+            for period in ['1mo', '3mo', '6mo', '1y']:
+                try:
+                    data = ticker.history(period=period)
+                    if not data.empty:
+                        print(f"   ✅ Got {len(data)} days of data (period={period})")
+                        prices = data['Adj Close'] if 'Adj Close' in data.columns else data['Close']
+                        returns = prices.pct_change().dropna() * 100
+                        return {
+                            'prices': prices, 
+                            'returns': returns, 
+                            'last_price': float(prices.iloc[-1])
+                        }
+                except:
+                    continue
+            
+            print(f"   ⚠️ No data for {symbol} after trying all periods")
+            return None
+            
+        except Exception as e:
+            print(f"   ❌ Error: {str(e)}")
+            return None
         
     except Exception as e:
         print(f"   ❌ Error: {str(e)}")
         return None
-    
     def calculate_entropy(self, returns_series):
         returns = returns_series.dropna().values
         returns = returns[~np.isinf(returns)]
