@@ -468,6 +468,105 @@ document.addEventListener('DOMContentLoaded', function() {
     if (toggleIndia) toggleIndia.addEventListener('click', toggleIndiaView);
     
     // Initial live status
+    // ============================================
+// CORE METRICS PANEL FUNCTIONS
+// ============================================
+
+function calculateCrisisProbability() {
+    // Simple probability based on GFFI
+    const gffi = globalGFFI || 63.5;
+    const threshold = 72.8;
+    
+    if (gffi >= threshold) {
+        return 85; // High probability
+    } else if (gffi >= 65) {
+        return 60 + (gffi - 65) * 2; // 60-75%
+    } else if (gffi >= 58) {
+        return 30 + (gffi - 58) * 3; // 30-50%
+    } else {
+        return 15 + (gffi - 50) * 1.5; // 15-30%
+    }
+}
+
+function getTrend() {
+    if (!countryData || countryData.length === 0) return { direction: 'Stable', change: 0 };
+    
+    // Calculate average change in last 3 months (simplified)
+    const avgGffi = countryData.reduce((sum, c) => sum + c.gffi, 0) / countryData.length;
+    const previousAvg = avgGffi * 0.95; // Simplified - in real app, use historical data
+    
+    const change = ((avgGffi - previousAvg) / previousAvg) * 100;
+    
+    if (change > 2) return { direction: '↑ Rising', change: change.toFixed(1) };
+    if (change < -2) return { direction: '↓ Falling', change: change.toFixed(1) };
+    return { direction: '→ Stable', change: change.toFixed(1) };
+}
+
+function getRiskLevel(gffi) {
+    if (gffi >= 70) return { text: 'CRITICAL', badge: '🔴' };
+    if (gffi >= 65) return { text: 'WARNING', badge: '🟠' };
+    if (gffi >= 58) return { text: 'WATCH', badge: '🟡' };
+    return { text: 'SAFE', badge: '🟢' };
+}
+
+function updateCoreMetrics() {
+    const gffi = globalGFFI || 63.5;
+    
+    // Update GFFI Score
+    const gffiEl = document.getElementById('global-gffi');
+    if (gffiEl) gffiEl.textContent = gffi;
+    
+    // Update Risk Level
+    const risk = getRiskLevel(gffi);
+    const riskTextEl = document.getElementById('risk-level-text');
+    const riskBadgeEl = document.getElementById('risk-badge');
+    if (riskTextEl) riskTextEl.textContent = risk.text;
+    if (riskBadgeEl) riskBadgeEl.textContent = risk.badge;
+    
+    // Update Probability
+    const probEl = document.getElementById('crisis-probability');
+    if (probEl) probEl.textContent = Math.round(calculateCrisisProbability()) + '%';
+    
+    // Update Trend
+    const trend = getTrend();
+    const trendTextEl = document.getElementById('trend-text');
+    const trendChangeEl = document.getElementById('trend-change');
+    if (trendTextEl) trendTextEl.textContent = trend.direction;
+    if (trendChangeEl) {
+        trendChangeEl.textContent = (trend.change > 0 ? '+' : '') + trend.change + '%';
+        trendChangeEl.className = `metric-change trend-${trend.direction.includes('Rising') ? 'up' : trend.direction.includes('Falling') ? 'down' : 'stable'}`;
+    }
+}
+
+// Update initialization section
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 GFFI Dashboard Initializing...');
+    
+    // Update core metrics first
+    updateCoreMetrics();
+    
+    // Set global values
+    document.getElementById('update-time').textContent = updateDate;
+    document.getElementById('update-time-hm').textContent = updateTime;
+    
+    // Render initial views
+    renderCountryGrid();
+    renderSectorGrid();
+    renderStockGrid();
+    renderIndiaGrid();
+    
+    // Add event listeners
+    document.getElementById('toggle-country').addEventListener('click', toggleCountryView);
+    document.getElementById('toggle-sector').addEventListener('click', toggleSectorView);
+    document.getElementById('toggle-stock').addEventListener('click', toggleStockView);
+    document.getElementById('toggle-india').addEventListener('click', toggleIndiaView);
+    
+    // Update live status
+    updateLiveStatus();
+    setInterval(updateCoreMetrics, 60000); // Update every minute
+    
+    console.log('✅ GFFI Dashboard Ready!');
+});
     updateLiveStatus();
     
     console.log('✅ GFFI Dashboard Ready!');
