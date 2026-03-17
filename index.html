@@ -1,29 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
-<<!-- Open Graph / LinkedIn Meta Tags - FIXED VERSION -->
-<meta property="og:title" content="GFFI - Global Financial Fragility Index Dashboard" />
-<meta property="og:description" content="Live dashboard tracking financial fragility across 17 countries using entropy-based AI. Predict market crises 24 months in advance with 0.921 AUC accuracy. Real-time GFFI scores, sector analysis, and stock recommendations based on published research (DOI: 10.5281/zenodo.18859370)." />
-<meta property="og:image" content="https://gffi.online/gffi-preview.png" />
-<meta property="og:url" content="https://gffi.online" />
-<meta property="og:type" content="website" />
-<meta property="og:site_name" content="GFFI Analytics" />
-<meta property="og:author" content="Udesh Kumar Bhatriya" />
-
-<!-- Twitter Card (optional but helpful) -->
-<meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="GFFI Dashboard - Predict Financial Crises 24 Months in Advance" />
-<meta name="twitter:description" content="Real-time Global Financial Fragility Index with 0.921 AUC accuracy. Track 17 countries, sector analysis, and stock picks." />
-<meta name="twitter:image" content="https://gffi.online/gffi-preview.png" />>
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GFFI - Global Financial Fragility Index</title>
+    
+    <!-- Open Graph / LinkedIn Meta Tags -->
+    <meta property="og:title" content="GFFI - Global Financial Fragility Index Dashboard" />
+    <meta property="og:description" content="Live dashboard tracking financial fragility across 17 countries using entropy-based AI. Predict market crises 24 months in advance with 0.921 AUC accuracy. Real-time GFFI scores, sector analysis, and stock recommendations based on published research (DOI: 10.5281/zenodo.18859370)." />
+    <meta property="og:image" content="https://gffi.online/gffi-preview.png" />
+    <meta property="og:url" content="https://gffi.online" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="GFFI Analytics" />
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="GFFI Dashboard - Predict Financial Crises 24 Months in Advance" />
+    <meta name="twitter:description" content="Real-time Global Financial Fragility Index with 0.921 AUC accuracy. Track 17 countries, sector analysis, and stock picks." />
+    <meta name="twitter:image" content="https://gffi.online/gffi-preview.png" />
+    
+    <!-- Regular meta tags -->
     <meta name="description" content="Real-time financial fragility index based on entropy. Predict market crises 24 months in advance.">
     <meta name="keywords" content="GFFI, financial crisis prediction, entropy finance, stock market risk, Nifty analysis">
+    
+    <!-- Stylesheets -->
     <link rel="stylesheet" href="style.css">
-    <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -68,19 +72,20 @@
                         <span class="stat-label">Countries</span>
                     </div>
                     <div class="stat">
-                        <span class="stat-number">High accuracy early warning signals</span>
+                        <span class="stat-number">High Accuracy</span>
                         <span class="stat-label">Crisis Detection</span>
                     </div>
                 </div>
             </div>
         </div>
     </section>
-<!-- Country Section with Toggle Button -->
-<div class="section-header">
-    <h3>🌎 Country-wise GFFI</h3>
-    <button id="toggle-country" class="btn-toggle">📊 Switch to Table View</button>
-</div>
-<div id="country-grid" class="country-grid"></div>
+
+    <!-- Country Section with Toggle Button -->
+    <div class="section-header">
+        <h3>🌎 Country-wise GFFI</h3>
+        <button id="toggle-country" class="btn-toggle">📊 Switch to Table View</button>
+    </div>
+    <div id="country-grid" class="country-grid"></div>
 
     <!-- Live GFFI Dashboard Section -->
     <section id="gffi-data" class="dashboard-section">
@@ -91,91 +96,92 @@
                 <p>Real-time GFFI values based on market entropy and banking capital ratios</p>
             </div>
 
-            <!-- CORE METRICS PANEL (Bloomberg Style) -->
-<div class="metrics-grid">
-    <div class="metric-card main-gffi">
-        <div class="metric-icon"><i class="fas fa-globe"></i></div>
-        <div class="metric-content">
-            <span class="metric-label">GFFI SCORE</span>
-            <span class="metric-value" id="global-gffi">63.5</span>
-        </div>
-    </div>
-    
-    <div class="metric-card risk-level">
-        <div class="metric-icon"><i class="fas fa-shield-alt"></i></div>
-        <div class="metric-content">
-            <span class="metric-label">RISK LEVEL</span>
-            <span class="metric-value" id="risk-level-text">WATCH</span>
-            <span class="risk-badge" id="risk-badge">🟡</span>
-        </div>
-    </div>
-    
-    <div class="metric-card probability">
-        <div class="metric-icon"><i class="fas fa-chart-pie"></i></div>
-        <div class="metric-content">
-            <span class="metric-label">PROBABILITY</span>
-            <span class="metric-value" id="crisis-probability">38%</span>
-            <span class="metric-sub">next 12 months</span>
-        </div>
-    </div>
-    
-    <div class="metric-card trend">
-        <div class="metric-icon"><i class="fas fa-chart-line"></i></div>
-        <div class="metric-content">
-            <span class="metric-label">TREND</span>
-            <span class="metric-value" id="trend-text">↑ Rising</span>
-            <span class="metric-change" id="trend-change">+4.2%</span>
-        </div>
-    </div>
-</div>
+            <!-- CORE METRICS PANEL -->
+            <div class="metrics-grid">
+                <div class="metric-card main-gffi">
+                    <div class="metric-icon"><i class="fas fa-globe"></i></div>
+                    <div class="metric-content">
+                        <span class="metric-label">GFFI SCORE</span>
+                        <span class="metric-value" id="global-gffi">63.5</span>
+                    </div>
+                </div>
+                
+                <div class="metric-card risk-level">
+                    <div class="metric-icon"><i class="fas fa-shield-alt"></i></div>
+                    <div class="metric-content">
+                        <span class="metric-label">RISK LEVEL</span>
+                        <span class="metric-value" id="risk-level-text">WATCH</span>
+                        <span class="risk-badge" id="risk-badge">🟡</span>
+                    </div>
+                </div>
+                
+                <div class="metric-card probability">
+                    <div class="metric-icon"><i class="fas fa-chart-pie"></i></div>
+                    <div class="metric-content">
+                        <span class="metric-label">PROBABILITY</span>
+                        <span class="metric-value" id="crisis-probability">38%</span>
+                        <span class="metric-sub">next 12 months</span>
+                    </div>
+                </div>
+                
+                <div class="metric-card trend">
+                    <div class="metric-icon"><i class="fas fa-chart-line"></i></div>
+                    <div class="metric-content">
+                        <span class="metric-label">TREND</span>
+                        <span class="metric-value" id="trend-text">↑ Rising</span>
+                        <span class="metric-change" id="trend-change">+4.2%</span>
+                    </div>
+                </div>
+            </div>
 
-<!-- Global Metrics Cards with Live Status (नीचे रख सकते हैं) -->
-<div class="global-metrics">
-    <div class="metric-card">
-        <div class="metric-icon"><i class="fas fa-chart-line"></i></div>
-        <div class="metric-content">
-            <span class="metric-label">Market Status</span>
-            <span class="metric-value">Bullish 📈</span>
-            <span class="metric-date" id="current-date"></span>
-        </div>
-    </div>
-    <div class="metric-card">
-        <div class="metric-icon"><i class="fas fa-clock"></i></div>
-        <div class="metric-content">
-            <span class="metric-label">Last Update</span>
-            <span class="metric-value" id="update-time">17 Mar 2026</span>
-            <span class="metric-date" id="update-time-hm">02:07 AM</span>
-        </div>
-    </div>
-</div>
+            <!-- Global Metrics Cards -->
+            <div class="global-metrics">
+                <div class="metric-card">
+                    <div class="metric-icon"><i class="fas fa-chart-line"></i></div>
+                    <div class="metric-content">
+                        <span class="metric-label">Market Status</span>
+                        <span class="metric-value">Bullish 📈</span>
+                        <span class="metric-date" id="current-date"></span>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon"><i class="fas fa-clock"></i></div>
+                    <div class="metric-content">
+                        <span class="metric-label">Last Update</span>
+                        <span class="metric-value" id="update-time">17 Mar 2026</span>
+                        <span class="metric-date" id="update-time-hm">02:07 AM</span>
+                    </div>
+                </div>
+            </div>
+
             <!-- Country Grid -->
             <h3 class="section-subtitle">🌎 Country-wise GFFI</h3>
-            <div class="country-grid" id="country-grid">
-                <!-- Countries will be loaded via JavaScript -->
-            </div>
+            <div class="country-grid" id="country-grid"></div>
         </div>
     </section>
-<!-- Sector Section with Toggle Button -->
-<div class="section-header">
-    <h3>🏭 Sector-wise GFFI Analysis</h3>
-    <button id="toggle-sector" class="btn-toggle">📊 Switch to Table View</button>
-</div>
-<div id="sector-grid" class="sector-grid"></div>
+
+    <!-- Sector Section with Toggle Button -->
+    <div class="section-header">
+        <h3>🏭 Sector-wise GFFI Analysis</h3>
+        <button id="toggle-sector" class="btn-toggle">📊 Switch to Table View</button>
+    </div>
+    <div id="sector-grid" class="sector-grid"></div>
+
     <!-- Sector Analysis Section -->
     <section id="sector-analysis" class="sector-analysis-section">
         <div class="container">
             <h3>🏭 Sector-wise GFFI Analysis</h3>
-            <div class="sector-grid" id="sector-grid">
-                <!-- Sectors will be loaded via JavaScript -->
-            </div>
+            <div class="sector-grid" id="sector-grid"></div>
         </div>
     </section>
-<!-- Stock Picks with Toggle Button -->
-<div class="section-header">
-    <h3>📈 Top Stock Picks based on GFFI</h3>
-    <button id="toggle-stock" class="btn-toggle">📊 Switch to Table View</button>
-</div>
-<div class="picks-container" id="stock-picks-container"></div>
+
+    <!-- Stock Picks with Toggle Button -->
+    <div class="section-header">
+        <h3>📈 Top Stock Picks based on GFFI</h3>
+        <button id="toggle-stock" class="btn-toggle">📊 Switch to Table View</button>
+    </div>
+    <div class="picks-container" id="stock-picks-container"></div>
+
     <!-- Stock Picks Section -->
     <section id="stock-picks" class="stock-picks-section">
         <div class="container">
@@ -196,17 +202,20 @@
             </div>
         </div>
     </section>
-<!-- India Market with Toggle Button -->
-<div class="section-header">
-    <h3>🇮🇳 India Market Dashboard</h3>
-    <button id="toggle-india" class="btn-toggle">📊 Switch to Table View</button>
-</div>
-<div class="india-cards"></div>
+
+    <!-- India Market with Toggle Button -->
+    <div class="section-header">
+        <h3>🇮🇳 India Market Dashboard</h3>
+        <button id="toggle-india" class="btn-toggle">📊 Switch to Table View</button>
+    </div>
+    <div class="india-cards"></div>
+
     <!-- India Market Dashboard -->
     <section class="india-market-section">
-        <div class="container">
-            
+        <div class="container"></div>
+    </section>
+
     <script src="data.js"></script>
-<script src="functions.js"></script>
+    <script src="functions.js"></script>
 </body>
 </html>
