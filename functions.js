@@ -122,15 +122,13 @@ function renderIndiaGrid() {
         return;
     }
     
-    // Check if indiaMarketData exists
     if (!indiaMarketData) {
         console.error('indiaMarketData is not available');
         return;
     }
     
-    // Check if countryData exists and has India
-    let indiaGffi = 64.7;  // default value
-    let indiaStatus = 'success';  // default status
+    let indiaGffi = 64.7;
+    let indiaStatus = 'success';
     
     if (countryData && Array.isArray(countryData)) {
         const indiaData = countryData.find(c => c && c.name === 'India');
@@ -176,7 +174,6 @@ function renderIndiaGrid() {
     `;
     container.innerHTML = html;
     
-    // Update market status
     const marketStatusEl = document.getElementById('market-status');
     if (marketStatusEl) {
         marketStatusEl.textContent = indiaMarketData.nifty_change < 0 ? '🔴 BEARISH' : '🟢 BULLISH';
@@ -199,16 +196,156 @@ function renderIndiaGrid() {
 }
 
 // ============================================
+// CHANGE INDICATOR FUNCTIONS
+// ============================================
+
+function calculateThreeMonthChange() {
+    if (!countryData || countryData.length === 0) {
+        return {
+            value: 0,
+            direction: 'stable',
+            icon: '➡️',
+            absValue: 0,
+            interpretation: 'Stable',
+            badge: 'Low',
+            meterWidth: 30
+        };
+    }
+    
+    const currentAvg = countryData.reduce((sum, c) => sum + c.gffi, 0) / countryData.length;
+    const randomFactor = 0.85 + (Math.random() * 0.3);
+    const threeMonthOldAvg = currentAvg * randomFactor;
+    const change = ((currentAvg - threeMonthOldAvg) / threeMonthOldAvg) * 100;
+    
+    let direction = 'stable';
+    let icon = '➡️';
+    let interpretation = 'Stable';
+    let badge = 'Low';
+    let meterWidth = 30;
+    
+    if (change > 3) {
+        direction = 'increasing';
+        icon = '🔺';
+        interpretation = 'Risk Increasing Rapidly';
+        badge = 'High';
+        meterWidth = 85;
+    } else if (change > 1) {
+        direction = 'increasing';
+        icon = '↑';
+        interpretation = 'Risk Increasing';
+        badge = 'Medium';
+        meterWidth = 65;
+    } else if (change < -3) {
+        direction = 'decreasing';
+        icon = '🔻';
+        interpretation = 'Risk Decreasing Rapidly';
+        badge = 'Low';
+        meterWidth = 15;
+    } else if (change < -1) {
+        direction = 'decreasing';
+        icon = '↓';
+        interpretation = 'Risk Decreasing';
+        badge = 'Low';
+        meterWidth = 25;
+    }
+    
+    return {
+        value: Math.abs(change).toFixed(1),
+        direction: direction,
+        icon: icon,
+        absValue: Math.abs(change).toFixed(1),
+        interpretation: interpretation,
+        badge: badge,
+        meterWidth: meterWidth,
+        fullValue: change.toFixed(1)
+    };
+}
+
+function updateChangeIndicator() {
+    const changeData = calculateThreeMonthChange();
+    
+    const card = document.querySelector('.change-indicator-card');
+    if (card) {
+        card.classList.remove('increasing', 'decreasing', 'stable');
+        card.classList.add(changeData.direction);
+    }
+    
+    const changeValueEl = document.getElementById('change-value');
+    if (changeValueEl) {
+        changeValueEl.textContent = `${changeData.icon} ${changeData.value}%`;
+    }
+    
+    const directionEl = document.getElementById('change-direction');
+    if (directionEl) {
+        let directionText = 'Stable';
+        if (changeData.direction === 'increasing') directionText = '↑ Rising';
+        if (changeData.direction === 'decreasing') directionText = '↓ Falling';
+        directionEl.textContent = directionText;
+    }
+    
+    const badgeEl = document.getElementById('change-badge');
+    if (badgeEl) {
+        badgeEl.textContent = changeData.badge;
+    }
+    
+    const meterBarEl = document.getElementById('change-meter-bar');
+    if (meterBarEl) {
+        meterBarEl.style.width = changeData.meterWidth + '%';
+    }
+    
+    const interpretationEl = document.getElementById('change-interpretation');
+    if (interpretationEl) {
+        interpretationEl.textContent = changeData.interpretation;
+    }
+    
+    console.log('✅ Change indicator updated:', changeData);
+}
+
+// ============================================
+// FOOTER FUNCTIONS
+// ============================================
+
+function updateFooterTime() {
+    const footerTimeEl = document.getElementById('footer-update-time');
+    if (footerTimeEl) {
+        const now = new Date();
+        const options = { 
+            hour: '2-digit', 
+            minute: '2-digit',
+            second: '2-digit',
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+            hour12: true
+        };
+        const timeStr = now.toLocaleString('en-IN', options);
+        footerTimeEl.textContent = timeStr;
+    }
+}
+
+// ============================================
+// LIVE STATUS UPDATE
+// ============================================
+function updateLiveStatus() {
+    const liveStatusEl = document.getElementById('live-status');
+    if (liveStatusEl) {
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+        liveStatusEl.innerHTML = `🟢 लाइव | अंतिम अपडेट: ${timeStr}`;
+    }
+}
+
+// Auto-refresh every minute
+setInterval(updateLiveStatus, 60000);
+
+// ============================================
 // TABLE VIEW FUNCTIONS
 // ============================================
 function renderCountryTable() {
     const container = document.getElementById('country-grid');
     if (!container) return;
     
-    if (!countryData || !Array.isArray(countryData)) {
-        console.error('countryData is not available');
-        return;
-    }
+    if (!countryData || !Array.isArray(countryData)) return;
     
     let html = '<table class="data-table"><tr><th>Country</th><th>GFFI</th><th>Status</th><th>Risk Level</th></tr>';
     
@@ -235,26 +372,18 @@ function renderSectorTable() {
     const container = document.getElementById('sector-grid');
     if (!container) return;
     
-    if (!sectorData || !Array.isArray(sectorData)) {
-        console.error('sectorData is not available');
-        return;
-    }
+    if (!sectorData || !Array.isArray(sectorData)) return;
     
     let html = '<table class="data-table"><tr><th>Sector</th><th>GFFI</th><th>Status</th><th>Trend</th><th>Top Stocks</th></tr>';
     
     sectorData.forEach(s => {
-        let statusClass = s.gffi >= 70 ? 'status-critical' : 
-                         s.gffi >= 65 ? 'status-alert' : 
-                         s.gffi >= 58 ? 'status-watch' : 'status-success';
-        let statusText = s.gffi >= 70 ? 'CRITICAL' : 
-                        s.gffi >= 65 ? 'ALERT' : 
-                        s.gffi >= 58 ? 'WATCH' : 'SAFE';
+        let statusText = s.gffi >= 70 ? 'CRITICAL' : s.gffi >= 65 ? 'ALERT' : s.gffi >= 58 ? 'WATCH' : 'SAFE';
         let trendIcon = s.trend === 'up' ? '📈' : s.trend === 'down' ? '📉' : '➡️';
         
         html += `<tr>
             <td><strong>${s.name}</strong></td>
             <td class="gffi-value">${s.gffi.toFixed(1)}</td>
-            <td><span class="${statusClass}">${statusText}</span></td>
+            <td>${statusText}</td>
             <td>${trendIcon}</td>
             <td>${s.stocks.slice(0, 3).join(', ')}</td>
         </tr>`;
@@ -268,10 +397,7 @@ function renderStockTable() {
     const container = document.querySelector('.picks-container');
     if (!container) return;
     
-    if (!stockPicks) {
-        console.error('stockPicks is not available');
-        return;
-    }
+    if (!stockPicks) return;
     
     let html = '<table class="data-table"><tr><th>Category</th><th>Symbol</th><th>Company</th><th>GFFI</th><th>Action</th><th>Reason</th></tr>';
     
@@ -295,12 +421,8 @@ function renderIndiaTable() {
     const container = document.querySelector('.india-cards');
     if (!container) return;
     
-    if (!indiaMarketData) {
-        console.error('indiaMarketData is not available');
-        return;
-    }
+    if (!indiaMarketData) return;
     
-    // Get India data from countryData
     let indiaGffi = 64.7;
     let indiaStatus = 'success';
     
@@ -415,21 +537,6 @@ function toggleIndiaView() {
 }
 
 // ============================================
-// LIVE STATUS UPDATE
-// ============================================
-function updateLiveStatus() {
-    const liveStatusEl = document.getElementById('live-status');
-    if (liveStatusEl) {
-        const now = new Date();
-        const timeStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
-        liveStatusEl.innerHTML = `🟢 लाइव | अंतिम अपडेट: ${timeStr}`;
-    }
-}
-
-// Auto-refresh every minute
-setInterval(updateLiveStatus, 60000);
-
-// ============================================
 // INITIALIZATION
 // ============================================
 document.addEventListener('DOMContentLoaded', function() {
@@ -447,14 +554,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (typeof updateTime !== 'undefined') {
         document.getElementById('update-time-hm').textContent = updateTime;
     }
-     // नया: Change indicator अपडेट करें
-    updateChangeIndicator();
     
-    // हर 5 मिनट में अपडेट करें
-    setInterval(updateChangeIndicator, 5 * 60 * 1000);
-    
-    console.log('✅ GFFI Dashboard Ready!');
-});
     // Render initial views
     renderCountryGrid();
     renderSectorGrid();
@@ -474,256 +574,19 @@ document.addEventListener('DOMContentLoaded', function() {
     const toggleIndia = document.getElementById('toggle-india');
     if (toggleIndia) toggleIndia.addEventListener('click', toggleIndiaView);
     
-    // Initial live status
-    // ============================================
-// CORE METRICS PANEL FUNCTIONS
-// ============================================
-
-function calculateCrisisProbability() {
-    // Simple probability based on GFFI
-    const gffi = globalGFFI || 63.5;
-    const threshold = 72.8;
-    
-    if (gffi >= threshold) {
-        return 85; // High probability
-    } else if (gffi >= 65) {
-        return 60 + (gffi - 65) * 2; // 60-75%
-    } else if (gffi >= 58) {
-        return 30 + (gffi - 58) * 3; // 30-50%
-    } else {
-        return 15 + (gffi - 50) * 1.5; // 15-30%
-    }
-}
-
-function getTrend() {
-    if (!countryData || countryData.length === 0) return { direction: 'Stable', change: 0 };
-    
-    // Calculate average change in last 3 months (simplified)
-    const avgGffi = countryData.reduce((sum, c) => sum + c.gffi, 0) / countryData.length;
-    const previousAvg = avgGffi * 0.95; // Simplified - in real app, use historical data
-    
-    const change = ((avgGffi - previousAvg) / previousAvg) * 100;
-    
-    if (change > 2) return { direction: '↑ Rising', change: change.toFixed(1) };
-    if (change < -2) return { direction: '↓ Falling', change: change.toFixed(1) };
-    return { direction: '→ Stable', change: change.toFixed(1) };
-}
-
-function getRiskLevel(gffi) {
-    if (gffi >= 70) return { text: 'CRITICAL', badge: '🔴' };
-    if (gffi >= 65) return { text: 'WARNING', badge: '🟠' };
-    if (gffi >= 58) return { text: 'WATCH', badge: '🟡' };
-    return { text: 'SAFE', badge: '🟢' };
-}
-
-function updateCoreMetrics() {
-    const gffi = globalGFFI || 63.5;
-    
-    // Update GFFI Score
-    const gffiEl = document.getElementById('global-gffi');
-    if (gffiEl) gffiEl.textContent = gffi;
-    
-    // Update Risk Level
-    const risk = getRiskLevel(gffi);
-    const riskTextEl = document.getElementById('risk-level-text');
-    const riskBadgeEl = document.getElementById('risk-badge');
-    if (riskTextEl) riskTextEl.textContent = risk.text;
-    if (riskBadgeEl) riskBadgeEl.textContent = risk.badge;
-    
-    // Update Probability
-    const probEl = document.getElementById('crisis-probability');
-    if (probEl) probEl.textContent = Math.round(calculateCrisisProbability()) + '%';
-    
-    // Update Trend
-    const trend = getTrend();
-    const trendTextEl = document.getElementById('trend-text');
-    const trendChangeEl = document.getElementById('trend-change');
-    if (trendTextEl) trendTextEl.textContent = trend.direction;
-    if (trendChangeEl) {
-        trendChangeEl.textContent = (trend.change > 0 ? '+' : '') + trend.change + '%';
-        trendChangeEl.className = `metric-change trend-${trend.direction.includes('Rising') ? 'up' : trend.direction.includes('Falling') ? 'down' : 'stable'}`;
-    }
-}
-
-// Update initialization section
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 GFFI Dashboard Initializing...');
-    
-    // Update core metrics first
+    // Update core metrics
     updateCoreMetrics();
     
-    // Set global values
-    document.getElementById('update-time').textContent = updateDate;
-    document.getElementById('update-time-hm').textContent = updateTime;
+    // नया: Change indicator अपडेट करें
+    updateChangeIndicator();
+    setInterval(updateChangeIndicator, 5 * 60 * 1000);
     
-    // Render initial views
-    renderCountryGrid();
-    renderSectorGrid();
-    renderStockGrid();
-    renderIndiaGrid();
+    // नया: Footer time अपडेट करें
+    updateFooterTime();
+    setInterval(updateFooterTime, 1000);
     
-    // Add event listeners
-    document.getElementById('toggle-country').addEventListener('click', toggleCountryView);
-    document.getElementById('toggle-sector').addEventListener('click', toggleSectorView);
-    document.getElementById('toggle-stock').addEventListener('click', toggleStockView);
-    document.getElementById('toggle-india').addEventListener('click', toggleIndiaView);
-    
-    // Update live status
+    // Initial live status
     updateLiveStatus();
-    setInterval(updateCoreMetrics, 60000); // Update every minute
     
     console.log('✅ GFFI Dashboard Ready!');
 });
-    updateLiveStatus();
-    
-// ============================================
-// CHANGE INDICATOR FUNCTIONS
-// ============================================
-
-function calculateThreeMonthChange() {
-    // चेक करें कि डेटा मौजूद है या नहीं
-    if (!countryData || countryData.length === 0) {
-        return {
-            value: 0,
-            direction: 'stable',
-            icon: '➡️',
-            absValue: 0,
-            interpretation: 'Stable',
-            badge: 'Low',
-            meterWidth: 30
-        };
-    }
-    
-    // मौजूदा औसत GFFI निकालें
-    const currentAvg = countryData.reduce((sum, c) => sum + c.gffi, 0) / countryData.length;
-    
-    // पिछले 3 महीनों का डेमो डेटा (असली प्रोजेक्ट में हिस्टोरिकल डेटा से लेंगे)
-    // अभी के लिए, थोड़ा रैंडम चेंज जेनरेट करते हैं
-    const randomFactor = 0.85 + (Math.random() * 0.3); // 0.85 से 1.15 के बीच
-    
-    // तीन महीने पहले का अनुमानित GFFI
-    const threeMonthOldAvg = currentAvg * randomFactor;
-    
-    // परिवर्तन की गणना
-    const change = ((currentAvg - threeMonthOldAvg) / threeMonthOldAvg) * 100;
-    
-    // डायरेक्शन और आइकन तय करें
-    let direction = 'stable';
-    let icon = '➡️';
-    let interpretation = 'Stable';
-    let badge = 'Low';
-    let meterWidth = 30;
-    
-    if (change > 3) {
-        direction = 'increasing';
-        icon = '🔺';
-        interpretation = 'Risk Increasing Rapidly';
-        badge = 'High';
-        meterWidth = 85;
-    } else if (change > 1) {
-        direction = 'increasing';
-        icon = '↑';
-        interpretation = 'Risk Increasing';
-        badge = 'Medium';
-        meterWidth = 65;
-    } else if (change < -3) {
-        direction = 'decreasing';
-        icon = '🔻';
-        interpretation = 'Risk Decreasing Rapidly';
-        badge = 'Low';
-        meterWidth = 15;
-    } else if (change < -1) {
-        direction = 'decreasing';
-        icon = '↓';
-        interpretation = 'Risk Decreasing';
-        badge = 'Low';
-        meterWidth = 25;
-    }
-    
-    return {
-        value: Math.abs(change).toFixed(1),
-        direction: direction,
-        icon: icon,
-        absValue: Math.abs(change).toFixed(1),
-        interpretation: interpretation,
-        badge: badge,
-        meterWidth: meterWidth,
-        fullValue: change.toFixed(1)
-    };
-}
-
-function updateChangeIndicator() {
-    const changeData = calculateThreeMonthChange();
-    
-    // कार्ड का कलर अपडेट करें
-    const card = document.querySelector('.change-indicator-card');
-    if (card) {
-        // पुरानी क्लासेस हटाएं
-        card.classList.remove('increasing', 'decreasing', 'stable');
-        // नई क्लास जोड़ें
-        card.classList.add(changeData.direction);
-    }
-    
-    // वैल्यू अपडेट करें
-    const changeValueEl = document.getElementById('change-value');
-    if (changeValueEl) {
-        changeValueEl.textContent = `${changeData.icon} ${changeData.value}%`;
-    }
-    
-    // डायरेक्शन टेक्स्ट अपडेट करें
-    const directionEl = document.getElementById('change-direction');
-    if (directionEl) {
-        let directionText = 'Stable';
-        if (changeData.direction === 'increasing') directionText = '↑ Rising';
-        if (changeData.direction === 'decreasing') directionText = '↓ Falling';
-        directionEl.textContent = directionText;
-    }
-    
-    // बैज अपडेट करें
-    const badgeEl = document.getElementById('change-badge');
-    if (badgeEl) {
-        badgeEl.textContent = changeData.badge;
-    }
-    
-    // मीटर बार अपडेट करें
-    const meterBarEl = document.getElementById('change-meter-bar');
-    if (meterBarEl) {
-        meterBarEl.style.width = changeData.meterWidth + '%';
-    }
-    
-    // इंटरप्रिटेशन अपडेट करें
-    const interpretationEl = document.getElementById('change-interpretation');
-    if (interpretationEl) {
-        interpretationEl.textContent = changeData.interpretation;
-    }
-    
-    console.log('✅ Change indicator updated:', changeData);
-}
-
-// DOMContentLoaded फंक्शन में यह लाइन जोड़ें
-// updateChangeIndicator();
-// ============================================
-// FOOTER FUNCTIONS
-// ============================================
-
-function updateFooterTime() {
-    const footerTimeEl = document.getElementById('footer-update-time');
-    if (footerTimeEl) {
-        const now = new Date();
-        const options = { 
-            hour: '2-digit', 
-            minute: '2-digit',
-            second: '2-digit',
-            day: '2-digit',
-            month: 'short',
-            year: 'numeric',
-            hour12: true
-        };
-        const timeStr = now.toLocaleString('en-IN', options);
-        footerTimeEl.textContent = timeStr;
-    }
-}
-
-// DOMContentLoaded में यह लाइन जोड़ें
-// updateFooterTime();
-// setInterval(updateFooterTime, 1000); // हर सेकंड अपडेट
