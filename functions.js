@@ -576,8 +576,6 @@ document.addEventListener('DOMContentLoaded', function() {
 });
     updateLiveStatus();
     
-    console.log('✅ GFFI Dashboard Ready!');
-});
 // ============================================
 // CHANGE INDICATOR FUNCTIONS
 // ============================================
