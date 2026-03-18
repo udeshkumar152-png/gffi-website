@@ -865,3 +865,151 @@ body {
 .trend-up { color: #28a745; }
 .trend-down { color: #dc3545; }
 .trend-stable { color: #ffc107; }
+/* ============================================
+   CHANGE INDICATOR STYLES
+   ============================================ */
+
+.change-indicator-container {
+    margin: 25px 0 15px;
+    width: 100%;
+}
+
+.change-indicator-card {
+    background: linear-gradient(105deg, #2c3e50 0%, #3498db 100%);
+    border-radius: 16px;
+    padding: 20px 25px;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    box-shadow: 0 10px 30px rgba(52, 152, 219, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.change-indicator-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 35px rgba(52, 152, 219, 0.4);
+}
+
+.change-icon {
+    font-size: 3.2rem;
+    background: rgba(255, 255, 255, 0.15);
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.change-content {
+    flex: 1;
+}
+
+.change-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.change-label {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 500;
+    opacity: 0.9;
+}
+
+.change-badge {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 4px 12px;
+    border-radius: 30px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    backdrop-filter: blur(5px);
+}
+
+.change-main {
+    display: flex;
+    align-items: baseline;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.change-value {
+    font-size: 2.8rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.change-direction {
+    font-size: 1.2rem;
+    font-weight: 500;
+    opacity: 0.9;
+}
+
+.change-meter {
+    height: 8px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    margin-bottom: 12px;
+    overflow: hidden;
+}
+
+.change-meter-bar {
+    height: 100%;
+    border-radius: 10px;
+    background: white;
+    transition: width 0.5s ease;
+}
+
+.change-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+.change-interpretation {
+    font-weight: 600;
+}
+
+.change-update {
+    font-size: 0.8rem;
+}
+
+/* रिस्पॉन्सिव डिजाइन */
+@media (max-width: 768px) {
+    .change-indicator-card {
+        flex-direction: column;
+        text-align: center;
+        padding: 20px;
+    }
+    
+    .change-main {
+        justify-content: center;
+    }
+    
+    .change-footer {
+        flex-direction: column;
+        gap: 5px;
+    }
+}
+
+/* अलग-अलग स्टेटस के लिए कलर वेरिएशन */
+.change-indicator-card.increasing {
+    background: linear-gradient(105deg, #c0392b 0%, #e74c3c 100%);
+}
+
+.change-indicator-card.decreasing {
+    background: linear-gradient(105deg, #27ae60 0%, #2ecc71 100%);
+}
+
+.change-indicator-card.stable {
+    background: linear-gradient(105deg, #f39c12 0%, #f1c40f 100%);
+}
