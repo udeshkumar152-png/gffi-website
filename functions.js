@@ -702,3 +702,28 @@ function updateChangeIndicator() {
 
 // DOMContentLoaded फंक्शन में यह लाइन जोड़ें
 // updateChangeIndicator();
+// ============================================
+// FOOTER FUNCTIONS
+// ============================================
+
+function updateFooterTime() {
+    const footerTimeEl = document.getElementById('footer-update-time');
+    if (footerTimeEl) {
+        const now = new Date();
+        const options = { 
+            hour: '2-digit', 
+            minute: '2-digit',
+            second: '2-digit',
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+            hour12: true
+        };
+        const timeStr = now.toLocaleString('en-IN', options);
+        footerTimeEl.textContent = timeStr;
+    }
+}
+
+// DOMContentLoaded में यह लाइन जोड़ें
+// updateFooterTime();
+// setInterval(updateFooterTime, 1000); // हर सेकंड अपडेट
