@@ -571,3 +571,129 @@ document.addEventListener('DOMContentLoaded', function() {
     
     console.log('✅ GFFI Dashboard Ready!');
 });
+// ============================================
+// CHANGE INDICATOR FUNCTIONS
+// ============================================
+
+function calculateThreeMonthChange() {
+    // चेक करें कि डेटा मौजूद है या नहीं
+    if (!countryData || countryData.length === 0) {
+        return {
+            value: 0,
+            direction: 'stable',
+            icon: '➡️',
+            absValue: 0,
+            interpretation: 'Stable',
+            badge: 'Low',
+            meterWidth: 30
+        };
+    }
+    
+    // मौजूदा औसत GFFI निकालें
+    const currentAvg = countryData.reduce((sum, c) => sum + c.gffi, 0) / countryData.length;
+    
+    // पिछले 3 महीनों का डेमो डेटा (असली प्रोजेक्ट में हिस्टोरिकल डेटा से लेंगे)
+    // अभी के लिए, थोड़ा रैंडम चेंज जेनरेट करते हैं
+    const randomFactor = 0.85 + (Math.random() * 0.3); // 0.85 से 1.15 के बीच
+    
+    // तीन महीने पहले का अनुमानित GFFI
+    const threeMonthOldAvg = currentAvg * randomFactor;
+    
+    // परिवर्तन की गणना
+    const change = ((currentAvg - threeMonthOldAvg) / threeMonthOldAvg) * 100;
+    
+    // डायरेक्शन और आइकन तय करें
+    let direction = 'stable';
+    let icon = '➡️';
+    let interpretation = 'Stable';
+    let badge = 'Low';
+    let meterWidth = 30;
+    
+    if (change > 3) {
+        direction = 'increasing';
+        icon = '🔺';
+        interpretation = 'Risk Increasing Rapidly';
+        badge = 'High';
+        meterWidth = 85;
+    } else if (change > 1) {
+        direction = 'increasing';
+        icon = '↑';
+        interpretation = 'Risk Increasing';
+        badge = 'Medium';
+        meterWidth = 65;
+    } else if (change < -3) {
+        direction = 'decreasing';
+        icon = '🔻';
+        interpretation = 'Risk Decreasing Rapidly';
+        badge = 'Low';
+        meterWidth = 15;
+    } else if (change < -1) {
+        direction = 'decreasing';
+        icon = '↓';
+        interpretation = 'Risk Decreasing';
+        badge = 'Low';
+        meterWidth = 25;
+    }
+    
+    return {
+        value: Math.abs(change).toFixed(1),
+        direction: direction,
+        icon: icon,
+        absValue: Math.abs(change).toFixed(1),
+        interpretation: interpretation,
+        badge: badge,
+        meterWidth: meterWidth,
+        fullValue: change.toFixed(1)
+    };
+}
+
+function updateChangeIndicator() {
+    const changeData = calculateThreeMonthChange();
+    
+    // कार्ड का कलर अपडेट करें
+    const card = document.querySelector('.change-indicator-card');
+    if (card) {
+        // पुरानी क्लासेस हटाएं
+        card.classList.remove('increasing', 'decreasing', 'stable');
+        // नई क्लास जोड़ें
+        card.classList.add(changeData.direction);
+    }
+    
+    // वैल्यू अपडेट करें
+    const changeValueEl = document.getElementById('change-value');
+    if (changeValueEl) {
+        changeValueEl.textContent = `${changeData.icon} ${changeData.value}%`;
+    }
+    
+    // डायरेक्शन टेक्स्ट अपडेट करें
+    const directionEl = document.getElementById('change-direction');
+    if (directionEl) {
+        let directionText = 'Stable';
+        if (changeData.direction === 'increasing') directionText = '↑ Rising';
+        if (changeData.direction === 'decreasing') directionText = '↓ Falling';
+        directionEl.textContent = directionText;
+    }
+    
+    // बैज अपडेट करें
+    const badgeEl = document.getElementById('change-badge');
+    if (badgeEl) {
+        badgeEl.textContent = changeData.badge;
+    }
+    
+    // मीटर बार अपडेट करें
+    const meterBarEl = document.getElementById('change-meter-bar');
+    if (meterBarEl) {
+        meterBarEl.style.width = changeData.meterWidth + '%';
+    }
+    
+    // इंटरप्रिटेशन अपडेट करें
+    const interpretationEl = document.getElementById('change-interpretation');
+    if (interpretationEl) {
+        interpretationEl.textContent = changeData.interpretation;
+    }
+    
+    console.log('✅ Change indicator updated:', changeData);
+}
+
+// DOMContentLoaded फंक्शन में यह लाइन जोड़ें
+// updateChangeIndicator();
