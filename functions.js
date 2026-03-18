@@ -447,7 +447,14 @@ document.addEventListener('DOMContentLoaded', function() {
     if (typeof updateTime !== 'undefined') {
         document.getElementById('update-time-hm').textContent = updateTime;
     }
+     // नया: Change indicator अपडेट करें
+    updateChangeIndicator();
     
+    // हर 5 मिनट में अपडेट करें
+    setInterval(updateChangeIndicator, 5 * 60 * 1000);
+    
+    console.log('✅ GFFI Dashboard Ready!');
+});
     // Render initial views
     renderCountryGrid();
     renderSectorGrid();
