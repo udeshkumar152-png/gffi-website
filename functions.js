@@ -574,14 +574,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const toggleIndia = document.getElementById('toggle-india');
     if (toggleIndia) toggleIndia.addEventListener('click', toggleIndiaView);
     
-    updateCoreMetrics() {
-    // Core metrics update logic
-    console.log('Core metrics updated');
-    
-    // अगर आपके पास पहले से कोड है तो उसे यहां डालें
-    // वरना फिलहाल खाली रहने दें
-}
-    
+   
     // नया: Change indicator अपडेट करें
     updateChangeIndicator();
     setInterval(updateChangeIndicator, 5 * 60 * 1000);
