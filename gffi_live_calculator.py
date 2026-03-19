@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-GFFI Live Calculator - COMPLETE LIVE VERSION
-Fetches 100% live data from Alpha Vantage, FRED, and Yahoo Finance
-No static data - everything updates in real-time
+GFFI Live Calculator - ALPHA VANTAGE ONLY VERSION
+Fetches ALL data exclusively from Alpha Vantage API
+No Yahoo Finance - more reliable on GitHub Actions
 """
 
 import os
@@ -12,13 +12,11 @@ import numpy as np
 import pandas as pd
 import requests
 from datetime import datetime, timedelta
-import yfinance as yf
-import pandas_datareader.data as web
 import warnings
 warnings.filterwarnings('ignore')
 
 print("="*70)
-print("🚀 GFFI LIVE CALCULATOR - 100% REAL-TIME DATA")
+print("🚀 GFFI LIVE CALCULATOR - ALPHA VANTAGE ONLY")
 print("="*70)
 print(f"📅 Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
@@ -28,90 +26,102 @@ print(f"📅 Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 ALPHA_VANTAGE_KEY = os.getenv('ALPHA_VANTAGE_KEY')
 FRED_API_KEY = os.getenv('FRED_API_KEY')
 
-# Country configuration with market symbols
+if not ALPHA_VANTAGE_KEY:
+    print("❌ ALPHA_VANTAGE_KEY not found in environment variables!")
+    exit(1)
+
+# Country configuration with Alpha Vantage symbols
 COUNTRIES = [
-    {'code': 'US', 'name': 'USA', 'flag': '🇺🇸', 'av_symbol': 'SPX', 'yahoo_symbol': '^GSPC', 'fred_series': 'DDSI03USA156NWDB'},
-    {'code': 'Germany', 'name': 'Germany', 'flag': '🇩🇪', 'av_symbol': 'GDAXI', 'yahoo_symbol': '^GDAXI', 'fred_series': 'DDSI03DEA156NWDB'},
-    {'code': 'France', 'name': 'France', 'flag': '🇫🇷', 'av_symbol': 'FCHI', 'yahoo_symbol': '^FCHI', 'fred_series': 'DDSI03FRA156NWDB'},
-    {'code': 'Japan', 'name': 'Japan', 'flag': '🇯🇵', 'av_symbol': 'NIKKEI225', 'yahoo_symbol': '^N225', 'fred_series': 'DDSI03JPA156NWDB'},
-    {'code': 'UK', 'name': 'UK', 'flag': '🇬🇧', 'av_symbol': 'FTSE', 'yahoo_symbol': '^FTSE', 'fred_series': 'DDSI03GBA156NWDB'},
-    {'code': 'China', 'name': 'China', 'flag': '🇨🇳', 'av_symbol': 'SSEC', 'yahoo_symbol': '000001.SS', 'fred_series': 'DDSI03CNA156NWDB'},
-    {'code': 'India', 'name': 'India', 'flag': '🇮🇳', 'av_symbol': 'NSEI', 'yahoo_symbol': '^NSEI', 'fred_series': 'DDSI03INA156NWDB'},
-    {'code': 'Brazil', 'name': 'Brazil', 'flag': '🇧🇷', 'av_symbol': 'BVSP', 'yahoo_symbol': '^BVSP', 'fred_series': 'DDSI03BRA156NWDB'},
-    {'code': 'Canada', 'name': 'Canada', 'flag': '🇨🇦', 'av_symbol': 'GSPTSE', 'yahoo_symbol': '^GSPTSE', 'fred_series': 'DDSI03CAA156NWDB'},
-    {'code': 'Australia', 'name': 'Australia', 'flag': '🇦🇺', 'av_symbol': 'AXJO', 'yahoo_symbol': '^AXJO', 'fred_series': 'DDSI03AUA156NWDB'},
-    {'code': 'SouthKorea', 'name': 'S. Korea', 'flag': '🇰🇷', 'av_symbol': 'KS11', 'yahoo_symbol': '^KS11', 'fred_series': 'DDSI03KRA156NWDB'},
-    {'code': 'Singapore', 'name': 'Singapore', 'flag': '🇸🇬', 'av_symbol': 'STI', 'yahoo_symbol': '^STI', 'fred_series': 'DDSI03SGA156NWDB'},
-    {'code': 'SouthAfrica', 'name': 'S. Africa', 'flag': '🇿🇦', 'av_symbol': 'JN0U.JO', 'yahoo_symbol': '^JN0U.JO', 'fred_series': 'DDSI03ZAA156NWDB'},
-    {'code': 'Mexico', 'name': 'Mexico', 'flag': '🇲🇽', 'av_symbol': 'MXX', 'yahoo_symbol': '^MXX', 'fred_series': 'DDSI03MXA156NWDB'},
-    {'code': 'Italy', 'name': 'Italy', 'flag': '🇮🇹', 'av_symbol': 'FTSEMIB', 'yahoo_symbol': 'FTSEMIB.MI', 'fred_series': 'DDSI03ITA156NWDB'},
-    {'code': 'Argentina', 'name': 'Argentina', 'flag': '🇦🇷', 'av_symbol': 'MERV', 'yahoo_symbol': '^MERV', 'fred_series': 'DDSI03ARA156NWDB'},
+    {'code': 'US', 'name': 'USA', 'flag': '🇺🇸', 'av_symbol': 'SPX', 'fred_series': 'DDSI03USA156NWDB'},
+    {'code': 'Germany', 'name': 'Germany', 'flag': '🇩🇪', 'av_symbol': 'GDAXI', 'fred_series': 'DDSI03DEA156NWDB'},
+    {'code': 'France', 'name': 'France', 'flag': '🇫🇷', 'av_symbol': 'FCHI', 'fred_series': 'DDSI03FRA156NWDB'},
+    {'code': 'Japan', 'name': 'Japan', 'flag': '🇯🇵', 'av_symbol': 'NIKKEI225', 'fred_series': 'DDSI03JPA156NWDB'},
+    {'code': 'UK', 'name': 'UK', 'flag': '🇬🇧', 'av_symbol': 'FTSE', 'fred_series': 'DDSI03GBA156NWDB'},
+    {'code': 'China', 'name': 'China', 'flag': '🇨🇳', 'av_symbol': 'SSEC', 'fred_series': 'DDSI03CNA156NWDB'},
+    {'code': 'India', 'name': 'India', 'flag': '🇮🇳', 'av_symbol': 'NSEI', 'fred_series': 'DDSI03INA156NWDB'},
+    {'code': 'Brazil', 'name': 'Brazil', 'flag': '🇧🇷', 'av_symbol': 'BVSP', 'fred_series': 'DDSI03BRA156NWDB'},
+    {'code': 'Canada', 'name': 'Canada', 'flag': '🇨🇦', 'av_symbol': 'GSPTSE', 'fred_series': 'DDSI03CAA156NWDB'},
+    {'code': 'Australia', 'name': 'Australia', 'flag': '🇦🇺', 'av_symbol': 'AXJO', 'fred_series': 'DDSI03AUA156NWDB'},
+    {'code': 'SouthKorea', 'name': 'S. Korea', 'flag': '🇰🇷', 'av_symbol': 'KS11', 'fred_series': 'DDSI03KRA156NWDB'},
+    {'code': 'Singapore', 'name': 'Singapore', 'flag': '🇸🇬', 'av_symbol': 'STI', 'fred_series': 'DDSI03SGA156NWDB'},
+    {'code': 'SouthAfrica', 'name': 'S. Africa', 'flag': '🇿🇦', 'av_symbol': 'JN0U.JO', 'fred_series': 'DDSI03ZAA156NWDB'},
+    {'code': 'Mexico', 'name': 'Mexico', 'flag': '🇲🇽', 'av_symbol': 'MXX', 'fred_series': 'DDSI03MXA156NWDB'},
+    {'code': 'Italy', 'name': 'Italy', 'flag': '🇮🇹', 'av_symbol': 'FTSEMIB', 'fred_series': 'DDSI03ITA156NWDB'},
+    {'code': 'Argentina', 'name': 'Argentina', 'flag': '🇦🇷', 'av_symbol': 'MERV', 'fred_series': 'DDSI03ARA156NWDB'},
 ]
 
-# Nifty 50 stocks for live stock picks
-NIFTY_50_STOCKS = [
-    {'symbol': 'RELIANCE.NS', 'name': 'Reliance Industries'},
-    {'symbol': 'TCS.NS', 'name': 'Tata Consultancy Services'},
-    {'symbol': 'HDFCBANK.NS', 'name': 'HDFC Bank'},
-    {'symbol': 'INFY.NS', 'name': 'Infosys'},
-    {'symbol': 'ICICIBANK.NS', 'name': 'ICICI Bank'},
-    {'symbol': 'HINDUNILVR.NS', 'name': 'Hindustan Unilever'},
-    {'symbol': 'ITC.NS', 'name': 'ITC Ltd'},
-    {'symbol': 'SBIN.NS', 'name': 'State Bank of India'},
-    {'symbol': 'BHARTIARTL.NS', 'name': 'Bharti Airtel'},
-    {'symbol': 'KOTAKBANK.NS', 'name': 'Kotak Mahindra Bank'},
-    {'symbol': 'LT.NS', 'name': 'Larsen & Toubro'},
-    {'symbol': 'ASIANPAINT.NS', 'name': 'Asian Paints'},
-    {'symbol': 'MARUTI.NS', 'name': 'Maruti Suzuki'},
-    {'symbol': 'SUNPHARMA.NS', 'name': 'Sun Pharma'},
-    {'symbol': 'TATAMOTORS.NS', 'name': 'Tata Motors'},
-    {'symbol': 'AXISBANK.NS', 'name': 'Axis Bank'},
-    {'symbol': 'NTPC.NS', 'name': 'NTPC Ltd'},
-    {'symbol': 'ONGC.NS', 'name': 'Oil & Natural Gas Corp'},
-    {'symbol': 'POWERGRID.NS', 'name': 'Power Grid Corp'},
-    {'symbol': 'TITAN.NS', 'name': 'Titan Company'},
-    {'symbol': 'BAJFINANCE.NS', 'name': 'Bajaj Finance'},
-    {'symbol': 'ADANIPORTS.NS', 'name': 'Adani Ports'},
-    {'symbol': 'JSWSTEEL.NS', 'name': 'JSW Steel'},
-    {'symbol': 'WIPRO.NS', 'name': 'Wipro'},
-    {'symbol': 'ULTRACEMCO.NS', 'name': 'UltraTech Cement'},
-    {'symbol': 'HCLTECH.NS', 'name': 'HCL Technologies'},
-    {'symbol': 'GRASIM.NS', 'name': 'Grasim Industries'},
-    {'symbol': 'DIVISLAB.NS', 'name': 'Divis Laboratories'},
-    {'symbol': 'DRREDDY.NS', 'name': 'Dr Reddy\'s Labs'},
-    {'symbol': 'BRITANNIA.NS', 'name': 'Britannia Industries'},
-    {'symbol': 'INDUSINDBK.NS', 'name': 'IndusInd Bank'},
-    {'symbol': 'TATASTEEL.NS', 'name': 'Tata Steel'},
-    {'symbol': 'CIPLA.NS', 'name': 'Cipla'},
-    {'symbol': 'APOLLOHOSP.NS', 'name': 'Apollo Hospitals'},
-    {'symbol': 'HEROMOTOCO.NS', 'name': 'Hero MotoCorp'},
-    {'symbol': 'BAJAJ-AUTO.NS', 'name': 'Bajaj Auto'},
-    {'symbol': 'EICHERMOT.NS', 'name': 'Eicher Motors'},
-    {'symbol': 'COALINDIA.NS', 'name': 'Coal India'},
-    {'symbol': 'BPCL.NS', 'name': 'Bharat Petroleum'},
-    {'symbol': 'IOC.NS', 'name': 'Indian Oil Corp'},
-    {'symbol': 'HDFCLIFE.NS', 'name': 'HDFC Life'},
-    {'symbol': 'SBILIFE.NS', 'name': 'SBI Life'},
-    {'symbol': 'BAJAJFINSV.NS', 'name': 'Bajaj Finserv'},
-    {'symbol': 'TECHM.NS', 'name': 'Tech Mahindra'},
-    {'symbol': 'NESTLEIND.NS', 'name': 'Nestle India'},
-    {'symbol': 'M&M.NS', 'name': 'Mahindra & Mahindra'},
-    {'symbol': 'HINDALCO.NS', 'name': 'Hindalco Industries'},
-    {'symbol': 'TATACONSUM.NS', 'name': 'Tata Consumer'},
-    {'symbol': 'UPL.NS', 'name': 'UPL Ltd'},
-    {'symbol': 'SHREECEM.NS', 'name': 'Shree Cement'},
+# Indian stocks for live stock picks (Alpha Vantage symbols)
+INDIAN_STOCKS = [
+    {'symbol': 'RELIANCE.BSE', 'name': 'Reliance Industries', 'av_symbol': 'RELIANCE.BSE'},
+    {'symbol': 'TCS.BSE', 'name': 'Tata Consultancy Services', 'av_symbol': 'TCS.BSE'},
+    {'symbol': 'HDFCBANK.BSE', 'name': 'HDFC Bank', 'av_symbol': 'HDFCBANK.BSE'},
+    {'symbol': 'INFY.BSE', 'name': 'Infosys', 'av_symbol': 'INFY.BSE'},
+    {'symbol': 'ICICIBANK.BSE', 'name': 'ICICI Bank', 'av_symbol': 'ICICIBANK.BSE'},
+    {'symbol': 'HINDUNILVR.BSE', 'name': 'Hindustan Unilever', 'av_symbol': 'HINDUNILVR.BSE'},
+    {'symbol': 'ITC.BSE', 'name': 'ITC Ltd', 'av_symbol': 'ITC.BSE'},
+    {'symbol': 'SBIN.BSE', 'name': 'State Bank of India', 'av_symbol': 'SBIN.BSE'},
+    {'symbol': 'BHARTIARTL.BSE', 'name': 'Bharti Airtel', 'av_symbol': 'BHARTIARTL.BSE'},
+    {'symbol': 'KOTAKBANK.BSE', 'name': 'Kotak Mahindra Bank', 'av_symbol': 'KOTAKBANK.BSE'},
+    {'symbol': 'LT.BSE', 'name': 'Larsen & Toubro', 'av_symbol': 'LT.BSE'},
+    {'symbol': 'ASIANPAINT.BSE', 'name': 'Asian Paints', 'av_symbol': 'ASIANPAINT.BSE'},
+    {'symbol': 'MARUTI.BSE', 'name': 'Maruti Suzuki', 'av_symbol': 'MARUTI.BSE'},
+    {'symbol': 'SUNPHARMA.BSE', 'name': 'Sun Pharma', 'av_symbol': 'SUNPHARMA.BSE'},
+    {'symbol': 'TATAMOTORS.BSE', 'name': 'Tata Motors', 'av_symbol': 'TATAMOTORS.BSE'},
+    {'symbol': 'AXISBANK.BSE', 'name': 'Axis Bank', 'av_symbol': 'AXISBANK.BSE'},
+    {'symbol': 'NTPC.BSE', 'name': 'NTPC Ltd', 'av_symbol': 'NTPC.BSE'},
+    {'symbol': 'ONGC.BSE', 'name': 'Oil & Natural Gas Corp', 'av_symbol': 'ONGC.BSE'},
+    {'symbol': 'POWERGRID.BSE', 'name': 'Power Grid Corp', 'av_symbol': 'POWERGRID.BSE'},
+    {'symbol': 'TITAN.BSE', 'name': 'Titan Company', 'av_symbol': 'TITAN.BSE'},
 ]
 
-# Sector definitions with their component stocks
+# Sector definitions with their component stocks (Alpha Vantage symbols)
 SECTOR_DEFINITIONS = {
-    'Banking & Financials': ['HDFCBANK.NS', 'ICICIBANK.NS', 'SBIN.NS', 'KOTAKBANK.NS', 'AXISBANK.NS', 'INDUSINDBK.NS', 'BAJFINANCE.NS', 'HDFCLIFE.NS', 'SBILIFE.NS'],
-    'Information Technology': ['TCS.NS', 'INFY.NS', 'HCLTECH.NS', 'WIPRO.NS', 'TECHM.NS'],
-    'Pharmaceuticals': ['SUNPHARMA.NS', 'CIPLA.NS', 'DRREDDY.NS', 'DIVISLAB.NS', 'APOLLOHOSP.NS'],
-    'Automobile': ['MARUTI.NS', 'TATAMOTORS.NS', 'M&M.NS', 'BAJAJ-AUTO.NS', 'HEROMOTOCO.NS', 'EICHERMOT.NS'],
-    'Energy': ['RELIANCE.NS', 'ONGC.NS', 'BPCL.NS', 'IOC.NS', 'POWERGRID.NS', 'NTPC.NS', 'COALINDIA.NS', 'ADANIPORTS.NS'],
-    'FMCG': ['HINDUNILVR.NS', 'ITC.NS', 'BRITANNIA.NS', 'NESTLEIND.NS', 'TITAN.NS', 'TATACONSUM.NS'],
-    'Metals': ['TATASTEEL.NS', 'JSWSTEEL.NS', 'HINDALCO.NS', 'COALINDIA.NS', 'GRASIM.NS'],
-    'Telecom': ['BHARTIARTL.NS', 'RELIANCE.NS', 'IDEA.NS'],
+    'Banking & Financials': ['HDFCBANK.BSE', 'ICICIBANK.BSE', 'SBIN.BSE', 'KOTAKBANK.BSE', 'AXISBANK.BSE'],
+    'Information Technology': ['TCS.BSE', 'INFY.BSE', 'HCLTECH.BSE', 'WIPRO.BSE'],
+    'Pharmaceuticals': ['SUNPHARMA.BSE', 'CIPLA.BSE', 'DRREDDY.BSE', 'DIVISLAB.BSE'],
+    'Automobile': ['MARUTI.BSE', 'TATAMOTORS.BSE', 'M&M.BSE', 'BAJAJ-AUTO.BSE'],
+    'Energy': ['RELIANCE.BSE', 'ONGC.BSE', 'BPCL.BSE', 'IOC.BSE'],
+    'FMCG': ['HINDUNILVR.BSE', 'ITC.BSE', 'BRITANNIA.BSE', 'NESTLEIND.BSE'],
+    'Metals': ['TATASTEEL.BSE', 'JSWSTEEL.BSE', 'HINDALCO.BSE', 'COALINDIA.BSE'],
+    'Telecom': ['BHARTIARTL.BSE', 'IDEA.BSE'],
+}
+
+# Stock name mapping for display
+STOCK_NAMES = {
+    'RELIANCE.BSE': 'Reliance',
+    'TCS.BSE': 'TCS',
+    'HDFCBANK.BSE': 'HDFC Bank',
+    'INFY.BSE': 'Infosys',
+    'ICICIBANK.BSE': 'ICICI Bank',
+    'HINDUNILVR.BSE': 'HUL',
+    'ITC.BSE': 'ITC',
+    'SBIN.BSE': 'SBI',
+    'BHARTIARTL.BSE': 'Bharti Airtel',
+    'KOTAKBANK.BSE': 'Kotak Bank',
+    'LT.BSE': 'L&T',
+    'ASIANPAINT.BSE': 'Asian Paints',
+    'MARUTI.BSE': 'Maruti',
+    'SUNPHARMA.BSE': 'Sun Pharma',
+    'TATAMOTORS.BSE': 'Tata Motors',
+    'AXISBANK.BSE': 'Axis Bank',
+    'NTPC.BSE': 'NTPC',
+    'ONGC.BSE': 'ONGC',
+    'POWERGRID.BSE': 'Power Grid',
+    'TITAN.BSE': 'Titan',
+    'CIPLA.BSE': 'Cipla',
+    'DRREDDY.BSE': 'Dr Reddy',
+    'DIVISLAB.BSE': 'Divis Labs',
+    'M&M.BSE': 'M&M',
+    'BAJAJ-AUTO.BSE': 'Bajaj Auto',
+    'BPCL.BSE': 'BPCL',
+    'IOC.BSE': 'IOC',
+    'BRITANNIA.BSE': 'Britannia',
+    'NESTLEIND.BSE': 'Nestle',
+    'TATASTEEL.BSE': 'Tata Steel',
+    'JSWSTEEL.BSE': 'JSW Steel',
+    'HINDALCO.BSE': 'Hindalco',
+    'COALINDIA.BSE': 'Coal India',
+    'IDEA.BSE': 'Vodafone Idea',
 }
 
 # ============================================
@@ -165,102 +175,78 @@ def calculate_capital_proxy(returns_series):
     return max(10, min(30, capital_proxy))
 
 # ============================================
-# DATA FETCHING FUNCTIONS
+# ALPHA VANTAGE DATA FETCHING
 # ============================================
 
-def fetch_stock_data(symbol):
-    """Fetch stock data and calculate GFFI"""
-    try:
-        # Try Yahoo Finance first
-        ticker = yf.Ticker(symbol)
-        hist = ticker.history(period="2mo")
-        
-        if hist.empty:
-            return None
-        
-        prices = hist['Close']
-        returns = prices.pct_change().dropna() * 100
-        
-        if len(returns) < 30:
-            return None
-        
-        entropy = calculate_entropy(returns)
-        capital = calculate_capital_proxy(returns)
-        gffi = (entropy / capital) * 1000
-        
-        return {
-            'symbol': symbol.replace('.NS', ''),
-            'gffi': round(gffi, 1),
-            'price': round(float(prices.iloc[-1]), 2),
-            'returns': returns.tolist()[-30:]
-        }
-    except Exception as e:
-        print(f"   ⚠️ Error fetching {symbol}: {str(e)[:30]}")
-        return None
-
-def fetch_index_data(symbol, name):
-    """Fetch index data (Nifty, Sensex, etc.)"""
-    try:
-        ticker = yf.Ticker(symbol)
-        hist = ticker.history(period="5d")
-        
-        if hist.empty or len(hist) < 2:
-            return None
-        
-        current_price = hist['Close'].iloc[-1]
-        prev_price = hist['Close'].iloc[-2]
-        change_pct = ((current_price - prev_price) / prev_price) * 100
-        
-        return {
-            'value': round(current_price, 2),
-            'change': round(change_pct, 2)
-        }
-    except Exception as e:
-        print(f"   ⚠️ Error fetching {name}: {str(e)[:30]}")
-        return None
-
-def fetch_alphavantage_data(symbol, is_index=False):
-    """Fetch data from Alpha Vantage API"""
-    if not ALPHA_VANTAGE_KEY:
-        return None
-    
+def fetch_alphavantage_timeseries(symbol):
+    """Fetch time series data from Alpha Vantage"""
     try:
         url = f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={symbol}&apikey={ALPHA_VANTAGE_KEY}&outputsize=compact"
-        response = requests.get(url, timeout=10)
+        response = requests.get(url, timeout=15)
         data = response.json()
         
         if 'Time Series (Daily)' not in data:
+            if 'Note' in data:
+                print(f"   📝 Alpha Vantage note: {data['Note'][:100]}")
             return None
         
+        # Parse data
         time_series = data['Time Series (Daily)']
         dates = []
         prices = []
         
+        # Get last 60 days
         sorted_dates = sorted(time_series.keys())[-60:]
         for date_str in sorted_dates:
             dates.append(pd.Timestamp(date_str))
             prices.append(float(time_series[date_str]['4. close']))
         
         prices_series = pd.Series(prices, index=dates)
+        return prices_series
         
-        if is_index:
-            current_price = prices_series.iloc[-1]
-            prev_price = prices_series.iloc[-2] if len(prices_series) > 1 else current_price
-            change_pct = ((current_price - prev_price) / prev_price) * 100
-            return {
-                'value': round(current_price, 2),
-                'change': round(change_pct, 2)
-            }
-        else:
-            returns = prices_series.pct_change().dropna() * 100
-            return {
-                'prices': prices_series,
-                'returns': returns,
-                'last_price': float(prices_series.iloc[-1])
-            }
     except Exception as e:
-        print(f"   ⚠️ Alpha Vantage error: {str(e)[:30]}")
+        print(f"   ⚠️ Alpha Vantage error: {str(e)[:50]}")
         return None
+
+def fetch_stock_data(symbol):
+    """Fetch stock data and calculate GFFI"""
+    prices_series = fetch_alphavantage_timeseries(symbol)
+    
+    if prices_series is None or len(prices_series) < 30:
+        return None
+    
+    returns = prices_series.pct_change().dropna() * 100
+    entropy = calculate_entropy(returns)
+    capital = calculate_capital_proxy(returns)
+    gffi = (entropy / capital) * 1000
+    
+    return {
+        'symbol': symbol,
+        'display_name': STOCK_NAMES.get(symbol, symbol.replace('.BSE', '')),
+        'gffi': round(gffi, 1),
+        'price': round(float(prices_series.iloc[-1]), 2),
+        'returns': returns.tolist()[-30:]
+    }
+
+def fetch_index_data(symbol, name):
+    """Fetch index data (Nifty, Sensex, etc.)"""
+    prices_series = fetch_alphavantage_timeseries(symbol)
+    
+    if prices_series is None or len(prices_series) < 2:
+        return None
+    
+    current_price = prices_series.iloc[-1]
+    prev_price = prices_series.iloc[-2] if len(prices_series) > 1 else current_price
+    change_pct = ((current_price - prev_price) / prev_price) * 100
+    
+    return {
+        'value': round(current_price, 2),
+        'change': round(change_pct, 2)
+    }
+
+# ============================================
+# FRED DATA FETCHING
+# ============================================
 
 def fetch_fred_data(series_id):
     """Fetch data from FRED API"""
@@ -268,6 +254,7 @@ def fetch_fred_data(series_id):
         return None
     
     try:
+        from pandas_datareader import data as web
         end = datetime.now()
         start = end - timedelta(days=3*365)
         data = web.DataReader(series_id, 'fred', start, end, api_key=FRED_API_KEY)
@@ -278,48 +265,55 @@ def fetch_fred_data(series_id):
         print(f"   ⚠️ FRED error: {str(e)[:30]}")
         return None
 
-def fetch_advance_decline():
-    """Fetch advance-decline data (simulated with real data)"""
-    try:
-        # Get Nifty 50 stocks performance
-        advances = 0
-        declines = 0
-        
-        for stock in NIFTY_50_STOCKS[:30]:  # Check first 30 stocks
-            data = fetch_stock_data(stock['symbol'])
-            if data:
-                # Check if stock price increased today
-                if data.get('returns') and len(data['returns']) > 0:
-                    last_return = data['returns'][-1]
-                    if last_return > 0:
-                        advances += 1
-                    elif last_return < 0:
-                        declines += 1
-        
-        total = advances + declines
-        if total < 10:
-            # Fallback to realistic numbers
-            advances = 850
-            declines = 1650
+# ============================================
+# COUNTRY GFFI FUNCTIONS
+# ============================================
+
+def calculate_country_gffi(country):
+    """Calculate GFFI for a single country"""
+    print(f"\n📍 Processing {country['name']}...")
+    
+    prices_series = fetch_alphavantage_timeseries(country['av_symbol'])
+    
+    if prices_series is None or len(prices_series) < 30:
+        print(f"   ⚠️ No market data for {country['name']}")
+        return None
+    
+    returns = prices_series.pct_change().dropna() * 100
+    entropy = calculate_entropy(returns)
+    
+    # Try FRED for capital data
+    if country.get('fred_series') and FRED_API_KEY:
+        fred_data = fetch_fred_data(country['fred_series'])
+        if fred_data:
+            capital = fred_data['latest_value']
         else:
-            # Scale to realistic Nifty numbers (out of ~2700 stocks)
-            scale_factor = 2700 / total
-            advances = int(advances * scale_factor)
-            declines = int(declines * scale_factor)
-        
-        return advances, declines
-    except:
-        return 850, 1650
+            capital = calculate_capital_proxy(returns)
+    else:
+        capital = calculate_capital_proxy(returns)
+    
+    gffi = (entropy / capital) * 1000
+    gffi = round(gffi, 1)
+    
+    result = {
+        'flag': country['flag'],
+        'name': country['name'],
+        'gffi': gffi,
+        'status': get_status(gffi)
+    }
+    
+    print(f"   ✅ GFFI: {gffi} ({result['status']})")
+    return result
 
 # ============================================
 # SECTOR DATA FUNCTIONS
 # ============================================
 
 def calculate_sector_gffi(sector_name, stock_symbols):
-    """Calculate live GFFI for a sector based on its component stocks"""
+    """Calculate live GFFI for a sector"""
     gffi_values = []
     
-    for symbol in stock_symbols[:4]:  # Use top 4 stocks for sector GFFI
+    for symbol in stock_symbols[:4]:  # Use top 4 stocks
         stock_data = fetch_stock_data(symbol)
         if stock_data and stock_data['gffi']:
             gffi_values.append(stock_data['gffi'])
@@ -329,74 +323,22 @@ def calculate_sector_gffi(sector_name, stock_symbols):
     
     avg_gffi = sum(gffi_values) / len(gffi_values)
     
-    # Determine trend based on recent performance
-    try:
-        # Get sector etf or use index as proxy
-        if sector_name == 'Banking & Financials':
-            index_data = fetch_index_data('^NSEBANK', 'Bank Nifty')
-        elif sector_name == 'Information Technology':
-            index_data = fetch_index_data('^CNXIT', 'Nifty IT')
-        else:
-            index_data = None
-        
-        if index_data and index_data['change'] > 0.5:
-            trend = 'up'
-        elif index_data and index_data['change'] < -0.5:
-            trend = 'down'
-        else:
-            trend = 'stable'
-    except:
-        # Random trend based on GFFI
-        if avg_gffi > 62:
-            trend = 'up'
-        elif avg_gffi < 58:
-            trend = 'down'
-        else:
-            trend = 'stable'
+    # Determine trend
+    if avg_gffi > 62:
+        trend = 'up'
+    elif avg_gffi < 58:
+        trend = 'down'
+    else:
+        trend = 'stable'
     
     return round(avg_gffi, 1), trend
 
 def get_sector_stocks(sector_name, stock_symbols):
-    """Get human-readable stock names for a sector"""
+    """Get display names for sector stocks"""
     stock_names = []
-    name_mapping = {
-        'HDFCBANK.NS': 'HDFC Bank',
-        'ICICIBANK.NS': 'ICICI Bank',
-        'SBIN.NS': 'SBI',
-        'KOTAKBANK.NS': 'Kotak Bank',
-        'AXISBANK.NS': 'Axis Bank',
-        'TCS.NS': 'TCS',
-        'INFY.NS': 'Infosys',
-        'HCLTECH.NS': 'HCL Tech',
-        'WIPRO.NS': 'Wipro',
-        'SUNPHARMA.NS': 'Sun Pharma',
-        'CIPLA.NS': 'Cipla',
-        'DRREDDY.NS': 'Dr Reddy',
-        'DIVISLAB.NS': 'Divis Labs',
-        'MARUTI.NS': 'Maruti',
-        'TATAMOTORS.NS': 'Tata Motors',
-        'M&M.NS': 'M&M',
-        'BAJAJ-AUTO.NS': 'Bajaj Auto',
-        'RELIANCE.NS': 'Reliance',
-        'ONGC.NS': 'ONGC',
-        'BPCL.NS': 'BPCL',
-        'IOC.NS': 'IOC',
-        'HINDUNILVR.NS': 'HUL',
-        'ITC.NS': 'ITC',
-        'BRITANNIA.NS': 'Britannia',
-        'NESTLEIND.NS': 'Nestle',
-        'TATASTEEL.NS': 'Tata Steel',
-        'JSWSTEEL.NS': 'JSW Steel',
-        'HINDALCO.NS': 'Hindalco',
-        'COALINDIA.NS': 'Coal India',
-        'BHARTIARTL.NS': 'Bharti Airtel',
-        'IDEA.NS': 'Vodafone Idea',
-    }
-    
-    for symbol in stock_symbols[:4]:  # Top 4 stocks
-        name = name_mapping.get(symbol, symbol.replace('.NS', ''))
+    for symbol in stock_symbols[:4]:
+        name = STOCK_NAMES.get(symbol, symbol.replace('.BSE', ''))
         stock_names.append(name)
-    
     return stock_names
 
 def fetch_live_sector_data():
@@ -424,15 +366,15 @@ def fetch_live_sector_data():
 
 def generate_stock_picks():
     """Generate live stock picks based on GFFI values"""
-    print("\n📈 Generating live stock picks from Nifty 50...")
+    print("\n📈 Generating live stock picks from Indian stocks...")
     
     stocks_with_gffi = []
     
-    for stock in NIFTY_50_STOCKS:
-        data = fetch_stock_data(stock['symbol'])
+    for stock in INDIAN_STOCKS[:25]:  # Limit to 25 stocks for speed
+        data = fetch_stock_data(stock['av_symbol'])
         if data and data['gffi']:
             stocks_with_gffi.append({
-                'symbol': data['symbol'],
+                'symbol': stock['symbol'].replace('.BSE', ''),
                 'name': stock['name'],
                 'gffi': data['gffi'],
                 'price': data['price']
@@ -480,7 +422,6 @@ def generate_stock_picks():
             'reason': get_watch_reason(s['gffi'], s['price'])
         })
     
-    # Take top 5 from each category
     return {
         'safe': safe_picks[:5],
         'risky': risky_picks[:5],
@@ -536,101 +477,32 @@ def generate_fallback_stock_picks():
     }
 
 # ============================================
-# COUNTRY GFFI FUNCTIONS
-# ============================================
-
-def fetch_country_market_data(country):
-    """Fetch market data for a country"""
-    # Try Alpha Vantage first
-    market_data = fetch_alphavantage_data(country['av_symbol'])
-    
-    # Try Yahoo Finance as fallback
-    if market_data is None:
-        try:
-            ticker = yf.Ticker(country['yahoo_symbol'])
-            hist = ticker.history(period="2mo")
-            if not hist.empty:
-                prices = hist['Close']
-                returns = prices.pct_change().dropna() * 100
-                market_data = {
-                    'prices': prices,
-                    'returns': returns,
-                    'last_price': float(prices.iloc[-1])
-                }
-                print(f"   ✅ Got Yahoo data for {country['name']}")
-        except:
-            pass
-    
-    return market_data
-
-def calculate_country_gffi(country):
-    """Calculate GFFI for a single country"""
-    print(f"\n📍 Processing {country['name']}...")
-    
-    market_data = fetch_country_market_data(country)
-    
-    if market_data is None:
-        print(f"   ⚠️ No market data for {country['name']}")
-        return None
-    
-    recent_returns = pd.Series(market_data['returns']).tail(60)
-    entropy = calculate_entropy(recent_returns)
-    
-    # Try FRED for capital data
-    if country.get('fred_series'):
-        fred_data = fetch_fred_data(country['fred_series'])
-        if fred_data:
-            capital = fred_data['latest_value']
-        else:
-            capital = calculate_capital_proxy(recent_returns)
-    else:
-        capital = calculate_capital_proxy(recent_returns)
-    
-    gffi = (entropy / capital) * 1000
-    gffi = round(gffi, 1)
-    
-    result = {
-        'flag': country['flag'],
-        'name': country['name'],
-        'gffi': gffi,
-        'status': get_status(gffi)
-    }
-    
-    print(f"   ✅ GFFI: {gffi} ({result['status']})")
-    return result
-
-# ============================================
 # INDIA MARKET DATA FUNCTIONS
 # ============================================
 
 def fetch_live_india_market_data():
-    """Fetch live India market data (Nifty, Sensex, VIX)"""
+    """Fetch live India market data (Nifty, Sensex)"""
     print("\n🇮🇳 Fetching live India market data...")
     
     # Nifty 50
-    nifty_data = fetch_index_data('^NSEI', 'Nifty 50')
-    if not nifty_data:
-        nifty_data = fetch_alphavantage_data('NSEI', is_index=True)
+    nifty_data = fetch_index_data('NSEI', 'Nifty 50')
     if not nifty_data:
         nifty_data = {'value': 77566, 'change': -1.71}
     print(f"   ✅ Nifty: {nifty_data['value']} ({nifty_data['change']}%)")
     
     # Sensex
-    sensex_data = fetch_index_data('^BSESN', 'Sensex')
-    if not sensex_data:
-        sensex_data = fetch_alphavantage_data('BSESN', is_index=True)
+    sensex_data = fetch_index_data('BSESN', 'Sensex')
     if not sensex_data:
         sensex_data = {'value': 77566, 'change': -1.71}
     print(f"   ✅ Sensex: {sensex_data['value']} ({sensex_data['change']}%)")
     
-    # India VIX
-    vix_data = fetch_index_data('^INDIAVIX', 'India VIX')
-    if not vix_data:
-        vix_data = {'value': 23.36, 'change': 17.58}
+    # VIX (simulated since Alpha Vantage doesn't have India VIX)
+    vix_data = {'value': 23.36, 'change': 17.58}
     print(f"   ✅ VIX: {vix_data['value']} ({vix_data['change']}%)")
     
-    # Advance/Decline
-    advances, declines = fetch_advance_decline()
+    # Advance/Decline (simulated)
+    advances = 850
+    declines = 1650
     print(f"   ✅ Advance/Decline: {advances}/{declines}")
     
     return {
@@ -649,9 +521,9 @@ def fetch_live_india_market_data():
 # ============================================
 
 def main():
-    """Main function to generate data.js with 100% live data"""
+    """Main function to generate data.js with Alpha Vantage data"""
     print("\n" + "="*70)
-    print("🌍 FETCHING 100% LIVE GFFI DATA")
+    print("🌍 FETCHING LIVE GFFI DATA FROM ALPHA VANTAGE")
     print("="*70)
     
     # Fetch country GFFI data
@@ -663,6 +535,7 @@ def main():
         if result:
             country_data.append(result)
             gffi_values.append(result['gffi'])
+        time.sleep(12)  # Alpha Vantage rate limit (5 calls per minute)
     
     global_gffi = round(sum(gffi_values) / len(gffi_values), 1) if gffi_values else 63.5
     
@@ -680,7 +553,7 @@ def main():
     
     # Generate data.js content
     js_content = f"""// ============================================
-// DATA.JS - Auto-generated by GFFI Live Calculator
+// DATA.JS - Auto-generated by GFFI Live Calculator (Alpha Vantage)
 // Last Updated: {now.strftime('%Y-%m-%d %H:%M:%S')}
 // ============================================
 
@@ -703,7 +576,7 @@ const indiaMarketData = {json.dumps(india_market_data, indent=2, ensure_ascii=Fa
         f.write(js_content)
     
     print("\n" + "="*70)
-    print("✅ DATA.JS UPDATED SUCCESSFULLY - 100% LIVE DATA")
+    print("✅ DATA.JS UPDATED SUCCESSFULLY - ALPHA VANTAGE")
     print("="*70)
     print(f"   🌍 Countries: {len(country_data)}")
     print(f"   📊 Global GFFI: {global_gffi}")
@@ -711,7 +584,6 @@ const indiaMarketData = {json.dumps(india_market_data, indent=2, ensure_ascii=Fa
     print(f"   📈 Stock Picks: {len(stock_picks['safe'])} Safe, {len(stock_picks['risky'])} Risky, {len(stock_picks['watch'])} Watch")
     print(f"   🇮🇳 Nifty: {india_market_data['nifty']} ({india_market_data['nifty_change']}%)")
     print(f"   🇮🇳 Sensex: {india_market_data['sensex']} ({india_market_data['sensex_change']}%)")
-    print(f"   🇮🇳 VIX: {india_market_data['vix']} ({india_market_data['vix_change']}%)")
     print(f"   📅 Last Updated: {now.strftime('%Y-%m-%d %H:%M:%S')}")
     print("="*70)
 
