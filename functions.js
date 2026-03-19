@@ -1,45 +1,45 @@
 // ============================================
 // FUNCTIONS.JS - Safe version with error handling
 // ============================================
-
 // ============================================
-// SAFE DATA HANDLING - DEFAULTS IF DATA MISSING
+// SAFE DATA HANDLING - CHECK EXISTS BUT DON'T REDECLARE
 // ============================================
 
-// Global variables with safe defaults
+// Check if variables exist, but don't redeclare with var
 if (typeof globalGFFI === 'undefined' || globalGFFI === null) {
     console.warn('⚠️ globalGFFI not available');
-    var globalGFFI = null;
+    // Don't use var here - just set on window
+    window.globalGFFI = null;
 }
 
 if (typeof updateDate === 'undefined') {
-    var updateDate = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+    window.updateDate = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
 if (typeof updateTime === 'undefined') {
-    var updateTime = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+    window.updateTime = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
 }
 
+// For arrays and objects, check and set defaults
 if (typeof countryData === 'undefined' || !Array.isArray(countryData)) {
     console.warn('⚠️ countryData not available');
-    var countryData = [];
+    window.countryData = [];
 }
 
 if (typeof sectorData === 'undefined' || !Array.isArray(sectorData)) {
     console.warn('⚠️ sectorData not available');
-    var sectorData = [];
+    window.sectorData = [];
 }
 
 if (typeof stockPicks === 'undefined' || typeof stockPicks !== 'object') {
     console.warn('⚠️ stockPicks not available');
-    var stockPicks = { safe: [], risky: [], watch: [] };
+    window.stockPicks = { safe: [], risky: [], watch: [] };
 }
 
 if (typeof indiaMarketData === 'undefined' || typeof indiaMarketData !== 'object') {
     console.warn('⚠️ indiaMarketData not available');
-    var indiaMarketData = {};
+    window.indiaMarketData = {};
 }
-
 // ============================================
 // VIEW STATE MANAGEMENT
 // ============================================
