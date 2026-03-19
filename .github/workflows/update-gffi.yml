@@ -30,6 +30,7 @@ jobs:
 
       - name: 🔄 Run GFFI Live Calculator
         env:
+          ALPHA_VANTAGE_KEY: ${{ secrets.ALPHA_VANTAGE_KEY }}
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
         run: python gffi_live_calculator.py
 
