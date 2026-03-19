@@ -535,7 +535,7 @@ def main():
         if result:
             country_data.append(result)
             gffi_values.append(result['gffi'])
-        time.sleep(12)  # Alpha Vantage rate limit (5 calls per minute)
+        time.sleep(15)  # Alpha Vantage rate limit (5 calls per minute)
     
     global_gffi = round(sum(gffi_values) / len(gffi_values), 1) if gffi_values else 63.5
     
