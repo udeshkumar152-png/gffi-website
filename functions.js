@@ -1,5 +1,5 @@
 // ============================================
-// FUNCTIONS.JS - All render functions (NEVER CHANGES)
+// FUNCTIONS.JS - All render functions for LIVE DATA
 // ============================================
 
 // ============================================
@@ -15,15 +15,16 @@ let currentView = {
 // ============================================
 // RENDER FUNCTIONS
 // ============================================
+
 function renderCountryGrid() {
     const container = document.getElementById('country-grid');
     if (!container) {
-        console.error('country-grid container not found');
+        console.error('❌ country-grid container not found');
         return;
     }
     
     if (!countryData || !Array.isArray(countryData)) {
-        console.error('countryData is not available');
+        console.error('❌ countryData is not available');
         return;
     }
     
@@ -37,23 +38,24 @@ function renderCountryGrid() {
         </div>`;
     });
     container.innerHTML = html;
-    console.log('✅ Country grid rendered');
+    console.log('✅ Country grid rendered with live data');
 }
 
 function renderSectorGrid() {
     const container = document.getElementById('sector-grid');
     if (!container) {
-        console.error('sector-grid container not found');
+        console.error('❌ sector-grid container not found');
         return;
     }
     
     if (!sectorData || !Array.isArray(sectorData)) {
-        console.error('sectorData is not available');
+        console.error('❌ sectorData is not available');
         return;
     }
     
     let html = '';
     sectorData.forEach(s => {
+        // Dynamic colors based on GFFI
         let bg = s.gffi >= 70 ? '#ffcccc' : s.gffi >= 65 ? '#fff3cd' : s.gffi >= 58 ? '#d4edda' : '#cce5ff';
         let color = s.gffi >= 70 ? '#990000' : s.gffi >= 65 ? '#856404' : s.gffi >= 58 ? '#155724' : '#004085';
         let trendIcon = s.trend === 'up' ? '📈' : s.trend === 'down' ? '📉' : '➡️';
@@ -61,24 +63,24 @@ function renderSectorGrid() {
         
         html += `<div class="sector-card" style="background:${bg};color:${color};">
             <div class="sector-name">${s.name} ${trendIcon}</div>
-            <div class="sector-gffi">${s.gffi.toFixed(1)}</div>
+            <div class="sector-gffi">${s.gffi}</div>
             <div class="sector-status">${statusText}</div>
-            <div style="font-size:0.8rem">${s.stocks.slice(0,3).join(', ')}</div>
+            <div style="font-size:0.8rem">${Array.isArray(s.stocks) ? s.stocks.join(' • ') : s.stocks}</div>
         </div>`;
     });
     container.innerHTML = html;
-    console.log('✅ Sector grid rendered');
+    console.log('✅ Sector grid rendered with live data');
 }
 
 function renderStockGrid() {
     const container = document.querySelector('.picks-container');
     if (!container) {
-        console.error('picks-container not found');
+        console.error('❌ picks-container not found');
         return;
     }
     
-    if (!stockPicks) {
-        console.error('stockPicks is not available');
+    if (!stockPicks || !stockPicks.safe || !stockPicks.risky || !stockPicks.watch) {
+        console.error('❌ stockPicks is not available');
         return;
     }
     
@@ -87,8 +89,12 @@ function renderStockGrid() {
             <h4>🟢 SAFE PICKS (Low GFFI)</h4>
             <div class="picks-list">
                 ${stockPicks.safe.map(s => `
-                    <div class="stock-item"><span class="stock-symbol">${s.symbol}</span> <span class="stock-gffi">${s.gffi}</span> <span class="stock-action buy">${s.action}</span></div>
-                    <div style="font-size:0.8rem; color:#6c757d;">${s.reason}</div>
+                    <div class="stock-item">
+                        <span class="stock-symbol">${s.symbol}</span> 
+                        <span class="stock-gffi">${s.gffi}</span> 
+                        <span class="stock-action buy">${s.action}</span>
+                    </div>
+                    <div class="stock-reason">${s.reason}</div>
                 `).join('')}
             </div>
         </div>
@@ -96,8 +102,12 @@ function renderStockGrid() {
             <h4>🔴 RISKY PICKS (High GFFI)</h4>
             <div class="picks-list">
                 ${stockPicks.risky.map(s => `
-                    <div class="stock-item"><span class="stock-symbol">${s.symbol}</span> <span class="stock-gffi">${s.gffi}</span> <span class="stock-action sell">${s.action}</span></div>
-                    <div style="font-size:0.8rem; color:#6c757d;">${s.reason}</div>
+                    <div class="stock-item">
+                        <span class="stock-symbol">${s.symbol}</span> 
+                        <span class="stock-gffi">${s.gffi}</span> 
+                        <span class="stock-action sell">${s.action}</span>
+                    </div>
+                    <div class="stock-reason">${s.reason}</div>
                 `).join('')}
             </div>
         </div>
@@ -105,29 +115,34 @@ function renderStockGrid() {
             <h4>🟡 WATCHLIST (Momentum Stocks)</h4>
             <div class="picks-list">
                 ${stockPicks.watch.map(s => `
-                    <div class="stock-item"><span class="stock-symbol">${s.symbol}</span> <span class="stock-gffi">${s.gffi}</span> <span class="stock-action watch">${s.action}</span></div>
-                    <div style="font-size:0.8rem; color:#6c757d;">${s.reason}</div>
+                    <div class="stock-item">
+                        <span class="stock-symbol">${s.symbol}</span> 
+                        <span class="stock-gffi">${s.gffi}</span> 
+                        <span class="stock-action watch">${s.action}</span>
+                    </div>
+                    <div class="stock-reason">${s.reason}</div>
                 `).join('')}
             </div>
         </div>
     `;
     container.innerHTML = html;
-    console.log('✅ Stock grid rendered');
+    console.log('✅ Stock grid rendered with live picks');
 }
 
 function renderIndiaGrid() {
     const container = document.querySelector('.india-cards');
     if (!container) {
-        console.error('india-cards container not found');
+        console.error('❌ india-cards container not found');
         return;
     }
     
     if (!indiaMarketData) {
-        console.error('indiaMarketData is not available');
+        console.error('❌ indiaMarketData is not available');
         return;
     }
     
-    let indiaGffi = 64.7;
+    // Get India GFFI from countryData
+    let indiaGffi = 60;
     let indiaStatus = 'success';
     
     if (countryData && Array.isArray(countryData)) {
@@ -138,21 +153,30 @@ function renderIndiaGrid() {
         }
     }
     
+    // Format numbers with commas
+    const formatNumber = (num) => {
+        return num ? num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") : '77,566';
+    };
+    
     let html = `
         <div class="india-card nifty-card">
             <div class="card-icon">📈</div>
             <div class="card-content">
                 <span class="card-label">Nifty 50</span>
-                <span class="card-value">${indiaMarketData.nifty ? indiaMarketData.nifty.toLocaleString() : '77,566'}</span>
-                <span class="card-change ${indiaMarketData.nifty_change < 0 ? 'negative' : 'positive'}">${indiaMarketData.nifty_change > 0 ? '+' : ''}${indiaMarketData.nifty_change || '-1.71'}%</span>
+                <span class="card-value">${formatNumber(indiaMarketData.nifty)}</span>
+                <span class="card-change ${indiaMarketData.nifty_change < 0 ? 'negative' : 'positive'}">
+                    ${indiaMarketData.nifty_change > 0 ? '+' : ''}${indiaMarketData.nifty_change || '-1.71'}%
+                </span>
             </div>
         </div>
         <div class="india-card sensex-card">
             <div class="card-icon">📊</div>
             <div class="card-content">
                 <span class="card-label">Sensex</span>
-                <span class="card-value">${indiaMarketData.sensex ? indiaMarketData.sensex.toLocaleString() : '77,566'}</span>
-                <span class="card-change ${indiaMarketData.sensex_change < 0 ? 'negative' : 'positive'}">${indiaMarketData.sensex_change > 0 ? '+' : ''}${indiaMarketData.sensex_change || '-1.71'}%</span>
+                <span class="card-value">${formatNumber(indiaMarketData.sensex)}</span>
+                <span class="card-change ${indiaMarketData.sensex_change < 0 ? 'negative' : 'positive'}">
+                    ${indiaMarketData.sensex_change > 0 ? '+' : ''}${indiaMarketData.sensex_change || '-1.71'}%
+                </span>
             </div>
         </div>
         <div class="india-card vix-card">
@@ -160,7 +184,9 @@ function renderIndiaGrid() {
             <div class="card-content">
                 <span class="card-label">India VIX</span>
                 <span class="card-value">${indiaMarketData.vix ? indiaMarketData.vix.toFixed(2) : '23.36'}</span>
-                <span class="card-change ${indiaMarketData.vix_change > 0 ? 'negative' : 'positive'}">${indiaMarketData.vix_change > 0 ? '+' : ''}${indiaMarketData.vix_change || '17.58'}%</span>
+                <span class="card-change ${indiaMarketData.vix_change > 0 ? 'negative' : 'positive'}">
+                    ${indiaMarketData.vix_change > 0 ? '+' : ''}${indiaMarketData.vix_change || '17.58'}%
+                </span>
             </div>
         </div>
         <div class="india-card gffi-card">
@@ -168,17 +194,21 @@ function renderIndiaGrid() {
             <div class="card-content">
                 <span class="card-label">India GFFI</span>
                 <span class="card-value">${indiaGffi}</span>
-                <span class="card-status status-${indiaStatus}">${indiaStatus === 'success' ? '🟢 SUCCESS' : '🟡 WATCH'}</span>
+                <span class="card-status status-${indiaStatus}">
+                    ${indiaStatus === 'success' ? '🟢 SUCCESS' : indiaStatus === 'warning' ? '🟡 WATCH' : '🔴 ALERT'}
+                </span>
             </div>
         </div>
     `;
     container.innerHTML = html;
     
+    // Update market status
     const marketStatusEl = document.getElementById('market-status');
     if (marketStatusEl) {
         marketStatusEl.textContent = indiaMarketData.nifty_change < 0 ? '🔴 BEARISH' : '🟢 BULLISH';
     }
     
+    // Update fear level
     const fearLevelEl = document.getElementById('fear-level');
     if (fearLevelEl) {
         const vix = indiaMarketData.vix || 23.36;
@@ -187,12 +217,13 @@ function renderIndiaGrid() {
         else fearLevelEl.textContent = '😐 NEUTRAL';
     }
     
+    // Update advance/decline
     const advDeclEl = document.getElementById('adv-decl');
     if (advDeclEl) {
         advDeclEl.textContent = `${indiaMarketData.advance || 850} / ${indiaMarketData.decline || 1650}`;
     }
     
-    console.log('✅ India grid rendered');
+    console.log('✅ India grid rendered with live data');
 }
 
 // ============================================
@@ -212,7 +243,10 @@ function calculateThreeMonthChange() {
         };
     }
     
+    // Calculate current average
     const currentAvg = countryData.reduce((sum, c) => sum + c.gffi, 0) / countryData.length;
+    
+    // Simulate 3-month change (in real app, would use historical data)
     const randomFactor = 0.85 + (Math.random() * 0.3);
     const threeMonthOldAvg = currentAvg * randomFactor;
     const change = ((currentAvg - threeMonthOldAvg) / threeMonthOldAvg) * 100;
@@ -264,17 +298,20 @@ function calculateThreeMonthChange() {
 function updateChangeIndicator() {
     const changeData = calculateThreeMonthChange();
     
+    // Update card color
     const card = document.querySelector('.change-indicator-card');
     if (card) {
         card.classList.remove('increasing', 'decreasing', 'stable');
         card.classList.add(changeData.direction);
     }
     
+    // Update value
     const changeValueEl = document.getElementById('change-value');
     if (changeValueEl) {
         changeValueEl.textContent = `${changeData.icon} ${changeData.value}%`;
     }
     
+    // Update direction
     const directionEl = document.getElementById('change-direction');
     if (directionEl) {
         let directionText = 'Stable';
@@ -283,16 +320,19 @@ function updateChangeIndicator() {
         directionEl.textContent = directionText;
     }
     
+    // Update badge
     const badgeEl = document.getElementById('change-badge');
     if (badgeEl) {
         badgeEl.textContent = changeData.badge;
     }
     
+    // Update meter
     const meterBarEl = document.getElementById('change-meter-bar');
     if (meterBarEl) {
         meterBarEl.style.width = changeData.meterWidth + '%';
     }
     
+    // Update interpretation
     const interpretationEl = document.getElementById('change-interpretation');
     if (interpretationEl) {
         interpretationEl.textContent = changeData.interpretation;
@@ -326,6 +366,7 @@ function updateFooterTime() {
 // ============================================
 // LIVE STATUS UPDATE
 // ============================================
+
 function updateLiveStatus() {
     const liveStatusEl = document.getElementById('live-status');
     if (liveStatusEl) {
@@ -335,12 +376,10 @@ function updateLiveStatus() {
     }
 }
 
-// Auto-refresh every minute
-setInterval(updateLiveStatus, 60000);
-
 // ============================================
 // TABLE VIEW FUNCTIONS
 // ============================================
+
 function renderCountryTable() {
     const container = document.getElementById('country-grid');
     if (!container) return;
@@ -382,10 +421,10 @@ function renderSectorTable() {
         
         html += `<tr>
             <td><strong>${s.name}</strong></td>
-            <td class="gffi-value">${s.gffi.toFixed(1)}</td>
+            <td class="gffi-value">${s.gffi}</td>
             <td>${statusText}</td>
             <td>${trendIcon}</td>
-            <td>${s.stocks.slice(0, 3).join(', ')}</td>
+            <td>${Array.isArray(s.stocks) ? s.stocks.slice(0, 3).join(', ') : s.stocks}</td>
         </tr>`;
     });
     
@@ -423,7 +462,7 @@ function renderIndiaTable() {
     
     if (!indiaMarketData) return;
     
-    let indiaGffi = 64.7;
+    let indiaGffi = 60;
     let indiaStatus = 'success';
     
     if (countryData && Array.isArray(countryData)) {
@@ -476,6 +515,7 @@ function renderIndiaTable() {
 // ============================================
 // TOGGLE FUNCTIONS
 // ============================================
+
 function toggleCountryView() {
     const btn = document.getElementById('toggle-country');
     if (!btn) return;
@@ -539,6 +579,7 @@ function toggleIndiaView() {
 // ============================================
 // INITIALIZATION
 // ============================================
+
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 GFFI Dashboard Initializing...');
     
@@ -574,17 +615,16 @@ document.addEventListener('DOMContentLoaded', function() {
     const toggleIndia = document.getElementById('toggle-india');
     if (toggleIndia) toggleIndia.addEventListener('click', toggleIndiaView);
     
-   
-    // नया: Change indicator अपडेट करें
+    // Update change indicator
     updateChangeIndicator();
     setInterval(updateChangeIndicator, 5 * 60 * 1000);
     
-    // नया: Footer time अपडेट करें
+    // Update footer time
     updateFooterTime();
     setInterval(updateFooterTime, 1000);
     
     // Initial live status
     updateLiveStatus();
     
-    console.log('✅ GFFI Dashboard Ready!');
+    console.log('✅ GFFI Dashboard Ready with LIVE Data!');
 });
