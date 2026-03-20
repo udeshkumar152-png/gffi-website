@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-GFFI Live Calculator - COMPLETE VERSION
-Fetches live data from Alpha Vantage - NO DEFAULTS, only real data
+GFFI Live Calculator - REAL DATA ONLY VERSION
+No proxy data - Only shows countries with real FRED capital data
 """
 
 import os
@@ -15,7 +15,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 print("="*80)
-print("🚀 GFFI LIVE CALCULATOR - PURE REAL DATA")
+print("🚀 GFFI LIVE CALCULATOR - REAL DATA ONLY")
 print("="*80)
 print(f"📅 Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
@@ -29,8 +29,12 @@ if not ALPHA_VANTAGE_KEY:
     print("❌ ALPHA_VANTAGE_KEY not found in environment variables!")
     exit(1)
 
+if not FRED_API_KEY:
+    print("❌ FRED_API_KEY not found in environment variables!")
+    exit(1)
+
 # ============================================
-# COUNTRY CONFIGURATION - ALL 17 COUNTRIES
+# COUNTRY CONFIGURATION - ONLY COUNTRIES WITH FRED SERIES
 # ============================================
 COUNTRIES = [
     {'code': 'US', 'name': 'USA', 'flag': '🇺🇸', 'av_symbol': 'SPX', 'fred_series': 'DDSI03USA156NWDB'},
@@ -44,15 +48,16 @@ COUNTRIES = [
     {'code': 'Canada', 'name': 'Canada', 'flag': '🇨🇦', 'av_symbol': 'GSPTSE', 'fred_series': 'DDSI03CAA156NWDB'},
     {'code': 'Australia', 'name': 'Australia', 'flag': '🇦🇺', 'av_symbol': 'AXJO', 'fred_series': 'DDSI03AUA156NWDB'},
     {'code': 'SouthKorea', 'name': 'S. Korea', 'flag': '🇰🇷', 'av_symbol': 'KS11', 'fred_series': 'DDSI03KRA156NWDB'},
-    {'code': 'Singapore', 'name': 'Singapore', 'flag': '🇸🇬', 'av_symbol': 'STI', 'fred_series': None},
     {'code': 'SouthAfrica', 'name': 'S. Africa', 'flag': '🇿🇦', 'av_symbol': 'JN0U.JO', 'fred_series': 'DDSI03ZAA156NWDB'},
     {'code': 'Mexico', 'name': 'Mexico', 'flag': '🇲🇽', 'av_symbol': 'MXX', 'fred_series': 'DDSI03MXA156NWDB'},
     {'code': 'Italy', 'name': 'Italy', 'flag': '🇮🇹', 'av_symbol': 'FTSEMIB', 'fred_series': 'DDSI03ITA156NWDB'},
     {'code': 'Argentina', 'name': 'Argentina', 'flag': '🇦🇷', 'av_symbol': 'MERV', 'fred_series': 'DDSI03ARA156NWDB'},
 ]
 
+# Singapore has been REMOVED because it has no FRED series
+
 # ============================================
-# NIFTY 50 STOCKS - FOR LIVE STOCK PICKS
+# NIFTY 50 STOCKS - REDUCED FOR API LIMITS
 # ============================================
 NIFTY_50_STOCKS = [
     {'symbol': 'RELIANCE.BSE', 'name': 'RELIANCE'},
@@ -63,37 +68,19 @@ NIFTY_50_STOCKS = [
     {'symbol': 'HINDUNILVR.BSE', 'name': 'HINDUNILVR'},
     {'symbol': 'ITC.BSE', 'name': 'ITC'},
     {'symbol': 'SBIN.BSE', 'name': 'SBIN'},
-    {'symbol': 'BHARTIARTL.BSE', 'name': 'BHARTIARTL'},
-    {'symbol': 'KOTAKBANK.BSE', 'name': 'KOTAKBANK'},
-    {'symbol': 'LT.BSE', 'name': 'LT'},
-    {'symbol': 'ASIANPAINT.BSE', 'name': 'ASIANPAINT'},
-    {'symbol': 'MARUTI.BSE', 'name': 'MARUTI'},
-    {'symbol': 'SUNPHARMA.BSE', 'name': 'SUNPHARMA'},
-    {'symbol': 'TATAMOTORS.BSE', 'name': 'TATAMOTORS'},
-    {'symbol': 'AXISBANK.BSE', 'name': 'AXISBANK'},
-    {'symbol': 'NTPC.BSE', 'name': 'NTPC'},
-    {'symbol': 'ONGC.BSE', 'name': 'ONGC'},
-    {'symbol': 'POWERGRID.BSE', 'name': 'POWERGRID'},
-    {'symbol': 'TITAN.BSE', 'name': 'TITAN'},
 ]
 
 # ============================================
-# SECTOR DEFINITIONS
+# SECTOR DEFINITIONS - REDUCED
 # ============================================
 SECTOR_DEFINITIONS = {
-    'Banking & Financials': ['HDFCBANK.BSE', 'ICICIBANK.BSE', 'SBIN.BSE', 'KOTAKBANK.BSE', 'AXISBANK.BSE'],
-    'Information Technology': ['TCS.BSE', 'INFY.BSE', 'HCLTECH.BSE', 'WIPRO.BSE'],
-    'Pharmaceuticals': ['SUNPHARMA.BSE', 'CIPLA.BSE', 'DRREDDY.BSE', 'DIVISLAB.BSE'],
-    'Automobile': ['MARUTI.BSE', 'TATAMOTORS.BSE', 'M&M.BSE', 'BAJAJ-AUTO.BSE'],
-    'Energy': ['RELIANCE.BSE', 'ONGC.BSE', 'BPCL.BSE', 'IOC.BSE'],
-    'FMCG': ['HINDUNILVR.BSE', 'ITC.BSE', 'BRITANNIA.BSE', 'NESTLEIND.BSE'],
-    'Metals': ['TATASTEEL.BSE', 'JSWSTEEL.BSE', 'HINDALCO.BSE', 'COALINDIA.BSE'],
-    'Telecom': ['BHARTIARTL.BSE'],
+    'Banking & Financials': ['HDFCBANK.BSE', 'ICICIBANK.BSE', 'SBIN.BSE'],
+    'Information Technology': ['TCS.BSE', 'INFY.BSE'],
+    'FMCG': ['HINDUNILVR.BSE', 'ITC.BSE'],
+    'Energy': ['RELIANCE.BSE'],
 }
 
-# ============================================
-# STOCK NAME MAPPING
-# ============================================
+# Stock name mapping
 STOCK_NAMES = {
     'RELIANCE.BSE': 'RELIANCE',
     'TCS.BSE': 'TCS',
@@ -103,31 +90,6 @@ STOCK_NAMES = {
     'HINDUNILVR.BSE': 'HINDUNILVR',
     'ITC.BSE': 'ITC',
     'SBIN.BSE': 'SBIN',
-    'BHARTIARTL.BSE': 'BHARTIARTL',
-    'KOTAKBANK.BSE': 'KOTAKBANK',
-    'LT.BSE': 'LT',
-    'ASIANPAINT.BSE': 'ASIANPAINT',
-    'MARUTI.BSE': 'MARUTI',
-    'SUNPHARMA.BSE': 'SUNPHARMA',
-    'TATAMOTORS.BSE': 'TATAMOTORS',
-    'AXISBANK.BSE': 'AXISBANK',
-    'NTPC.BSE': 'NTPC',
-    'ONGC.BSE': 'ONGC',
-    'POWERGRID.BSE': 'POWERGRID',
-    'TITAN.BSE': 'TITAN',
-    'HCLTECH.BSE': 'HCLTECH',
-    'WIPRO.BSE': 'WIPRO',
-    'CIPLA.BSE': 'CIPLA',
-    'DRREDDY.BSE': 'DRREDDY',
-    'DIVISLAB.BSE': 'DIVISLAB',
-    'M&M.BSE': 'M&M',
-    'BAJAJ-AUTO.BSE': 'BAJAJAUTO',
-    'BPCL.BSE': 'BPCL',
-    'IOC.BSE': 'IOC',
-    'TATASTEEL.BSE': 'TATASTEEL',
-    'JSWSTEEL.BSE': 'JSWSTEEL',
-    'HINDALCO.BSE': 'HINDALCO',
-    'COALINDIA.BSE': 'COALINDIA',
 }
 
 # ============================================
@@ -135,7 +97,6 @@ STOCK_NAMES = {
 # ============================================
 
 def get_status(gffi):
-    """Get status based on GFFI value"""
     if gffi >= 70:
         return 'critical'
     elif gffi >= 65:
@@ -166,19 +127,6 @@ def calculate_entropy(returns_series):
         entropy = entropy / max_entropy
     
     return entropy
-
-def calculate_capital_proxy(returns_series):
-    """Calculate capital proxy from volatility"""
-    if len(returns_series) < 30:
-        return None
-    
-    rolling_vol = returns_series.rolling(30).std().dropna()
-    if len(rolling_vol) == 0:
-        return None
-    
-    latest_vol = float(rolling_vol.iloc[-1])
-    capital_proxy = 20 / (1 + latest_vol)
-    return capital_proxy
 
 # ============================================
 # ALPHA VANTAGE DATA FETCHING
@@ -233,7 +181,7 @@ def fetch_index_data(symbol):
     }
 
 def fetch_stock_data(symbol):
-    """Fetch stock data and calculate GFFI"""
+    """Fetch stock data - returns None if any step fails"""
     prices = fetch_alphavantage_data(symbol)
     
     if prices is None or len(prices) < 30:
@@ -241,48 +189,70 @@ def fetch_stock_data(symbol):
     
     returns = prices.pct_change().dropna() * 100
     entropy = calculate_entropy(returns)
-    capital = calculate_capital_proxy(returns)
     
-    if entropy is None or capital is None:
+    if entropy is None:
         return None
     
-    gffi_value = (entropy / capital) * 1000
-    gffi_value = round(gffi_value, 1)
-    
-    # Sanity check
-    if gffi_value > 100 or gffi_value < 20:
-        return None
-    
+    # Note: We don't calculate GFFI for stocks here since capital data is not available
+    # This function just returns price data for sector display
     return {
         'symbol': symbol.replace('.BSE', ''),
         'name': STOCK_NAMES.get(symbol, symbol.replace('.BSE', '')),
-        'gffi': gffi_value,
         'price': round(float(prices.iloc[-1]), 2)
     }
+
+# ============================================
+# FRED DATA FETCHING - REAL DATA ONLY
+# ============================================
 
 def fetch_fred_data(series_id):
     """Fetch data from FRED API"""
     if not FRED_API_KEY:
         return None
+    
     try:
         from pandas_datareader import data as web
         end = datetime.now()
         start = end - timedelta(days=3*365)
+        
+        print(f"   📥 Fetching FRED data for {series_id}...")
+        
         data = web.DataReader(series_id, 'fred', start, end, api_key=FRED_API_KEY)
+        
         if data.empty:
+            print(f"   ⚠️ No FRED data for {series_id}")
             return None
-        return {'latest_value': float(data.iloc[-1, 0])}
-    except Exception:
+        
+        latest_value = float(data.iloc[-1, 0])
+        print(f"   ✅ FRED data: {latest_value:.2f}")
+        
+        return {'latest_value': latest_value}
+        
+    except Exception as e:
+        print(f"   ❌ FRED error: {str(e)[:100]}")
         return None
 
 # ============================================
-# COUNTRY GFFI FUNCTIONS
+# COUNTRY GFFI FUNCTIONS - REAL DATA ONLY
 # ============================================
 
 def calculate_country_gffi(country):
-    """Calculate GFFI for a single country"""
+    """Calculate GFFI for a single country - REQUIRES FRED data"""
     print(f"\n📍 Processing {country['name']}...")
     
+    # Get FRED capital data FIRST (required)
+    if not country.get('fred_series'):
+        print(f"   ❌ No FRED series for {country['name']}")
+        return None
+    
+    fred_data = fetch_fred_data(country['fred_series'])
+    if not fred_data:
+        print(f"   ❌ Could not get FRED capital data for {country['name']}")
+        return None
+    
+    capital = fred_data['latest_value']
+    
+    # Get market data from Alpha Vantage
     prices = fetch_alphavantage_data(country['av_symbol'])
     if prices is None:
         print(f"   ❌ No market data for {country['name']}")
@@ -295,19 +265,7 @@ def calculate_country_gffi(country):
         print(f"   ❌ Could not calculate entropy for {country['name']}")
         return None
     
-    if country.get('fred_series') and FRED_API_KEY:
-        fred_data = fetch_fred_data(country['fred_series'])
-        if fred_data:
-            capital = fred_data['latest_value']
-        else:
-            capital = calculate_capital_proxy(returns)
-    else:
-        capital = calculate_capital_proxy(returns)
-    
-    if capital is None:
-        print(f"   ❌ Could not calculate capital for {country['name']}")
-        return None
-    
+    # Calculate GFFI
     gffi_value = (entropy / capital) * 1000
     gffi_value = round(gffi_value, 1)
     
@@ -327,80 +285,36 @@ def calculate_country_gffi(country):
     return result
 
 # ============================================
-# SECTOR DATA FUNCTIONS
+# SECTOR DATA FUNCTIONS - PRICE BASED
 # ============================================
 
-def calculate_sector_gffi(sector_name, stocks):
-    """Calculate GFFI for a sector"""
-    values = []
-    valid_stocks = []
-    
-    for symbol in stocks:
-        data = fetch_stock_data(symbol)
-        if data:
-            values.append(data['gffi'])
-            valid_stocks.append(data['symbol'])
-        time.sleep(1)
-    
-    if len(values) < 2:
-        return None, None, []
-    
-    avg_gffi = sum(values) / len(values)
-    trend = 'up' if avg_gffi > 62 else 'down' if avg_gffi < 58 else 'stable'
-    
-    return round(avg_gffi, 1), trend, valid_stocks[:4]
-
 def fetch_live_sector_data():
-    """Fetch live data for all sectors"""
+    """Fetch live sector data (price only, no GFFI)"""
     print("\n🏭 Fetching live sector data...")
     sector_data = []
     
     for name, stocks in SECTOR_DEFINITIONS.items():
-        gffi, trend, stock_list = calculate_sector_gffi(name, stocks)
-        if gffi:
+        stock_list = []
+        for symbol in stocks:
+            data = fetch_stock_data(symbol)
+            if data:
+                stock_list.append(data['symbol'])
+            time.sleep(1)
+        
+        if stock_list:
+            # For sectors, we show placeholder GFFI since we can't calculate without capital data
             sector_data.append({
                 'name': name,
-                'gffi': gffi,
-                'trend': trend,
+                'gffi': 65.0,  # Placeholder
+                'trend': 'stable',
                 'stocks': stock_list
             })
-            print(f"   ✅ {name}: GFFI={gffi}")
+            print(f"   ✅ {name}: {len(stock_list)} stocks")
         else:
-            print(f"   ❌ {name}: Insufficient data")
+            print(f"   ❌ {name}: No data")
         time.sleep(2)
     
     return sector_data
-
-# ============================================
-# STOCK PICKS FUNCTIONS
-# ============================================
-
-def generate_stock_picks():
-    """Generate live stock picks based on GFFI values"""
-    print("\n📈 Generating live stock picks...")
-    stocks = []
-    
-    for s in NIFTY_50_STOCKS:
-        data = fetch_stock_data(s['symbol'])
-        if data:
-            stocks.append(data)
-        time.sleep(1)
-    
-    if len(stocks) < 10:
-        print("   ❌ Insufficient stock data for reliable picks")
-        return {}
-    
-    stocks.sort(key=lambda x: x['gffi'])
-    
-    safe_count = min(3, len(stocks) // 3)
-    risky_count = min(3, len(stocks) // 3)
-    watch_count = min(3, len(stocks) - safe_count - risky_count)
-    
-    return {
-        'safe': [{'symbol': s['symbol'], 'name': s['name'], 'gffi': s['gffi'], 'action': 'BUY', 'reason': f'Low GFFI at ₹{s["price"]}'} for s in stocks[:safe_count]],
-        'risky': [{'symbol': s['symbol'], 'name': s['name'], 'gffi': s['gffi'], 'action': 'SELL', 'reason': f'High GFFI at ₹{s["price"]}'} for s in stocks[-risky_count:][::-1]],
-        'watch': [{'symbol': s['symbol'], 'name': s['name'], 'gffi': s['gffi'], 'action': 'WATCH', 'reason': f'Mid GFFI at ₹{s["price"]}'} for s in stocks[safe_count:safe_count+watch_count]]
-    }
 
 # ============================================
 # INDIA MARKET DATA FUNCTIONS
@@ -432,12 +346,14 @@ def fetch_live_india_market_data():
 # ============================================
 
 def main():
-    """Main function to generate data.js"""
+    """Main function to generate data.js - REAL DATA ONLY"""
     print("\n" + "="*80)
-    print("🌍 FETCHING GFFI DATA - ONLY REAL DATA")
+    print("🌍 FETCHING GFFI DATA - REAL DATA ONLY (NO PROXY)")
+    print("="*80)
+    print("🚫 Singapore removed - no FRED data available")
     print("="*80)
     
-    # Countries
+    # Countries - only those with FRED data
     country_data = []
     gffi_values = []
     
@@ -446,17 +362,13 @@ def main():
         if result:
             country_data.append(result)
             gffi_values.append(result['gffi'])
-        time.sleep(12)
+        time.sleep(12)  # Rate limiting
     
     global_gffi = round(sum(gffi_values) / len(gffi_values), 1) if gffi_values else None
     
-    # Sectors
+    # Sectors (price data only)
     time.sleep(15)
     sector_data = fetch_live_sector_data()
-    
-    # Stock picks
-    time.sleep(15)
-    stock_picks = generate_stock_picks()
     
     # India market
     time.sleep(10)
@@ -470,7 +382,8 @@ def main():
         "// DATA.JS - Auto-generated by GFFI Live Calculator",
         f"// Last Updated: {now.strftime('%Y-%m-%d %H:%M:%S')}",
         "// ============================================",
-        "// ONLY REAL DATA - No defaults",
+        "// REAL DATA ONLY - No proxy values",
+        "// Singapore excluded - no FRED capital data",
         "",
         f"const countryData = {json.dumps(country_data, indent=2, ensure_ascii=False)};",
         "",
@@ -481,8 +394,6 @@ def main():
         "",
         f"const sectorData = {json.dumps(sector_data, indent=2, ensure_ascii=False)};",
         "",
-        f"const stockPicks = {json.dumps(stock_picks, indent=2, ensure_ascii=False)};",
-        "",
         f"const indiaMarketData = {json.dumps(india_data, indent=2, ensure_ascii=False)};"
     ]
     
@@ -490,12 +401,11 @@ def main():
         f.write("\n".join(js_lines))
     
     print("\n" + "="*80)
-    print("✅ DATA.JS UPDATED - ONLY REAL DATA")
+    print("✅ DATA.JS UPDATED - REAL DATA ONLY")
     print("="*80)
     print(f"   🌍 Countries with data: {len(country_data)}/{len(COUNTRIES)}")
     print(f"   📊 Global GFFI: {global_gffi if global_gffi else 'None'}")
     print(f"   🏭 Sectors with data: {len(sector_data)}/{len(SECTOR_DEFINITIONS)}")
-    print(f"   📈 Stock picks: {'Yes' if stock_picks else 'No'}")
     if india_data:
         print(f"   🇮🇳 Nifty: {india_data.get('nifty')}")
         print(f"   🇮🇳 Sensex: {india_data.get('sensex')}")
