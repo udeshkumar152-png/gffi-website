@@ -87,35 +87,37 @@ def get_status(gffi):
         return 'success'
 
 def calculate_entropy(returns_series):
+    """Calculate Shannon entropy from returns"""
     returns = returns_series.dropna().values
     returns = returns[~np.isinf(returns)]
     returns = returns[~np.isnan(returns)]
     
     if len(returns) < 10:
-        return None
+        return 0.5  # डिफॉल्ट वैल्यू
     
-    bins = min(20, len(returns)//2)
+    bins = min(10, len(returns)//2)  # 20 की जगह 10
     hist, _ = np.histogram(returns, bins=bins, density=True)
     probs = hist / hist.sum()
     probs = probs[probs > 0]
     
     if len(probs) == 0:
-        return None
+        return 0.5
     
     entropy = -np.sum(probs * np.log(probs))
     max_entropy = np.log(bins)
     if max_entropy > 0:
         entropy = min(1.0, entropy / max_entropy)
     
-    return max(0.1, min(0.9, entropy))
+    return max(0.3, min(0.8, entropy))  # रेंज को थोड़ा बदला
 
 def calculate_capital_proxy(returns_series):
-    if len(returns_series) < 60:
-        return None
+    """Calculate capital proxy from volatility"""
+    if len(returns_series) < 30:  # 60 की जगह 30 दिन काफी हैं
+        return 15.0  # डिफॉल्ट वैल्यू
     
-    rolling_vol = returns_series.rolling(60).std().dropna()
+    rolling_vol = returns_series.rolling(30).std().dropna()  # 60 की जगह 30
     if len(rolling_vol) == 0:
-        return None
+        return 15.0
     
     latest_vol = float(rolling_vol.iloc[-1])
     capital_proxy = 20 / (1 + latest_vol)
