@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-GFFI Live Calculator - PURE REAL DATA VERSION
-NO DEFAULT VALUES - Only shows data when APIs return valid data
+GFFI Live Calculator - COMPLETE VERSION
+Fetches live data from Alpha Vantage - NO DEFAULTS, only real data
 """
 
 import os
@@ -52,59 +52,29 @@ COUNTRIES = [
 ]
 
 # ============================================
-# COMPLETE NIFTY 50 STOCKS
+# NIFTY 50 STOCKS - FOR LIVE STOCK PICKS
 # ============================================
 NIFTY_50_STOCKS = [
-    {'symbol': 'RELIANCE.BSE', 'name': 'Reliance Industries'},
-    {'symbol': 'TCS.BSE', 'name': 'Tata Consultancy Services'},
-    {'symbol': 'HDFCBANK.BSE', 'name': 'HDFC Bank'},
-    {'symbol': 'INFY.BSE', 'name': 'Infosys'},
-    {'symbol': 'ICICIBANK.BSE', 'name': 'ICICI Bank'},
-    {'symbol': 'HINDUNILVR.BSE', 'name': 'Hindustan Unilever'},
-    {'symbol': 'ITC.BSE', 'name': 'ITC Ltd'},
-    {'symbol': 'SBIN.BSE', 'name': 'State Bank of India'},
-    {'symbol': 'BHARTIARTL.BSE', 'name': 'Bharti Airtel'},
-    {'symbol': 'KOTAKBANK.BSE', 'name': 'Kotak Mahindra Bank'},
-    {'symbol': 'LT.BSE', 'name': 'Larsen & Toubro'},
-    {'symbol': 'ASIANPAINT.BSE', 'name': 'Asian Paints'},
-    {'symbol': 'MARUTI.BSE', 'name': 'Maruti Suzuki'},
-    {'symbol': 'SUNPHARMA.BSE', 'name': 'Sun Pharma'},
-    {'symbol': 'TATAMOTORS.BSE', 'name': 'Tata Motors'},
-    {'symbol': 'AXISBANK.BSE', 'name': 'Axis Bank'},
-    {'symbol': 'NTPC.BSE', 'name': 'NTPC Ltd'},
-    {'symbol': 'ONGC.BSE', 'name': 'Oil & Natural Gas Corp'},
-    {'symbol': 'POWERGRID.BSE', 'name': 'Power Grid Corp'},
-    {'symbol': 'TITAN.BSE', 'name': 'Titan Company'},
-    {'symbol': 'BAJFINANCE.BSE', 'name': 'Bajaj Finance'},
-    {'symbol': 'ADANIPORTS.BSE', 'name': 'Adani Ports'},
-    {'symbol': 'JSWSTEEL.BSE', 'name': 'JSW Steel'},
-    {'symbol': 'WIPRO.BSE', 'name': 'Wipro'},
-    {'symbol': 'ULTRACEMCO.BSE', 'name': 'UltraTech Cement'},
-    {'symbol': 'HCLTECH.BSE', 'name': 'HCL Technologies'},
-    {'symbol': 'GRASIM.BSE', 'name': 'Grasim Industries'},
-    {'symbol': 'DIVISLAB.BSE', 'name': 'Divis Laboratories'},
-    {'symbol': 'DRREDDY.BSE', 'name': "Dr Reddy's Labs"},
-    {'symbol': 'BRITANNIA.BSE', 'name': 'Britannia Industries'},
-    {'symbol': 'INDUSINDBK.BSE', 'name': 'IndusInd Bank'},
-    {'symbol': 'TATASTEEL.BSE', 'name': 'Tata Steel'},
-    {'symbol': 'CIPLA.BSE', 'name': 'Cipla'},
-    {'symbol': 'APOLLOHOSP.BSE', 'name': 'Apollo Hospitals'},
-    {'symbol': 'HEROMOTOCO.BSE', 'name': 'Hero MotoCorp'},
-    {'symbol': 'BAJAJ-AUTO.BSE', 'name': 'Bajaj Auto'},
-    {'symbol': 'EICHERMOT.BSE', 'name': 'Eicher Motors'},
-    {'symbol': 'COALINDIA.BSE', 'name': 'Coal India'},
-    {'symbol': 'BPCL.BSE', 'name': 'Bharat Petroleum'},
-    {'symbol': 'IOC.BSE', 'name': 'Indian Oil Corp'},
-    {'symbol': 'HDFCLIFE.BSE', 'name': 'HDFC Life'},
-    {'symbol': 'SBILIFE.BSE', 'name': 'SBI Life'},
-    {'symbol': 'BAJAJFINSV.BSE', 'name': 'Bajaj Finserv'},
-    {'symbol': 'TECHM.BSE', 'name': 'Tech Mahindra'},
-    {'symbol': 'NESTLEIND.BSE', 'name': 'Nestle India'},
-    {'symbol': 'M&M.BSE', 'name': 'Mahindra & Mahindra'},
-    {'symbol': 'HINDALCO.BSE', 'name': 'Hindalco Industries'},
-    {'symbol': 'TATACONSUM.BSE', 'name': 'Tata Consumer'},
-    {'symbol': 'UPL.BSE', 'name': 'UPL Ltd'},
-    {'symbol': 'SHREECEM.BSE', 'name': 'Shree Cement'},
+    {'symbol': 'RELIANCE.BSE', 'name': 'RELIANCE'},
+    {'symbol': 'TCS.BSE', 'name': 'TCS'},
+    {'symbol': 'HDFCBANK.BSE', 'name': 'HDFCBANK'},
+    {'symbol': 'INFY.BSE', 'name': 'INFY'},
+    {'symbol': 'ICICIBANK.BSE', 'name': 'ICICIBANK'},
+    {'symbol': 'HINDUNILVR.BSE', 'name': 'HINDUNILVR'},
+    {'symbol': 'ITC.BSE', 'name': 'ITC'},
+    {'symbol': 'SBIN.BSE', 'name': 'SBIN'},
+    {'symbol': 'BHARTIARTL.BSE', 'name': 'BHARTIARTL'},
+    {'symbol': 'KOTAKBANK.BSE', 'name': 'KOTAKBANK'},
+    {'symbol': 'LT.BSE', 'name': 'LT'},
+    {'symbol': 'ASIANPAINT.BSE', 'name': 'ASIANPAINT'},
+    {'symbol': 'MARUTI.BSE', 'name': 'MARUTI'},
+    {'symbol': 'SUNPHARMA.BSE', 'name': 'SUNPHARMA'},
+    {'symbol': 'TATAMOTORS.BSE', 'name': 'TATAMOTORS'},
+    {'symbol': 'AXISBANK.BSE', 'name': 'AXISBANK'},
+    {'symbol': 'NTPC.BSE', 'name': 'NTPC'},
+    {'symbol': 'ONGC.BSE', 'name': 'ONGC'},
+    {'symbol': 'POWERGRID.BSE', 'name': 'POWERGRID'},
+    {'symbol': 'TITAN.BSE', 'name': 'TITAN'},
 ]
 
 # ============================================
@@ -112,16 +82,18 @@ NIFTY_50_STOCKS = [
 # ============================================
 SECTOR_DEFINITIONS = {
     'Banking & Financials': ['HDFCBANK.BSE', 'ICICIBANK.BSE', 'SBIN.BSE', 'KOTAKBANK.BSE', 'AXISBANK.BSE'],
-    'Information Technology': ['TCS.BSE', 'INFY.BSE', 'HCLTECH.BSE', 'WIPRO.BSE', 'TECHM.BSE'],
-    'Pharmaceuticals': ['SUNPHARMA.BSE', 'CIPLA.BSE', 'DRREDDY.BSE', 'DIVISLAB.BSE', 'APOLLOHOSP.BSE'],
-    'Automobile': ['MARUTI.BSE', 'TATAMOTORS.BSE', 'M&M.BSE', 'BAJAJ-AUTO.BSE', 'HEROMOTOCO.BSE'],
-    'Energy': ['RELIANCE.BSE', 'ONGC.BSE', 'BPCL.BSE', 'IOC.BSE', 'NTPC.BSE'],
-    'FMCG': ['HINDUNILVR.BSE', 'ITC.BSE', 'BRITANNIA.BSE', 'NESTLEIND.BSE', 'TITAN.BSE'],
-    'Metals': ['TATASTEEL.BSE', 'JSWSTEEL.BSE', 'HINDALCO.BSE', 'COALINDIA.BSE', 'GRASIM.BSE'],
+    'Information Technology': ['TCS.BSE', 'INFY.BSE', 'HCLTECH.BSE', 'WIPRO.BSE'],
+    'Pharmaceuticals': ['SUNPHARMA.BSE', 'CIPLA.BSE', 'DRREDDY.BSE', 'DIVISLAB.BSE'],
+    'Automobile': ['MARUTI.BSE', 'TATAMOTORS.BSE', 'M&M.BSE', 'BAJAJ-AUTO.BSE'],
+    'Energy': ['RELIANCE.BSE', 'ONGC.BSE', 'BPCL.BSE', 'IOC.BSE'],
+    'FMCG': ['HINDUNILVR.BSE', 'ITC.BSE', 'BRITANNIA.BSE', 'NESTLEIND.BSE'],
+    'Metals': ['TATASTEEL.BSE', 'JSWSTEEL.BSE', 'HINDALCO.BSE', 'COALINDIA.BSE'],
     'Telecom': ['BHARTIARTL.BSE'],
 }
 
-# Stock name mapping
+# ============================================
+# STOCK NAME MAPPING
+# ============================================
 STOCK_NAMES = {
     'RELIANCE.BSE': 'RELIANCE',
     'TCS.BSE': 'TCS',
@@ -143,36 +115,19 @@ STOCK_NAMES = {
     'ONGC.BSE': 'ONGC',
     'POWERGRID.BSE': 'POWERGRID',
     'TITAN.BSE': 'TITAN',
-    'BAJFINANCE.BSE': 'BAJFINANCE',
-    'ADANIPORTS.BSE': 'ADANIPORTS',
-    'JSWSTEEL.BSE': 'JSWSTEEL',
-    'WIPRO.BSE': 'WIPRO',
-    'ULTRACEMCO.BSE': 'ULTRACEMCO',
     'HCLTECH.BSE': 'HCLTECH',
-    'GRASIM.BSE': 'GRASIM',
-    'DIVISLAB.BSE': 'DIVISLAB',
-    'DRREDDY.BSE': 'DRREDDY',
-    'BRITANNIA.BSE': 'BRITANNIA',
-    'INDUSINDBK.BSE': 'INDUSINDBK',
-    'TATASTEEL.BSE': 'TATASTEEL',
+    'WIPRO.BSE': 'WIPRO',
     'CIPLA.BSE': 'CIPLA',
-    'APOLLOHOSP.BSE': 'APOLLOHOSP',
-    'HEROMOTOCO.BSE': 'HEROMOTOCO',
+    'DRREDDY.BSE': 'DRREDDY',
+    'DIVISLAB.BSE': 'DIVISLAB',
+    'M&M.BSE': 'M&M',
     'BAJAJ-AUTO.BSE': 'BAJAJAUTO',
-    'EICHERMOT.BSE': 'EICHERMOT',
-    'COALINDIA.BSE': 'COALINDIA',
     'BPCL.BSE': 'BPCL',
     'IOC.BSE': 'IOC',
-    'HDFCLIFE.BSE': 'HDFCLIFE',
-    'SBILIFE.BSE': 'SBILIFE',
-    'BAJAJFINSV.BSE': 'BAJAJFINSV',
-    'TECHM.BSE': 'TECHM',
-    'NESTLEIND.BSE': 'NESTLE',
-    'M&M.BSE': 'M&M',
+    'TATASTEEL.BSE': 'TATASTEEL',
+    'JSWSTEEL.BSE': 'JSWSTEEL',
     'HINDALCO.BSE': 'HINDALCO',
-    'TATACONSUM.BSE': 'TATACONSUM',
-    'UPL.BSE': 'UPL',
-    'SHREECEM.BSE': 'SHREECEM',
+    'COALINDIA.BSE': 'COALINDIA',
 }
 
 # ============================================
@@ -180,6 +135,7 @@ STOCK_NAMES = {
 # ============================================
 
 def get_status(gffi):
+    """Get status based on GFFI value"""
     if gffi >= 70:
         return 'critical'
     elif gffi >= 65:
@@ -254,14 +210,30 @@ def fetch_alphavantage_data(symbol, max_retries=2):
             else:
                 return None
                 
-        except:
+        except Exception:
             if attempt < max_retries - 1:
                 time.sleep(10)
     
     return None
 
+def fetch_index_data(symbol):
+    """Fetch index data (Nifty, Sensex)"""
+    prices = fetch_alphavantage_data(symbol)
+    
+    if prices is None or len(prices) < 2:
+        return None
+    
+    current = prices.iloc[-1]
+    prev = prices.iloc[-2]
+    change = ((current - prev) / prev) * 100
+    
+    return {
+        'value': round(current, 2),
+        'change': round(change, 2)
+    }
+
 def fetch_stock_data(symbol):
-    """Fetch stock data and calculate GFFI - returns None if any step fails"""
+    """Fetch stock data and calculate GFFI"""
     prices = fetch_alphavantage_data(symbol)
     
     if prices is None or len(prices) < 30:
@@ -274,9 +246,12 @@ def fetch_stock_data(symbol):
     if entropy is None or capital is None:
         return None
     
-    # Calculate GFFI
     gffi_value = (entropy / capital) * 1000
     gffi_value = round(gffi_value, 1)
+    
+    # Sanity check
+    if gffi_value > 100 or gffi_value < 20:
+        return None
     
     return {
         'symbol': symbol.replace('.BSE', ''),
@@ -285,12 +260,27 @@ def fetch_stock_data(symbol):
         'price': round(float(prices.iloc[-1]), 2)
     }
 
+def fetch_fred_data(series_id):
+    """Fetch data from FRED API"""
+    if not FRED_API_KEY:
+        return None
+    try:
+        from pandas_datareader import data as web
+        end = datetime.now()
+        start = end - timedelta(days=3*365)
+        data = web.DataReader(series_id, 'fred', start, end, api_key=FRED_API_KEY)
+        if data.empty:
+            return None
+        return {'latest_value': float(data.iloc[-1, 0])}
+    except Exception:
+        return None
+
 # ============================================
-# COUNTRY GFFI FUNCTIONS - NO DEFAULTS
+# COUNTRY GFFI FUNCTIONS
 # ============================================
 
 def calculate_country_gffi(country):
-    """Calculate GFFI for a single country - returns None if data missing"""
+    """Calculate GFFI for a single country"""
     print(f"\n📍 Processing {country['name']}...")
     
     prices = fetch_alphavantage_data(country['av_symbol'])
@@ -318,56 +308,57 @@ def calculate_country_gffi(country):
         print(f"   ❌ Could not calculate capital for {country['name']}")
         return None
     
-    gffi = (entropy / capital) * 1000
-    gffi = round(gffi, 1)
+    gffi_value = (entropy / capital) * 1000
+    gffi_value = round(gffi_value, 1)
     
-    # Sanity check - GFFI should be between 20 and 100 for normal markets
-    if gffi > 100 or gffi < 20:
-        print(f"   ⚠️ GFFI value {gffi} seems abnormal, skipping")
+    # Sanity check
+    if gffi_value > 100 or gffi_value < 20:
+        print(f"   ⚠️ GFFI value {gffi_value} seems abnormal, skipping")
         return None
     
     result = {
         'flag': country['flag'],
         'name': country['name'],
-        'gffi': gffi,
-        'status': get_status(gffi)
+        'gffi': gffi_value,
+        'status': get_status(gffi_value)
     }
     
-    print(f"   ✅ GFFI: {gffi} ({result['status']})")
+    print(f"   ✅ GFFI: {gffi_value} ({result['status']})")
     return result
 
 # ============================================
-# SECTOR DATA FUNCTIONS - NO DEFAULTS
+# SECTOR DATA FUNCTIONS
 # ============================================
 
 def calculate_sector_gffi(sector_name, stocks):
-    """Calculate GFFI for a sector - returns None if insufficient data"""
+    """Calculate GFFI for a sector"""
     values = []
     valid_stocks = []
     
-    for symbol in stocks[:5]:
+    for symbol in stocks:
         data = fetch_stock_data(symbol)
         if data:
             values.append(data['gffi'])
-            valid_stocks.append(STOCK_NAMES.get(symbol, symbol.replace('.BSE', '')))
+            valid_stocks.append(data['symbol'])
         time.sleep(1)
     
-    if len(values) < 3:
-        return None, None, None
+    if len(values) < 2:
+        return None, None, []
     
-    avg = sum(values) / len(values)
-    trend = 'up' if avg > 62 else 'down' if avg < 58 else 'stable'
-    return round(avg, 1), trend, valid_stocks[:4]
+    avg_gffi = sum(values) / len(values)
+    trend = 'up' if avg_gffi > 62 else 'down' if avg_gffi < 58 else 'stable'
+    
+    return round(avg_gffi, 1), trend, valid_stocks[:4]
 
 def fetch_live_sector_data():
-    """Fetch live data for all sectors - only includes sectors with sufficient data"""
+    """Fetch live data for all sectors"""
     print("\n🏭 Fetching live sector data...")
-    data = []
+    sector_data = []
     
     for name, stocks in SECTOR_DEFINITIONS.items():
         gffi, trend, stock_list = calculate_sector_gffi(name, stocks)
         if gffi:
-            data.append({
+            sector_data.append({
                 'name': name,
                 'gffi': gffi,
                 'trend': trend,
@@ -378,14 +369,14 @@ def fetch_live_sector_data():
             print(f"   ❌ {name}: Insufficient data")
         time.sleep(2)
     
-    return data
+    return sector_data
 
 # ============================================
-# STOCK PICKS FUNCTIONS - NO DEFAULTS
+# STOCK PICKS FUNCTIONS
 # ============================================
 
 def generate_stock_picks():
-    """Generate stock picks - returns empty dict if insufficient data"""
+    """Generate live stock picks based on GFFI values"""
     print("\n📈 Generating live stock picks...")
     stocks = []
     
@@ -395,28 +386,28 @@ def generate_stock_picks():
             stocks.append(data)
         time.sleep(1)
     
-    if len(stocks) < 15:
+    if len(stocks) < 10:
         print("   ❌ Insufficient stock data for reliable picks")
         return {}
     
     stocks.sort(key=lambda x: x['gffi'])
     
-    safe_count = min(5, len(stocks) // 4)
-    risky_count = min(5, len(stocks) // 4)
-    watch_count = min(5, len(stocks) - safe_count - risky_count)
+    safe_count = min(3, len(stocks) // 3)
+    risky_count = min(3, len(stocks) // 3)
+    watch_count = min(3, len(stocks) - safe_count - risky_count)
     
     return {
-        'safe': [{'symbol': s['symbol'], 'name': s['name'], 'gffi': s['gffi'], 'action': 'BUY', 'reason': f'Lowest GFFI at ₹{s["price"]}'} for s in stocks[:safe_count]],
-        'risky': [{'symbol': s['symbol'], 'name': s['name'], 'gffi': s['gffi'], 'action': 'SELL', 'reason': f'Highest GFFI at ₹{s["price"]}'} for s in stocks[-risky_count:][::-1]],
-        'watch': [{'symbol': s['symbol'], 'name': s['name'], 'gffi': s['gffi'], 'action': 'WATCH', 'reason': f'Mid-range GFFI at ₹{s["price"]}'} for s in stocks[safe_count:safe_count+watch_count]]
+        'safe': [{'symbol': s['symbol'], 'name': s['name'], 'gffi': s['gffi'], 'action': 'BUY', 'reason': f'Low GFFI at ₹{s["price"]}'} for s in stocks[:safe_count]],
+        'risky': [{'symbol': s['symbol'], 'name': s['name'], 'gffi': s['gffi'], 'action': 'SELL', 'reason': f'High GFFI at ₹{s["price"]}'} for s in stocks[-risky_count:][::-1]],
+        'watch': [{'symbol': s['symbol'], 'name': s['name'], 'gffi': s['gffi'], 'action': 'WATCH', 'reason': f'Mid GFFI at ₹{s["price"]}'} for s in stocks[safe_count:safe_count+watch_count]]
     }
 
 # ============================================
-# INDIA MARKET DATA FUNCTIONS - NO DEFAULTS
+# INDIA MARKET DATA FUNCTIONS
 # ============================================
 
 def fetch_live_india_market_data():
-    """Fetch live India market data - returns empty dict if fails"""
+    """Fetch live India market data"""
     print("\n🇮🇳 Fetching live India market data...")
     
     nifty = fetch_index_data('NSEI')
@@ -428,9 +419,6 @@ def fetch_live_india_market_data():
     
     print(f"   ✅ Nifty: {nifty['value']} ({nifty['change']}%)")
     print(f"   ✅ Sensex: {sensex['value']} ({sensex['change']}%)")
-    
-    # VIX data is not available, so we don't include it
-    # Advance/Decline data is not available, so we don't include it
     
     return {
         'nifty': int(nifty['value']),
@@ -444,12 +432,12 @@ def fetch_live_india_market_data():
 # ============================================
 
 def main():
-    """Main function to generate data.js with ONLY real data"""
+    """Main function to generate data.js"""
     print("\n" + "="*80)
-    print("🌍 FETCHING ONLY REAL GFFI DATA - NO DEFAULTS")
+    print("🌍 FETCHING GFFI DATA - ONLY REAL DATA")
     print("="*80)
     
-    # Fetch country GFFI data
+    # Countries
     country_data = []
     gffi_values = []
     
@@ -462,64 +450,52 @@ def main():
     
     global_gffi = round(sum(gffi_values) / len(gffi_values), 1) if gffi_values else None
     
+    # Sectors
     time.sleep(15)
     sector_data = fetch_live_sector_data()
     
+    # Stock picks
     time.sleep(15)
     stock_picks = generate_stock_picks()
     
+    # India market
     time.sleep(10)
     india_data = fetch_live_india_market_data()
     
+    # Generate data.js
     now = datetime.now()
     
-    # Build JS content - only include data that exists
     js_lines = [
         "// ============================================",
         "// DATA.JS - Auto-generated by GFFI Live Calculator",
         f"// Last Updated: {now.strftime('%Y-%m-%d %H:%M:%S')}",
         "// ============================================",
-        "// NOTE: Only real data is included. No default values.",
+        "// ONLY REAL DATA - No defaults",
         "",
+        f"const countryData = {json.dumps(country_data, indent=2, ensure_ascii=False)};",
+        "",
+        f"const globalGFFI = {json.dumps(global_gffi)};",
+        "",
+        f"const updateDate = '{now.strftime('%d %b %Y')}';",
+        f"const updateTime = '{now.strftime('%I:%M %p')}';",
+        "",
+        f"const sectorData = {json.dumps(sector_data, indent=2, ensure_ascii=False)};",
+        "",
+        f"const stockPicks = {json.dumps(stock_picks, indent=2, ensure_ascii=False)};",
+        "",
+        f"const indiaMarketData = {json.dumps(india_data, indent=2, ensure_ascii=False)};"
     ]
-    
-    # Country data
-    js_lines.append(f"const countryData = {json.dumps(country_data, indent=2, ensure_ascii=False)};")
-    js_lines.append("")
-    
-    # Global GFFI (only if exists)
-    if global_gffi:
-        js_lines.append(f"const globalGFFI = {global_gffi};")
-    else:
-        js_lines.append("const globalGFFI = null;")
-    js_lines.append("")
-    
-    # Update date/time
-    js_lines.append(f"const updateDate = '{now.strftime('%d %b %Y')}';")
-    js_lines.append(f"const updateTime = '{now.strftime('%I:%M %p')}';")
-    js_lines.append("")
-    
-    # Sector data
-    js_lines.append(f"const sectorData = {json.dumps(sector_data, indent=2, ensure_ascii=False)};")
-    js_lines.append("")
-    
-    # Stock picks
-    js_lines.append(f"const stockPicks = {json.dumps(stock_picks, indent=2, ensure_ascii=False)};")
-    js_lines.append("")
-    
-    # India market data
-    js_lines.append(f"const indiaMarketData = {json.dumps(india_data, indent=2, ensure_ascii=False)};")
     
     with open('data.js', 'w', encoding='utf-8') as f:
         f.write("\n".join(js_lines))
     
     print("\n" + "="*80)
-    print("✅ DATA.JS UPDATED - ONLY REAL DATA INCLUDED")
+    print("✅ DATA.JS UPDATED - ONLY REAL DATA")
     print("="*80)
-    print(f"   🌍 Countries with real data: {len(country_data)}/{len(COUNTRIES)}")
+    print(f"   🌍 Countries with data: {len(country_data)}/{len(COUNTRIES)}")
     print(f"   📊 Global GFFI: {global_gffi if global_gffi else 'None'}")
-    print(f"   🏭 Sectors with real data: {len(sector_data)}/{len(SECTOR_DEFINITIONS)}")
-    print(f"   📈 Stock Picks available: {'Yes' if stock_picks else 'No'}")
+    print(f"   🏭 Sectors with data: {len(sector_data)}/{len(SECTOR_DEFINITIONS)}")
+    print(f"   📈 Stock picks: {'Yes' if stock_picks else 'No'}")
     if india_data:
         print(f"   🇮🇳 Nifty: {india_data.get('nifty')}")
         print(f"   🇮🇳 Sensex: {india_data.get('sensex')}")
