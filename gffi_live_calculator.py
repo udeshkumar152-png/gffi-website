@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
-GFFI Live Calculator - INDIA MARKET ONLY with yfinance
-Fetches live data from Yahoo Finance for Indian market
+GFFI Live Calculator - INDIA MARKET ONLY (Alpha Vantage)
+Fetches live data from Alpha Vantage for Indian market
+Works reliably on GitHub Actions
 """
 
 import os
@@ -9,71 +10,95 @@ import json
 import time
 import numpy as np
 import pandas as pd
-import yfinance as yf
+import requests
 from datetime import datetime, timedelta
 import warnings
 warnings.filterwarnings('ignore')
 
 print("="*80)
-print("🚀 GFFI LIVE CALCULATOR - INDIA MARKET (yfinance)")
+print("🚀 GFFI LIVE CALCULATOR - INDIA MARKET (Alpha Vantage)")
 print("="*80)
 print(f"📅 Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
 # ============================================
-# INDIAN MARKET SYMBOLS
+# CONFIGURATION
 # ============================================
-NIFTY_SYMBOL = "^NSEI"
-SENSEX_SYMBOL = "^BSESN"
+ALPHA_VANTAGE_KEY = os.getenv('ALPHA_VANTAGE_KEY')
+
+if not ALPHA_VANTAGE_KEY:
+    print("❌ ALPHA_VANTAGE_KEY not found in environment variables!")
+    exit(1)
 
 # ============================================
-# NIFTY 50 STOCKS (with Yahoo Finance symbols)
+# INDIAN MARKET SYMBOLS (Alpha Vantage)
+# ============================================
+NIFTY_SYMBOL = "NSEI"
+SENSEX_SYMBOL = "BSESN"
+
+# ============================================
+# NIFTY 50 STOCKS (Alpha Vantage symbols)
 # ============================================
 NIFTY_50_STOCKS = [
-    {'symbol': 'RELIANCE.NS', 'name': 'Reliance Industries', 'sector': 'Energy'},
-    {'symbol': 'TCS.NS', 'name': 'Tata Consultancy Services', 'sector': 'IT'},
-    {'symbol': 'HDFCBANK.NS', 'name': 'HDFC Bank', 'sector': 'Banking'},
-    {'symbol': 'INFY.NS', 'name': 'Infosys', 'sector': 'IT'},
-    {'symbol': 'ICICIBANK.NS', 'name': 'ICICI Bank', 'sector': 'Banking'},
-    {'symbol': 'HINDUNILVR.NS', 'name': 'Hindustan Unilever', 'sector': 'FMCG'},
-    {'symbol': 'ITC.NS', 'name': 'ITC Ltd', 'sector': 'FMCG'},
-    {'symbol': 'SBIN.NS', 'name': 'State Bank of India', 'sector': 'Banking'},
-    {'symbol': 'BHARTIARTL.NS', 'name': 'Bharti Airtel', 'sector': 'Telecom'},
-    {'symbol': 'KOTAKBANK.NS', 'name': 'Kotak Mahindra Bank', 'sector': 'Banking'},
-    {'symbol': 'LT.NS', 'name': 'Larsen & Toubro', 'sector': 'Construction'},
-    {'symbol': 'ASIANPAINT.NS', 'name': 'Asian Paints', 'sector': 'FMCG'},
-    {'symbol': 'MARUTI.NS', 'name': 'Maruti Suzuki', 'sector': 'Auto'},
-    {'symbol': 'SUNPHARMA.NS', 'name': 'Sun Pharma', 'sector': 'Pharma'},
-    {'symbol': 'TATAMOTORS.NS', 'name': 'Tata Motors', 'sector': 'Auto'},
-    {'symbol': 'AXISBANK.NS', 'name': 'Axis Bank', 'sector': 'Banking'},
-    {'symbol': 'NTPC.NS', 'name': 'NTPC Ltd', 'sector': 'Energy'},
-    {'symbol': 'ONGC.NS', 'name': 'ONGC', 'sector': 'Energy'},
-    {'symbol': 'POWERGRID.NS', 'name': 'Power Grid', 'sector': 'Energy'},
-    {'symbol': 'TITAN.NS', 'name': 'Titan Company', 'sector': 'FMCG'},
-    {'symbol': 'BAJFINANCE.NS', 'name': 'Bajaj Finance', 'sector': 'Banking'},
-    {'symbol': 'JSWSTEEL.NS', 'name': 'JSW Steel', 'sector': 'Metals'},
-    {'symbol': 'WIPRO.NS', 'name': 'Wipro', 'sector': 'IT'},
-    {'symbol': 'HCLTECH.NS', 'name': 'HCL Technologies', 'sector': 'IT'},
-    {'symbol': 'TATASTEEL.NS', 'name': 'Tata Steel', 'sector': 'Metals'},
-    {'symbol': 'CIPLA.NS', 'name': 'Cipla', 'sector': 'Pharma'},
-    {'symbol': 'DRREDDY.NS', 'name': "Dr Reddy's Labs", 'sector': 'Pharma'},
-    {'symbol': 'BRITANNIA.NS', 'name': 'Britannia', 'sector': 'FMCG'},
-    {'symbol': 'HINDALCO.NS', 'name': 'Hindalco', 'sector': 'Metals'},
-    {'symbol': 'M&M.NS', 'name': 'Mahindra & Mahindra', 'sector': 'Auto'},
+    {'symbol': 'RELIANCE.BSE', 'name': 'Reliance Industries', 'sector': 'Energy'},
+    {'symbol': 'TCS.BSE', 'name': 'Tata Consultancy Services', 'sector': 'IT'},
+    {'symbol': 'HDFCBANK.BSE', 'name': 'HDFC Bank', 'sector': 'Banking'},
+    {'symbol': 'INFY.BSE', 'name': 'Infosys', 'sector': 'IT'},
+    {'symbol': 'ICICIBANK.BSE', 'name': 'ICICI Bank', 'sector': 'Banking'},
+    {'symbol': 'HINDUNILVR.BSE', 'name': 'Hindustan Unilever', 'sector': 'FMCG'},
+    {'symbol': 'ITC.BSE', 'name': 'ITC Ltd', 'sector': 'FMCG'},
+    {'symbol': 'SBIN.BSE', 'name': 'State Bank of India', 'sector': 'Banking'},
+    {'symbol': 'BHARTIARTL.BSE', 'name': 'Bharti Airtel', 'sector': 'Telecom'},
+    {'symbol': 'KOTAKBANK.BSE', 'name': 'Kotak Mahindra Bank', 'sector': 'Banking'},
+    {'symbol': 'LT.BSE', 'name': 'Larsen & Toubro', 'sector': 'Construction'},
+    {'symbol': 'ASIANPAINT.BSE', 'name': 'Asian Paints', 'sector': 'FMCG'},
+    {'symbol': 'MARUTI.BSE', 'name': 'Maruti Suzuki', 'sector': 'Auto'},
+    {'symbol': 'SUNPHARMA.BSE', 'name': 'Sun Pharma', 'sector': 'Pharma'},
+    {'symbol': 'TATAMOTORS.BSE', 'name': 'Tata Motors', 'sector': 'Auto'},
+    {'symbol': 'AXISBANK.BSE', 'name': 'Axis Bank', 'sector': 'Banking'},
+    {'symbol': 'NTPC.BSE', 'name': 'NTPC Ltd', 'sector': 'Energy'},
+    {'symbol': 'ONGC.BSE', 'name': 'ONGC', 'sector': 'Energy'},
+    {'symbol': 'POWERGRID.BSE', 'name': 'Power Grid', 'sector': 'Energy'},
+    {'symbol': 'TITAN.BSE', 'name': 'Titan Company', 'sector': 'FMCG'},
 ]
 
 # ============================================
-# SECTOR MAPPING
+# SECTOR MAPPING (with Alpha Vantage symbols)
 # ============================================
 SECTORS = {
-    'Banking': ['HDFCBANK.NS', 'ICICIBANK.NS', 'SBIN.NS', 'KOTAKBANK.NS', 'AXISBANK.NS', 'BAJFINANCE.NS'],
-    'IT': ['TCS.NS', 'INFY.NS', 'HCLTECH.NS', 'WIPRO.NS'],
-    'Pharma': ['SUNPHARMA.NS', 'CIPLA.NS', 'DRREDDY.NS'],
-    'Auto': ['MARUTI.NS', 'TATAMOTORS.NS', 'M&M.NS'],
-    'FMCG': ['HINDUNILVR.NS', 'ITC.NS', 'BRITANNIA.NS', 'TITAN.NS'],
-    'Energy': ['RELIANCE.NS', 'ONGC.NS', 'NTPC.NS', 'POWERGRID.NS'],
-    'Metals': ['TATASTEEL.NS', 'JSWSTEEL.NS', 'HINDALCO.NS'],
-    'Telecom': ['BHARTIARTL.NS'],
-    'Construction': ['LT.NS'],
+    'Banking': ['HDFCBANK.BSE', 'ICICIBANK.BSE', 'SBIN.BSE', 'KOTAKBANK.BSE', 'AXISBANK.BSE'],
+    'IT': ['TCS.BSE', 'INFY.BSE'],
+    'Pharma': ['SUNPHARMA.BSE'],
+    'Auto': ['MARUTI.BSE', 'TATAMOTORS.BSE'],
+    'FMCG': ['HINDUNILVR.BSE', 'ITC.BSE', 'TITAN.BSE'],
+    'Energy': ['RELIANCE.BSE', 'ONGC.BSE', 'NTPC.BSE'],
+    'Telecom': ['BHARTIARTL.BSE'],
+    'Construction': ['LT.BSE'],
+}
+
+# ============================================
+# STOCK NAME MAPPING
+# ============================================
+STOCK_NAMES = {
+    'RELIANCE.BSE': 'RELIANCE',
+    'TCS.BSE': 'TCS',
+    'HDFCBANK.BSE': 'HDFCBANK',
+    'INFY.BSE': 'INFY',
+    'ICICIBANK.BSE': 'ICICIBANK',
+    'HINDUNILVR.BSE': 'HINDUNILVR',
+    'ITC.BSE': 'ITC',
+    'SBIN.BSE': 'SBIN',
+    'BHARTIARTL.BSE': 'BHARTIARTL',
+    'KOTAKBANK.BSE': 'KOTAKBANK',
+    'LT.BSE': 'LT',
+    'ASIANPAINT.BSE': 'ASIANPAINT',
+    'MARUTI.BSE': 'MARUTI',
+    'SUNPHARMA.BSE': 'SUNPHARMA',
+    'TATAMOTORS.BSE': 'TATAMOTORS',
+    'AXISBANK.BSE': 'AXISBANK',
+    'NTPC.BSE': 'NTPC',
+    'ONGC.BSE': 'ONGC',
+    'POWERGRID.BSE': 'POWERGRID',
+    'TITAN.BSE': 'TITAN',
 }
 
 # ============================================
@@ -126,68 +151,95 @@ def calculate_capital_proxy(returns_series):
     return max(10, min(30, capital_proxy))
 
 # ============================================
-# DATA FETCHING FUNCTIONS
+# ALPHA VANTAGE DATA FETCHING
 # ============================================
+
+def fetch_alphavantage_data(symbol, max_retries=2):
+    """Fetch data from Alpha Vantage"""
+    for attempt in range(max_retries):
+        try:
+            url = f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={symbol}&apikey={ALPHA_VANTAGE_KEY}&outputsize=compact"
+            response = requests.get(url, timeout=15)
+            data = response.json()
+            
+            if 'Time Series (Daily)' in data:
+                time_series = data['Time Series (Daily)']
+                dates = []
+                prices = []
+                
+                sorted_dates = sorted(time_series.keys())[-60:]
+                for date_str in sorted_dates:
+                    dates.append(pd.Timestamp(date_str))
+                    prices.append(float(time_series[date_str]['4. close']))
+                
+                return pd.Series(prices, index=dates)
+            
+            elif 'Note' in data:
+                if attempt < max_retries - 1:
+                    wait_time = 15
+                    print(f"   ⏳ Rate limit, waiting {wait_time}s...")
+                    time.sleep(wait_time)
+            else:
+                return None
+                
+        except Exception as e:
+            if attempt < max_retries - 1:
+                time.sleep(10)
+    
+    return None
 
 def fetch_index_data(symbol, name):
     """Fetch index data and calculate GFFI"""
     print(f"\n📍 Fetching {name} data...")
     
-    try:
-        # Fetch historical data for GFFI calculation
-        hist = yf.download(symbol, period="2mo", progress=False)
-        if hist.empty or len(hist) < 30:
-            print(f"   ❌ No historical data for {name}")
-            return None, None
-        
-        # Get latest price
-        current_price = hist['Close'].iloc[-1]
-        prev_price = hist['Close'].iloc[-2]
-        change_pct = ((current_price - prev_price) / prev_price) * 100
-        
-        # Calculate GFFI
-        returns = hist['Close'].pct_change().dropna() * 100
-        entropy = calculate_entropy(returns)
-        capital = calculate_capital_proxy(returns)
-        
-        if entropy is None:
-            print(f"   ❌ Could not calculate entropy for {name}")
-            return None, None
-        
-        gffi = (entropy / capital) * 1000
-        gffi = round(gffi, 1)
-        
-        # Sanity check
-        if gffi > 100 or gffi < 20:
-            print(f"   ⚠️ Abnormal GFFI {gffi} for {name}")
-            return None, None
-        
-        print(f"   ✅ {name}: {current_price:.0f} ({change_pct:.2f}%), GFFI={gffi}")
-        return {
-            'value': float(current_price),
-            'change': round(change_pct, 2),
-            'gffi': gffi
-        }, None
-        
-    except Exception as e:
-        print(f"   ❌ Error fetching {name}: {str(e)[:50]}")
+    prices = fetch_alphavantage_data(symbol)
+    if prices is None or len(prices) < 30:
+        print(f"   ❌ No historical data for {name}")
         return None, None
+    
+    # Get latest price and change
+    current_price = prices.iloc[-1]
+    prev_price = prices.iloc[-2] if len(prices) > 1 else current_price
+    change_pct = ((current_price - prev_price) / prev_price) * 100
+    
+    # Calculate GFFI
+    returns = prices.pct_change().dropna() * 100
+    entropy = calculate_entropy(returns)
+    capital = calculate_capital_proxy(returns)
+    
+    if entropy is None:
+        print(f"   ❌ Could not calculate entropy for {name}")
+        return None, None
+    
+    gffi = (entropy / capital) * 1000
+    gffi = round(gffi, 1)
+    
+    # Sanity check
+    if gffi > 100 or gffi < 20:
+        print(f"   ⚠️ Abnormal GFFI {gffi} for {name}")
+        return None, None
+    
+    print(f"   ✅ {name}: {current_price:.0f} ({change_pct:.2f}%), GFFI={gffi}")
+    return {
+        'value': float(current_price),
+        'change': round(change_pct, 2),
+        'gffi': gffi
+    }, None
 
 def fetch_stock_data(symbol, name):
     """Fetch stock data and calculate GFFI"""
     try:
-        # Fetch historical data
-        hist = yf.download(symbol, period="2mo", progress=False)
-        if hist.empty or len(hist) < 30:
+        prices = fetch_alphavantage_data(symbol)
+        if prices is None or len(prices) < 30:
             return None
         
         # Get latest price
-        current_price = hist['Close'].iloc[-1]
-        prev_price = hist['Close'].iloc[-2]
+        current_price = prices.iloc[-1]
+        prev_price = prices.iloc[-2] if len(prices) > 1 else current_price
         change_pct = ((current_price - prev_price) / prev_price) * 100
         
         # Calculate GFFI
-        returns = hist['Close'].pct_change().dropna() * 100
+        returns = prices.pct_change().dropna() * 100
         entropy = calculate_entropy(returns)
         capital = calculate_capital_proxy(returns)
         
@@ -202,7 +254,7 @@ def fetch_stock_data(symbol, name):
             return None
         
         return {
-            'symbol': symbol.replace('.NS', ''),
+            'symbol': STOCK_NAMES.get(symbol, symbol.replace('.BSE', '')),
             'name': name,
             'price': round(current_price, 2),
             'change': round(change_pct, 2),
@@ -226,12 +278,12 @@ def calculate_sector_gffi():
         gffi_values = []
         stock_names = []
         
-        for symbol in stocks[:3]:  # Top 3 stocks per sector
+        for symbol in stocks[:3]:
             stock_data = fetch_stock_data(symbol, sector)
             if stock_data and 'gffi' in stock_data:
                 gffi_values.append(stock_data['gffi'])
                 stock_names.append(stock_data['symbol'])
-            time.sleep(1)
+            time.sleep(12)  # Rate limiting
         
         if gffi_values:
             avg_gffi = sum(gffi_values) / len(gffi_values)
@@ -258,13 +310,13 @@ def generate_stock_picks():
     
     stocks_data = []
     
-    for stock in NIFTY_50_STOCKS[:20]:  # Limit to 20 for speed
+    for stock in NIFTY_50_STOCKS[:15]:  # Limit to 15 for API limits
         data = fetch_stock_data(stock['symbol'], stock['name'])
         if data:
             stocks_data.append(data)
-        time.sleep(1)
+        time.sleep(12)  # Rate limiting
     
-    if len(stocks_data) < 10:
+    if len(stocks_data) < 5:
         print("   ❌ Insufficient data for stock picks")
         return {}
     
@@ -273,7 +325,7 @@ def generate_stock_picks():
     
     # Safe picks (lowest GFFI)
     safe_picks = []
-    for s in stocks_data[:5]:
+    for s in stocks_data[:3]:
         safe_picks.append({
             'symbol': s['symbol'],
             'name': s['name'],
@@ -284,7 +336,7 @@ def generate_stock_picks():
     
     # Risky picks (highest GFFI)
     risky_picks = []
-    for s in stocks_data[-5:][::-1]:
+    for s in stocks_data[-3:][::-1]:
         risky_picks.append({
             'symbol': s['symbol'],
             'name': s['name'],
@@ -308,7 +360,7 @@ def generate_stock_picks():
     return {
         'safe': safe_picks,
         'risky': risky_picks,
-        'watch': watch_picks[:5]
+        'watch': watch_picks[:3]
     }
 
 # ============================================
@@ -318,7 +370,7 @@ def generate_stock_picks():
 def main():
     """Main function to generate data.js"""
     print("\n" + "="*80)
-    print("🇮🇳 FETCHING INDIA MARKET DATA (yfinance)")
+    print("🇮🇳 FETCHING INDIA MARKET DATA (Alpha Vantage)")
     print("="*80)
     
     # Fetch Nifty data
@@ -365,7 +417,7 @@ def main():
         "// DATA.JS - Auto-generated by GFFI Live Calculator",
         f"// Last Updated: {now.strftime('%Y-%m-%d %H:%M:%S')}",
         "// ============================================",
-        "// INDIA MARKET DATA - Live from Yahoo Finance",
+        "// INDIA MARKET DATA - Live from Alpha Vantage",
         "",
         f"const countryData = {json.dumps(country_data, indent=2, ensure_ascii=False)};",
         "",
