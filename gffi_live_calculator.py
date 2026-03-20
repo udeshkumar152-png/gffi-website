@@ -273,21 +273,24 @@ def fetch_stock_data(symbol):
     
     if entropy is None or capital is None:
         return None
+        gffi = (entropy / capital) * 1000
+    gffi = round(gffi, 1)
     
-    gffi = (entropy / capital) * 1000
-gffi = round(gffi, 1)
-
-# Add a sanity check - GFFI should be between 40 and 100 for normal markets
-if gffi > 100 or gffi < 20:
-    print(f"   ⚠️ GFFI value {gffi} seems abnormal, using None")
-    return None
+    # Add a sanity check - GFFI should be between 20 and 100 for normal markets
+    if gffi > 100 or gffi < 20:
+        print(f"   ⚠️ GFFI value {gffi} seems abnormal, skipping")
+        return None
     
-    return {
-        'symbol': symbol.replace('.BSE', ''),
-        'name': STOCK_NAMES.get(symbol, symbol.replace('.BSE', '')),
-        'gffi': round(gffi, 1),
-        'price': round(float(prices.iloc[-1]), 2)
+    # If GFFI is normal, create and return the result
+    result = {
+        'flag': country['flag'],
+        'name': country['name'],
+        'gffi': gffi,
+        'status': get_status(gffi)
     }
+    
+    print(f"   ✅ GFFI: {gffi} ({result['status']})")
+    return result
 
 def fetch_index_data(symbol):
     """Fetch index data - returns None if fails"""
