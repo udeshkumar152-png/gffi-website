@@ -275,6 +275,12 @@ def fetch_stock_data(symbol):
         return None
     
     gffi = (entropy / capital) * 1000
+gffi = round(gffi, 1)
+
+# Add a sanity check - GFFI should be between 40 and 100 for normal markets
+if gffi > 100 or gffi < 20:
+    print(f"   ⚠️ GFFI value {gffi} seems abnormal, using None")
+    return None
     
     return {
         'symbol': symbol.replace('.BSE', ''),
