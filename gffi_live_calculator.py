@@ -33,11 +33,7 @@ if not ALPHA_VANTAGE_KEY:
 # COUNTRY CONFIGURATION - 5 countries for now
 # ============================================
 COUNTRIES = [
-    {'code': 'US', 'name': 'USA', 'flag': '🇺🇸', 'av_symbol': 'SPX', 'fred_series': 'DDSI03USA156NWDB'},
-    {'code': 'India', 'name': 'India', 'flag': '🇮🇳', 'av_symbol': 'NSEI', 'fred_series': 'DDSI03INA156NWDB'},
-    {'code': 'UK', 'name': 'UK', 'flag': '🇬🇧', 'av_symbol': 'FTSE', 'fred_series': 'DDSI03GBA156NWDB'},
-    {'code': 'Singapore', 'name': 'Singapore', 'flag': '🇸🇬', 'av_symbol': 'STI', 'fred_series': None},
-    {'code': 'Japan', 'name': 'Japan', 'flag': '🇯🇵', 'av_symbol': 'NIKKEI225', 'fred_series': 'DDSI03JPA156NWDB'},
+    {'code': 'Singapore', 'name': 'Singapore', 'flag': '🇸🇬', 'av_symbol': 'STI', 'fred_series': None}, 
 ]
 
 # Nifty 50 stocks (using Alpha Vantage symbols)
@@ -56,19 +52,16 @@ NIFTY_50_STOCKS = [
 
 # Sector definitions with Alpha Vantage symbols
 SECTOR_DEFINITIONS = {
-    'Banking & Financials': ['HDFCBANK.BSE', 'ICICIBANK.BSE', 'SBIN.BSE', 'KOTAKBANK.BSE'],
-    'Information Technology': ['TCS.BSE', 'INFY.BSE', 'HCLTECH.BSE', 'WIPRO.BSE'],
-    'Pharmaceuticals': ['SUNPHARMA.BSE', 'CIPLA.BSE', 'DRREDDY.BSE', 'DIVISLAB.BSE'],
-    'Automobile': ['MARUTI.BSE', 'TATAMOTORS.BSE', 'M&M.BSE', 'BAJAJ-AUTO.BSE'],
-    'Energy': ['RELIANCE.BSE', 'ONGC.BSE', 'BPCL.BSE', 'IOC.BSE'],
-    'FMCG': ['HINDUNILVR.BSE', 'ITC.BSE', 'BRITANNIA.BSE', 'NESTLEIND.BSE'],
-    'Metals': ['TATASTEEL.BSE', 'JSWSTEEL.BSE', 'HINDALCO.BSE', 'COALINDIA.BSE'],
-    'Telecom': ['BHARTIARTL.BSE', 'IDEA.BSE'],
+    'Banking & Financials': ['HDFCBANK.BSE', 'ICICIBANK.BSE', 'SBIN.BSE'],
+    'Information Technology': ['TCS.BSE', 'INFY.BSE', 'HCLTECH.BSE'],
+    'Pharmaceuticals': ['SUNPHARMA.BSE', 'CIPLA.BSE', 'DRREDDY.BSE'],
+    'Energy': ['RELIANCE.BSE', 'ONGC.BSE', 'BPCL.BSE'],
+    'FMCG': ['HINDUNILVR.BSE', 'ITC.BSE', 'BRITANNIA.BSE'],
+    'Metals': ['TATASTEEL.BSE', 'JSWSTEEL.BSE', 'HINDALCO.BSE'],
 }
 
 # Stock name mapping
 STOCK_NAMES = {
-    'RELIANCE.BSE': 'Reliance',
     'TCS.BSE': 'TCS',
     'HDFCBANK.BSE': 'HDFC Bank',
     'INFY.BSE': 'Infosys',
@@ -76,28 +69,9 @@ STOCK_NAMES = {
     'HINDUNILVR.BSE': 'HUL',
     'ITC.BSE': 'ITC',
     'SBIN.BSE': 'SBI',
-    'BHARTIARTL.BSE': 'Bharti Airtel',
-    'KOTAKBANK.BSE': 'Kotak Bank',
-    'HCLTECH.BSE': 'HCLTech',
-    'WIPRO.BSE': 'Wipro',
     'SUNPHARMA.BSE': 'Sun Pharma',
     'CIPLA.BSE': 'Cipla',
     'DRREDDY.BSE': 'Dr Reddy',
-    'DIVISLAB.BSE': 'Divis Labs',
-    'MARUTI.BSE': 'Maruti',
-    'TATAMOTORS.BSE': 'Tata Motors',
-    'M&M.BSE': 'M&M',
-    'BAJAJ-AUTO.BSE': 'Bajaj Auto',
-    'ONGC.BSE': 'ONGC',
-    'BPCL.BSE': 'BPCL',
-    'IOC.BSE': 'IOC',
-    'BRITANNIA.BSE': 'Britannia',
-    'NESTLEIND.BSE': 'Nestle',
-    'TATASTEEL.BSE': 'Tata Steel',
-    'JSWSTEEL.BSE': 'JSW Steel',
-    'HINDALCO.BSE': 'Hindalco',
-    'COALINDIA.BSE': 'Coal India',
-    'IDEA.BSE': 'Vodafone Idea',
 }
 
 # ============================================
