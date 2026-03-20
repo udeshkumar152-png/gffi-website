@@ -356,6 +356,11 @@ def calculate_country_gffi(country):
     gffi = (entropy / capital) * 1000
     gffi = round(gffi, 1)
     
+    # Sanity check - GFFI should be between 20 and 100 for normal markets
+    if gffi > 100 or gffi < 20:
+        print(f"   ⚠️ GFFI value {gffi} seems abnormal, skipping")
+        return None
+    
     result = {
         'flag': country['flag'],
         'name': country['name'],
