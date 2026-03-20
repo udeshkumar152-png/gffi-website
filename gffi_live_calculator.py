@@ -273,55 +273,17 @@ def fetch_stock_data(symbol):
     
     if entropy is None or capital is None:
         return None
-        gffi = (entropy / capital) * 1000
-    gffi = round(gffi, 1)
     
-    # Add a sanity check - GFFI should be between 20 and 100 for normal markets
-    if gffi > 100 or gffi < 20:
-        print(f"   ⚠️ GFFI value {gffi} seems abnormal, skipping")
-        return None
-    
-    # If GFFI is normal, create and return the result
-    result = {
-        'flag': country['flag'],
-        'name': country['name'],
-        'gffi': gffi,
-        'status': get_status(gffi)
-    }
-    
-    print(f"   ✅ GFFI: {gffi} ({result['status']})")
-    return result
-
-def fetch_index_data(symbol):
-    """Fetch index data - returns None if fails"""
-    prices = fetch_alphavantage_data(symbol)
-    
-    if prices is None or len(prices) < 2:
-        return None
-    
-    current = prices.iloc[-1]
-    prev = prices.iloc[-2]
-    change = ((current - prev) / prev) * 100
+    # Calculate GFFI
+    gffi_value = (entropy / capital) * 1000
+    gffi_value = round(gffi_value, 1)
     
     return {
-        'value': round(current, 2),
-        'change': round(change, 2)
+        'symbol': symbol.replace('.BSE', ''),
+        'name': STOCK_NAMES.get(symbol, symbol.replace('.BSE', '')),
+        'gffi': gffi_value,
+        'price': round(float(prices.iloc[-1]), 2)
     }
-
-def fetch_fred_data(series_id):
-    """Fetch data from FRED API"""
-    if not FRED_API_KEY:
-        return None
-    try:
-        from pandas_datareader import data as web
-        end = datetime.now()
-        start = end - timedelta(days=3*365)
-        data = web.DataReader(series_id, 'fred', start, end, api_key=FRED_API_KEY)
-        if data.empty:
-            return None
-        return {'latest_value': float(data.iloc[-1, 0])}
-    except:
-        return None
 
 # ============================================
 # COUNTRY GFFI FUNCTIONS - NO DEFAULTS
