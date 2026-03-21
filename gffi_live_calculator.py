@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-GFFI Live Calculator - INDIA MARKET ONLY (Alpha Vantage + NSE)
-Fetches sector/stock data from Alpha Vantage and Nifty/Sensex from NSE India
+GFFI Live Calculator - INDIA MARKET ONLY (Alpha Vantage + NSE + Crisis Timeline)
+Fetches live data and calculates crisis probability
 """
 
 import os
@@ -29,7 +29,7 @@ if not ALPHA_VANTAGE_KEY:
     exit(1)
 
 # ============================================
-# NIFTY 50 STOCKS (Alpha Vantage symbols)
+# NIFTY 50 STOCKS
 # ============================================
 NIFTY_50_STOCKS = [
     {'symbol': 'RELIANCE.BSE', 'name': 'Reliance Industries', 'sector': 'Energy'},
@@ -144,7 +144,68 @@ def calculate_capital_proxy(returns_series):
     return max(10, min(30, capital_proxy))
 
 # ============================================
-# NSE DATA FETCHING (LIVE NIFTY & SENSEX)
+# CRISIS PROBABILITY FUNCTION
+# ============================================
+
+def calculate_crisis_probability(gffi_value):
+    """Calculate crisis probability and expected timeline based on GFFI value"""
+    threshold = 72.8
+    
+    if gffi_value is None or gffi_value <= threshold:
+        return {
+            'probability': 0,
+            'lead_time_min': None,
+            'lead_time_max': None,
+            'lead_time_avg': None,
+            'status': 'NORMAL',
+            'message': 'Below crisis threshold'
+        }
+    
+    # Probability increases as GFFI rises above threshold
+    excess = gffi_value - threshold
+    base_prob = 0.5  # 50% base probability at threshold
+    prob_increase = (excess / 10) * 0.3  # 30% increase for every 10 points above threshold
+    probability = min(0.95, base_prob + prob_increase)
+    
+    # Lead time decreases as GFFI rises
+    if gffi_value <= 75:
+        lead_min = 18
+        lead_max = 24
+        lead_avg = 21
+    elif gffi_value <= 80:
+        lead_min = 12
+        lead_max = 18
+        lead_avg = 15
+    elif gffi_value <= 85:
+        lead_min = 6
+        lead_max = 12
+        lead_avg = 9
+    else:
+        lead_min = 3
+        lead_max = 6
+        lead_avg = 4.5
+    
+    return {
+        'probability': round(probability * 100, 1),
+        'lead_time_min': lead_min,
+        'lead_time_max': lead_max,
+        'lead_time_avg': lead_avg,
+        'status': 'CRITICAL' if gffi_value >= 80 else 'WARNING',
+        'message': get_crisis_message(gffi_value)
+    }
+
+def get_crisis_message(gffi_value):
+    if gffi_value >= 85:
+        return "⚠️ EXTREME RISK: Crisis highly probable within 3-6 months"
+    elif gffi_value >= 80:
+        return "🔴 HIGH RISK: Crisis probable within 6-12 months"
+    elif gffi_value >= 75:
+        return "🟠 ELEVATED RISK: Crisis possible within 12-18 months"
+    else:
+        return "🟡 MODERATE RISK: Monitor closely, crisis possible within 18-24 months"
+
+# ============================================
+# NSE DATA FETCHING
 # ============================================
 
 def fetch_nse_index_data():
@@ -152,7 +213,6 @@ def fetch_nse_index_data():
     print("\n📍 Fetching Nifty & Sensex from NSE India...")
     
     try:
-        # First, get a session cookie
         session = requests.Session()
         session.headers.update({
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
@@ -160,11 +220,9 @@ def fetch_nse_index_data():
             'Accept': 'application/json, text/plain, */*'
         })
         
-        # Visit NSE homepage first to get cookies
         session.get('https://www.nseindia.com', timeout=10)
         time.sleep(2)
         
-        # Fetch Nifty 50 data
         url = 'https://www.nseindia.com/api/equity-stockIndices?index=NIFTY%2050'
         response = session.get(url, timeout=10)
         data = response.json()
@@ -224,13 +282,11 @@ def fetch_alphavantage_data(symbol, max_retries=2):
             
             elif 'Note' in data:
                 if attempt < max_retries - 1:
-                    wait_time = 15
-                    print(f"   ⏳ Rate limit, waiting {wait_time}s...")
-                    time.sleep(wait_time)
+                    time.sleep(15)
             else:
                 return None
                 
-        except Exception as e:
+        except Exception:
             if attempt < max_retries - 1:
                 time.sleep(10)
     
@@ -376,12 +432,35 @@ def main():
     print("🇮🇳 FETCHING INDIA MARKET DATA")
     print("="*80)
     
-    # Fetch Nifty & Sensex from NSE India (LIVE)
+    # Fetch Nifty & Sensex from NSE India
     nse_data = fetch_nse_index_data()
     
-    # Prepare India market data
-    india_market_data = {}
+    # Sector data
+    sector_data = calculate_sector_gffi()
     
+    # Calculate India GFFI as average of all sectors
+    if sector_data:
+        india_gffi = sum([s['gffi'] for s in sector_data]) / len(sector_data)
+        india_gffi = round(india_gffi, 1)
+    else:
+        india_gffi = 60
+    
+    # Calculate crisis probability
+    crisis_data = calculate_crisis_probability(india_gffi)
+    
+    # Country data
+    country_data = [{
+        'flag': '🇮🇳',
+        'name': 'India',
+        'gffi': india_gffi,
+        'status': get_status(india_gffi)
+    }]
+    
+    # Stock picks
+    stock_picks = generate_stock_picks()
+    
+    # India market data
+    india_market_data = {}
     if nse_data:
         india_market_data = {
             'nifty': nse_data.get('nifty', 0),
@@ -397,27 +476,7 @@ def main():
             'sensex_change': 0
         }
     
-    # Country data (India only - GFFI from sectors average)
-    sector_data = calculate_sector_gffi()
-    
-    # Calculate India GFFI as average of all sectors
-    if sector_data:
-        india_gffi = sum([s['gffi'] for s in sector_data]) / len(sector_data)
-        india_gffi = round(india_gffi, 1)
-    else:
-        india_gffi = 60
-    
-    country_data = [{
-        'flag': '🇮🇳',
-        'name': 'India',
-        'gffi': india_gffi,
-        'status': get_status(india_gffi)
-    }]
-    
-    # Stock picks
-    stock_picks = generate_stock_picks()
-    
-    # Global GFFI (using India GFFI)
+    # Global GFFI
     global_gffi = india_gffi
     
     # Current time
@@ -442,7 +501,9 @@ def main():
         "",
         f"const stockPicks = {json.dumps(stock_picks, indent=2, ensure_ascii=False)};",
         "",
-        f"const indiaMarketData = {json.dumps(india_market_data, indent=2, ensure_ascii=False)};"
+        f"const indiaMarketData = {json.dumps(india_market_data, indent=2, ensure_ascii=False)};",
+        "",
+        f"const crisisData = {json.dumps(crisis_data, indent=2, ensure_ascii=False)};"
     ]
     
     with open('data.js', 'w', encoding='utf-8') as f:
@@ -451,9 +512,9 @@ def main():
     print("\n" + "="*80)
     print("✅ DATA.JS UPDATED - INDIA MARKET")
     print("="*80)
-    print(f"   🇮🇳 Nifty: {india_market_data.get('nifty', 'N/A')} ({india_market_data.get('nifty_change', 'N/A')}%)")
-    print(f"   🇮🇳 Sensex: {india_market_data.get('sensex', 'N/A')} ({india_market_data.get('sensex_change', 'N/A')}%)")
     print(f"   🇮🇳 India GFFI: {india_gffi}")
+    print(f"   📊 Crisis Probability: {crisis_data['probability']}%")
+    print(f"   ⏰ Expected Window: {crisis_data['lead_time_min']}-{crisis_data['lead_time_max']} months")
     print(f"   🏭 Sectors: {len(sector_data)}")
     print(f"   📈 Stock Picks: {len(stock_picks.get('safe', []))} Buy, {len(stock_picks.get('risky', []))} Sell, {len(stock_picks.get('watch', []))} Watch")
     print("="*80)
