@@ -481,3 +481,78 @@ function toggleIndiaView() {
         renderIndiaGrid();
     }
 }
+// ============================================
+// CRISIS PROBABILITY TIMELINE
+// ============================================
+
+function renderCrisisTimeline() {
+    const container = document.getElementById('crisis-timeline');
+    if (!container || !crisisData) return;
+    
+    let color = '#28a745';
+    let statusClass = 'normal';
+    
+    if (crisisData.probability >= 80) {
+        color = '#dc3545';
+        statusClass = 'critical';
+    } else if (crisisData.probability >= 60) {
+        color = '#fd7e14';
+        statusClass = 'high';
+    } else if (crisisData.probability >= 40) {
+        color = '#ffc107';
+        statusClass = 'elevated';
+    } else if (crisisData.probability >= 20) {
+        color = '#28a745';
+        statusClass = 'moderate';
+    }
+    
+    let html = `
+        <div class="crisis-timeline-card ${statusClass}">
+            <h4>⚠️ Crisis Probability Timeline</h4>
+            <div class="probability-gauge">
+                <div class="probability-bar" style="width: ${crisisData.probability}%; background: ${color};"></div>
+                <span class="probability-value">${crisisData.probability}%</span>
+            </div>
+            
+            <div class="timeline-stats">
+                <div class="stat">
+                    <span class="stat-label">Expected Crisis Window</span>
+                    <span class="stat-value">${crisisData.lead_time_min} - ${crisisData.lead_time_max} months</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Average Lead Time</span>
+                    <span class="stat-value">${crisisData.lead_time_avg} months</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Current Status</span>
+                    <span class="stat-value status-${crisisData.status.toLowerCase()}">${crisisData.status}</span>
+                </div>
+            </div>
+            
+            <div class="crisis-message ${statusClass}">
+                ${crisisData.message}
+            </div>
+            
+            <div class="timeline-visual">
+                <div class="timeline-bar">
+                    <div class="timeline-marker" style="left: ${(crisisData.lead_time_avg / 24) * 100}%"></div>
+                    <div class="timeline-range" style="left: ${(crisisData.lead_time_min / 24) * 100}%; width: ${((crisisData.lead_time_max - crisisData.lead_time_min) / 24) * 100}%"></div>
+                    <div class="timeline-labels">
+                        <span>Now</span>
+                        <span>3mo</span>
+                        <span>6mo</span>
+                        <span>12mo</span>
+                        <span>18mo</span>
+                        <span>24mo</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="crisis-note">
+                <small>⚠️ Based on historical data: 2008 (24mo), 2020 (24mo), 2022 (6mo), 2023 (3mo)</small>
+            </div>
+        </div>
+    `;
+    
+    container.innerHTML = html;
+}
