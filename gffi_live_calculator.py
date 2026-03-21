@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """
-GFFI Live Calculator - INDIA MARKET ONLY (Alpha Vantage)
-Fetches live data from Alpha Vantage for Indian market
-Works reliably on GitHub Actions
+GFFI Live Calculator - INDIA MARKET ONLY (Alpha Vantage + NSE)
+Fetches sector/stock data from Alpha Vantage and Nifty/Sensex from NSE India
 """
 
 import os
@@ -16,7 +15,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 print("="*80)
-print("🚀 GFFI LIVE CALCULATOR - INDIA MARKET (Alpha Vantage)")
+print("🚀 GFFI LIVE CALCULATOR - INDIA MARKET (Alpha Vantage + NSE)")
 print("="*80)
 print(f"📅 Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
@@ -28,12 +27,6 @@ ALPHA_VANTAGE_KEY = os.getenv('ALPHA_VANTAGE_KEY')
 if not ALPHA_VANTAGE_KEY:
     print("❌ ALPHA_VANTAGE_KEY not found in environment variables!")
     exit(1)
-
-# ============================================
-# INDIAN MARKET SYMBOLS (Alpha Vantage)
-# ============================================
-NIFTY_SYMBOL = "NSEI"
-SENSEX_SYMBOL = "BSESN"
 
 # ============================================
 # NIFTY 50 STOCKS (Alpha Vantage symbols)
@@ -62,7 +55,7 @@ NIFTY_50_STOCKS = [
 ]
 
 # ============================================
-# SECTOR MAPPING (with Alpha Vantage symbols)
+# SECTOR MAPPING
 # ============================================
 SECTORS = {
     'Banking': ['HDFCBANK.BSE', 'ICICIBANK.BSE', 'SBIN.BSE', 'KOTAKBANK.BSE', 'AXISBANK.BSE'],
@@ -151,6 +144,61 @@ def calculate_capital_proxy(returns_series):
     return max(10, min(30, capital_proxy))
 
 # ============================================
+# NSE DATA FETCHING (LIVE NIFTY & SENSEX)
+# ============================================
+
+def fetch_nse_index_data():
+    """Fetch live Nifty and Sensex data from NSE India"""
+    print("\n📍 Fetching Nifty & Sensex from NSE India...")
+    
+    try:
+        # First, get a session cookie
+        session = requests.Session()
+        session.headers.update({
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+            'Accept-Language': 'en-US,en;q=0.9',
+            'Accept': 'application/json, text/plain, */*'
+        })
+        
+        # Visit NSE homepage first to get cookies
+        session.get('https://www.nseindia.com', timeout=10)
+        time.sleep(2)
+        
+        # Fetch Nifty 50 data
+        url = 'https://www.nseindia.com/api/equity-stockIndices?index=NIFTY%2050'
+        response = session.get(url, timeout=10)
+        data = response.json()
+        
+        nifty_value = None
+        nifty_change = None
+        sensex_value = None
+        sensex_change = None
+        
+        for item in data.get('data', []):
+            if item.get('index') == 'NIFTY 50':
+                nifty_value = item.get('last')
+                nifty_change = item.get('pChange')
+            elif item.get('index') == 'SENSEX':
+                sensex_value = item.get('last')
+                sensex_change = item.get('pChange')
+        
+        if nifty_value:
+            print(f"   ✅ Nifty: {nifty_value} ({nifty_change}%)")
+        if sensex_value:
+            print(f"   ✅ Sensex: {sensex_value} ({sensex_change}%)")
+        
+        return {
+            'nifty': nifty_value,
+            'nifty_change': nifty_change,
+            'sensex': sensex_value,
+            'sensex_change': sensex_change
+        }
+        
+    except Exception as e:
+        print(f"   ❌ Error fetching NSE data: {str(e)[:100]}")
+        return None
+
+# ============================================
 # ALPHA VANTAGE DATA FETCHING
 # ============================================
 
@@ -188,44 +236,6 @@ def fetch_alphavantage_data(symbol, max_retries=2):
     
     return None
 
-def fetch_index_data(symbol, name):
-    """Fetch index data and calculate GFFI"""
-    print(f"\n📍 Fetching {name} data...")
-    
-    prices = fetch_alphavantage_data(symbol)
-    if prices is None or len(prices) < 30:
-        print(f"   ❌ No historical data for {name}")
-        return None, None
-    
-    # Get latest price and change
-    current_price = prices.iloc[-1]
-    prev_price = prices.iloc[-2] if len(prices) > 1 else current_price
-    change_pct = ((current_price - prev_price) / prev_price) * 100
-    
-    # Calculate GFFI
-    returns = prices.pct_change().dropna() * 100
-    entropy = calculate_entropy(returns)
-    capital = calculate_capital_proxy(returns)
-    
-    if entropy is None:
-        print(f"   ❌ Could not calculate entropy for {name}")
-        return None, None
-    
-    gffi = (entropy / capital) * 1000
-    gffi = round(gffi, 1)
-    
-    # Sanity check
-    if gffi > 100 or gffi < 20:
-        print(f"   ⚠️ Abnormal GFFI {gffi} for {name}")
-        return None, None
-    
-    print(f"   ✅ {name}: {current_price:.0f} ({change_pct:.2f}%), GFFI={gffi}")
-    return {
-        'value': float(current_price),
-        'change': round(change_pct, 2),
-        'gffi': gffi
-    }, None
-
 def fetch_stock_data(symbol, name):
     """Fetch stock data and calculate GFFI"""
     try:
@@ -233,12 +243,10 @@ def fetch_stock_data(symbol, name):
         if prices is None or len(prices) < 30:
             return None
         
-        # Get latest price
         current_price = prices.iloc[-1]
         prev_price = prices.iloc[-2] if len(prices) > 1 else current_price
         change_pct = ((current_price - prev_price) / prev_price) * 100
         
-        # Calculate GFFI
         returns = prices.pct_change().dropna() * 100
         entropy = calculate_entropy(returns)
         capital = calculate_capital_proxy(returns)
@@ -249,7 +257,6 @@ def fetch_stock_data(symbol, name):
         gffi = (entropy / capital) * 1000
         gffi = round(gffi, 1)
         
-        # Sanity check
         if gffi > 100 or gffi < 20:
             return None
         
@@ -283,7 +290,7 @@ def calculate_sector_gffi():
             if stock_data and 'gffi' in stock_data:
                 gffi_values.append(stock_data['gffi'])
                 stock_names.append(stock_data['symbol'])
-            time.sleep(12)  # Rate limiting
+            time.sleep(12)
         
         if gffi_values:
             avg_gffi = sum(gffi_values) / len(gffi_values)
@@ -310,20 +317,18 @@ def generate_stock_picks():
     
     stocks_data = []
     
-    for stock in NIFTY_50_STOCKS[:15]:  # Limit to 15 for API limits
+    for stock in NIFTY_50_STOCKS[:15]:
         data = fetch_stock_data(stock['symbol'], stock['name'])
         if data:
             stocks_data.append(data)
-        time.sleep(12)  # Rate limiting
+        time.sleep(12)
     
     if len(stocks_data) < 5:
         print("   ❌ Insufficient data for stock picks")
         return {}
     
-    # Sort by GFFI
     stocks_data.sort(key=lambda x: x['gffi'])
     
-    # Safe picks (lowest GFFI)
     safe_picks = []
     for s in stocks_data[:3]:
         safe_picks.append({
@@ -334,7 +339,6 @@ def generate_stock_picks():
             'reason': f'Low GFFI indicates stability at ₹{s["price"]}'
         })
     
-    # Risky picks (highest GFFI)
     risky_picks = []
     for s in stocks_data[-3:][::-1]:
         risky_picks.append({
@@ -345,7 +349,6 @@ def generate_stock_picks():
             'reason': f'High GFFI indicates risk at ₹{s["price"]}'
         })
     
-    # Watchlist (middle range)
     mid_index = len(stocks_data) // 2
     watch_picks = []
     for s in stocks_data[mid_index-2:mid_index+3]:
@@ -370,43 +373,52 @@ def generate_stock_picks():
 def main():
     """Main function to generate data.js"""
     print("\n" + "="*80)
-    print("🇮🇳 FETCHING INDIA MARKET DATA (Alpha Vantage)")
+    print("🇮🇳 FETCHING INDIA MARKET DATA")
     print("="*80)
     
-    # Fetch Nifty data
-    nifty_result, _ = fetch_index_data(NIFTY_SYMBOL, "Nifty 50")
-    
-    # Fetch Sensex data
-    sensex_result, _ = fetch_index_data(SENSEX_SYMBOL, "Sensex")
+    # Fetch Nifty & Sensex from NSE India (LIVE)
+    nse_data = fetch_nse_index_data()
     
     # Prepare India market data
-    india_market_data = {
-        'nifty': int(nifty_result['value']) if nifty_result else 0,
-        'sensex': int(sensex_result['value']) if sensex_result else 0,
-        'nifty_change': nifty_result['change'] if nifty_result else 0,
-        'sensex_change': sensex_result['change'] if sensex_result else 0,
-        'nifty_gffi': nifty_result['gffi'] if nifty_result else None,
-        'sensex_gffi': sensex_result['gffi'] if sensex_result else None
-    }
+    india_market_data = {}
     
-    # Country data (India only)
-    country_data = []
-    if nifty_result and nifty_result.get('gffi'):
-        country_data.append({
-            'flag': '🇮🇳',
-            'name': 'India',
-            'gffi': nifty_result['gffi'],
-            'status': get_status(nifty_result['gffi'])
-        })
+    if nse_data:
+        india_market_data = {
+            'nifty': nse_data.get('nifty', 0),
+            'sensex': nse_data.get('sensex', 0),
+            'nifty_change': nse_data.get('nifty_change', 0),
+            'sensex_change': nse_data.get('sensex_change', 0)
+        }
+    else:
+        india_market_data = {
+            'nifty': 0,
+            'sensex': 0,
+            'nifty_change': 0,
+            'sensex_change': 0
+        }
     
-    # Sector data
+    # Country data (India only - GFFI from sectors average)
     sector_data = calculate_sector_gffi()
+    
+    # Calculate India GFFI as average of all sectors
+    if sector_data:
+        india_gffi = sum([s['gffi'] for s in sector_data]) / len(sector_data)
+        india_gffi = round(india_gffi, 1)
+    else:
+        india_gffi = 60
+    
+    country_data = [{
+        'flag': '🇮🇳',
+        'name': 'India',
+        'gffi': india_gffi,
+        'status': get_status(india_gffi)
+    }]
     
     # Stock picks
     stock_picks = generate_stock_picks()
     
     # Global GFFI (using India GFFI)
-    global_gffi = nifty_result['gffi'] if nifty_result else 63.5
+    global_gffi = india_gffi
     
     # Current time
     now = datetime.now()
@@ -417,7 +429,7 @@ def main():
         "// DATA.JS - Auto-generated by GFFI Live Calculator",
         f"// Last Updated: {now.strftime('%Y-%m-%d %H:%M:%S')}",
         "// ============================================",
-        "// INDIA MARKET DATA - Live from Alpha Vantage",
+        "// INDIA MARKET DATA - NSE (Live) + Alpha Vantage (Sectors/Stocks)",
         "",
         f"const countryData = {json.dumps(country_data, indent=2, ensure_ascii=False)};",
         "",
@@ -439,8 +451,9 @@ def main():
     print("\n" + "="*80)
     print("✅ DATA.JS UPDATED - INDIA MARKET")
     print("="*80)
-    print(f"   🇮🇳 Nifty: {india_market_data['nifty']} ({india_market_data['nifty_change']}%)")
-    print(f"   🇮🇳 Nifty GFFI: {india_market_data.get('nifty_gffi', 'None')}")
+    print(f"   🇮🇳 Nifty: {india_market_data.get('nifty', 'N/A')} ({india_market_data.get('nifty_change', 'N/A')}%)")
+    print(f"   🇮🇳 Sensex: {india_market_data.get('sensex', 'N/A')} ({india_market_data.get('sensex_change', 'N/A')}%)")
+    print(f"   🇮🇳 India GFFI: {india_gffi}")
     print(f"   🏭 Sectors: {len(sector_data)}")
     print(f"   📈 Stock Picks: {len(stock_picks.get('safe', []))} Buy, {len(stock_picks.get('risky', []))} Sell, {len(stock_picks.get('watch', []))} Watch")
     print("="*80)
