@@ -427,3 +427,53 @@
 </footer>
 </body>
 </html>
+<!-- NIFTY & SENSEX STOCKS - ZONE TOGGLE -->
+<div class="stocks-comparison-container">
+    <div class="comparison-header">
+        <h3>📊 Nifty & Sensex Stocks: Safe Zone vs High Risk Zone</h3>
+        <p class="comparison-subtitle">Based on real-time GFFI values (Lower GFFI = Safer)</p>
+    </div>
+    
+    <!-- ZONE TOGGLE BUTTONS -->
+    <div class="zone-toggle-buttons">
+        <button id="zone-toggle-all" class="zone-btn active" data-zone="all">🌍 All Zones</button>
+        <button id="zone-toggle-safe" class="zone-btn" data-zone="safe">🟢 Safe Zone (GFFI &lt; 37)</button>
+        <button id="zone-toggle-moderate" class="zone-btn" data-zone="moderate">🟡 Moderate Zone (37-38)</button>
+        <button id="zone-toggle-risky" class="zone-btn" data-zone="risky">🔴 High Risk Zone (GFFI > 38)</button>
+    </div>
+    
+    <!-- ZONE CARDS CONTAINER -->
+    <div id="zone-cards-container">
+        <div class="stocks-grid">
+            <!-- SAFE ZONE CARD -->
+            <div class="safe-zone-card zone-card" data-zone-type="safe">
+                <div class="zone-header safe">
+                    <i class="fas fa-shield-alt"></i>
+                    <h4>🟢 SAFE ZONE STOCKS</h4>
+                    <span class="zone-badge">Low Risk &nbsp; GFFI &lt; 37</span>
+                </div>
+                <div class="stocks-list" id="safe-zone-stocks"></div>
+            </div>
+            
+            <!-- RISKY ZONE CARD -->
+            <div class="risky-zone-card zone-card" data-zone-type="risky">
+                <div class="zone-header risky">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h4>🔴 HIGH RISK ZONE STOCKS</h4>
+                    <span class="zone-badge">High Risk &nbsp; GFFI > 38</span>
+                </div>
+                <div class="stocks-list" id="risky-zone-stocks"></div>
+            </div>
+        </div>
+        
+        <!-- MODERATE ZONE CARD -->
+        <div class="moderate-zone-card zone-card" data-zone-type="moderate">
+            <div class="zone-header moderate">
+                <i class="fas fa-chart-line"></i>
+                <h4>🟡 MODERATE ZONE STOCKS (WATCHLIST)</h4>
+                <span class="zone-badge">Moderate Risk &nbsp; GFFI 37-38</span>
+            </div>
+            <div class="stocks-list" id="moderate-zone-stocks"></div>
+        </div>
+    </div>
+</div>
