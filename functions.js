@@ -1,6 +1,7 @@
 // ============================================
-// FUNCTIONS.JS - Safe version with error handling
+// FUNCTIONS.JS - Complete with Zone Toggle
 // ============================================
+
 // ============================================
 // SAFE DATA HANDLING - CHECK EXISTS BUT DON'T REDECLARE
 // ============================================
@@ -8,7 +9,6 @@
 // Check if variables exist, but don't redeclare with var
 if (typeof globalGFFI === 'undefined' || globalGFFI === null) {
     console.warn('⚠️ globalGFFI not available');
-    // Don't use var here - just set on window
     window.globalGFFI = null;
 }
 
@@ -20,7 +20,6 @@ if (typeof updateTime === 'undefined') {
     window.updateTime = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
 }
 
-// For arrays and objects, check and set defaults
 if (typeof countryData === 'undefined' || !Array.isArray(countryData)) {
     console.warn('⚠️ countryData not available');
     window.countryData = [];
@@ -40,6 +39,7 @@ if (typeof indiaMarketData === 'undefined' || typeof indiaMarketData !== 'object
     console.warn('⚠️ indiaMarketData not available');
     window.indiaMarketData = {};
 }
+
 // ============================================
 // VIEW STATE MANAGEMENT
 // ============================================
@@ -56,10 +56,13 @@ let currentView = {
 
 function renderCountryGrid() {
     const container = document.getElementById('country-grid');
-    if (!container) return;
+    if (!container) {
+        console.error('❌ country-grid container not found');
+        return;
+    }
     
-    if (!countryData || countryData.length === 0) {
-        container.innerHTML = '<div class="no-data">🌍 No country data available</div>';
+    if (!countryData || !Array.isArray(countryData)) {
+        console.error('❌ countryData is not available');
         return;
     }
     
@@ -78,10 +81,13 @@ function renderCountryGrid() {
 
 function renderSectorGrid() {
     const container = document.getElementById('sector-grid');
-    if (!container) return;
+    if (!container) {
+        console.error('❌ sector-grid container not found');
+        return;
+    }
     
-    if (!sectorData || sectorData.length === 0) {
-        container.innerHTML = '<div class="no-data">🏭 No sector data available</div>';
+    if (!sectorData || !Array.isArray(sectorData)) {
+        console.error('❌ sectorData is not available');
         return;
     }
     
@@ -105,10 +111,13 @@ function renderSectorGrid() {
 
 function renderStockGrid() {
     const container = document.querySelector('.picks-container');
-    if (!container) return;
+    if (!container) {
+        console.error('❌ picks-container not found');
+        return;
+    }
     
-    if (!stockPicks || !stockPicks.safe || stockPicks.safe.length === 0) {
-        container.innerHTML = '<div class="no-data">📈 No stock picks available</div>';
+    if (!stockPicks || !stockPicks.safe || !stockPicks.risky || !stockPicks.watch) {
+        console.error('❌ stockPicks is not available');
         return;
     }
     
@@ -159,18 +168,24 @@ function renderStockGrid() {
 
 function renderIndiaGrid() {
     const container = document.querySelector('.india-cards');
-    if (!container) return;
+    if (!container) {
+        console.error('❌ india-cards container not found');
+        return;
+    }
     
-    if (!indiaMarketData || Object.keys(indiaMarketData).length === 0) {
-        container.innerHTML = '<div class="no-data">🇮🇳 No India market data available</div>';
+    if (!indiaMarketData) {
+        console.error('❌ indiaMarketData is not available');
         return;
     }
     
     let indiaGffi = 60;
+    let indiaStatus = 'success';
+    
     if (countryData && Array.isArray(countryData)) {
         const india = countryData.find(c => c && c.name === 'India');
         if (india) {
             indiaGffi = india.gffi;
+            indiaStatus = india.status;
         }
     }
     
@@ -210,6 +225,170 @@ function renderIndiaGrid() {
     `;
     container.innerHTML = html;
     console.log('✅ India grid rendered');
+}
+
+// ============================================
+// STOCKS ZONE RENDER FUNCTIONS
+// ============================================
+
+function renderStockZones() {
+    if (!stockPicks || !stockPicks.safe || !stockPicks.risky) return;
+    
+    // Get all stocks with their categories
+    const allStocksWithCategory = [
+        ...stockPicks.safe.map(s => ({ ...s, category: 'safe' })),
+        ...stockPicks.risky.map(s => ({ ...s, category: 'risky' })),
+        ...stockPicks.watch.map(s => ({ ...s, category: 'watch' }))
+    ];
+    
+    // Remove duplicates using Map
+    const uniqueStocksMap = new Map();
+    for (const stock of allStocksWithCategory) {
+        if (!uniqueStocksMap.has(stock.symbol)) {
+            uniqueStocksMap.set(stock.symbol, stock);
+        }
+    }
+    
+    const uniqueStocks = Array.from(uniqueStocksMap.values());
+    
+    // Filter stocks by zone
+    const safeStocks = uniqueStocks.filter(s => 
+        (s.category === 'safe') && (s.gffi < 37)
+    ).sort((a,b) => a.gffi - b.gffi);
+    
+    const riskyStocks = uniqueStocks.filter(s => 
+        (s.category === 'risky') && (s.gffi > 38)
+    ).sort((a,b) => a.gffi - b.gffi);
+    
+    const moderateStocks = uniqueStocks.filter(s => 
+        (s.category === 'watch') && (s.gffi >= 37 && s.gffi <= 38)
+    ).sort((a,b) => a.gffi - b.gffi);
+    
+    // Render Safe Zone
+    const safeContainer = document.getElementById('safe-zone-stocks');
+    if (safeContainer) {
+        if (safeStocks.length > 0) {
+            safeContainer.innerHTML = safeStocks.map(s => `
+                <div class="stock-item-compare">
+                    <div class="stock-info">
+                        <span class="stock-symbol">${s.symbol}</span>
+                        <span class="stock-name">${s.name || s.symbol}</span>
+                        <span class="stock-gffi-compare stock-gffi-safe">GFFI: ${s.gffi}</span>
+                    </div>
+                    <span class="stock-action-badge action-buy">${s.action}</span>
+                </div>
+            `).join('');
+        } else {
+            safeContainer.innerHTML = '<div class="no-data">No stocks in safe zone</div>';
+        }
+    }
+    
+    // Render Risky Zone
+    const riskyContainer = document.getElementById('risky-zone-stocks');
+    if (riskyContainer) {
+        if (riskyStocks.length > 0) {
+            riskyContainer.innerHTML = riskyStocks.map(s => `
+                <div class="stock-item-compare">
+                    <div class="stock-info">
+                        <span class="stock-symbol">${s.symbol}</span>
+                        <span class="stock-name">${s.name || s.symbol}</span>
+                        <span class="stock-gffi-compare stock-gffi-risky">GFFI: ${s.gffi}</span>
+                    </div>
+                    <span class="stock-action-badge action-sell">${s.action}</span>
+                </div>
+            `).join('');
+        } else {
+            riskyContainer.innerHTML = '<div class="no-data">No stocks in high risk zone</div>';
+        }
+    }
+    
+    // Render Moderate Zone
+    const moderateContainer = document.getElementById('moderate-zone-stocks');
+    if (moderateContainer) {
+        if (moderateStocks.length > 0) {
+            moderateContainer.innerHTML = moderateStocks.map(s => `
+                <div class="stock-item-compare">
+                    <div class="stock-info">
+                        <span class="stock-symbol">${s.symbol}</span>
+                        <span class="stock-name">${s.name || s.symbol}</span>
+                        <span class="stock-gffi-compare stock-gffi-moderate">GFFI: ${s.gffi}</span>
+                    </div>
+                    <span class="stock-action-badge action-watch">${s.action}</span>
+                </div>
+            `).join('');
+        } else {
+            moderateContainer.innerHTML = '<div class="no-data">No stocks in moderate zone</div>';
+        }
+    }
+}
+
+// ============================================
+// ZONE TOGGLE FUNCTION
+// ============================================
+
+function setupZoneToggle() {
+    const allBtn = document.getElementById('zone-toggle-all');
+    
+    // Agar buttons nahi hain to return karo
+    if (!allBtn) {
+        console.log('ℹ️ Zone toggle buttons not found in DOM - skipping');
+        return;
+    }
+    
+    const safeBtn = document.getElementById('zone-toggle-safe');
+    const moderateBtn = document.getElementById('zone-toggle-moderate');
+    const riskyBtn = document.getElementById('zone-toggle-risky');
+    
+    const safeCard = document.querySelector('.zone-card[data-zone-type="safe"]');
+    const moderateCard = document.querySelector('.zone-card[data-zone-type="moderate"]');
+    const riskyCard = document.querySelector('.zone-card[data-zone-type="risky"]');
+    
+    function setActiveButton(activeBtn) {
+        [allBtn, safeBtn, moderateBtn, riskyBtn].forEach(btn => {
+            if (btn) btn.classList.remove('active');
+        });
+        if (activeBtn) activeBtn.classList.add('active');
+    }
+    
+    // Show all zones
+    allBtn.addEventListener('click', () => {
+        setActiveButton(allBtn);
+        if (safeCard) safeCard.classList.remove('hidden');
+        if (moderateCard) moderateCard.classList.remove('hidden');
+        if (riskyCard) riskyCard.classList.remove('hidden');
+    });
+    
+    // Show only safe zone
+    if (safeBtn) {
+        safeBtn.addEventListener('click', () => {
+            setActiveButton(safeBtn);
+            if (safeCard) safeCard.classList.remove('hidden');
+            if (moderateCard) moderateCard.classList.add('hidden');
+            if (riskyCard) riskyCard.classList.add('hidden');
+        });
+    }
+    
+    // Show only moderate zone
+    if (moderateBtn) {
+        moderateBtn.addEventListener('click', () => {
+            setActiveButton(moderateBtn);
+            if (safeCard) safeCard.classList.add('hidden');
+            if (moderateCard) moderateCard.classList.remove('hidden');
+            if (riskyCard) riskyCard.classList.add('hidden');
+        });
+    }
+    
+    // Show only risky zone
+    if (riskyBtn) {
+        riskyBtn.addEventListener('click', () => {
+            setActiveButton(riskyBtn);
+            if (safeCard) safeCard.classList.add('hidden');
+            if (moderateCard) moderateCard.classList.add('hidden');
+            if (riskyCard) riskyCard.classList.remove('hidden');
+        });
+    }
+    
+    console.log('✅ Zone toggle setup complete');
 }
 
 // ============================================
@@ -331,50 +510,6 @@ function updateLiveStatus() {
 }
 
 // ============================================
-// INITIALIZATION
-// ============================================
-
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 GFFI Dashboard Initializing...');
-    
-    // Update global display
-    const gffiEl = document.getElementById('global-gffi');
-    if (gffiEl && globalGFFI) gffiEl.textContent = globalGFFI;
-    
-    const dateEl = document.getElementById('update-time');
-    if (dateEl) dateEl.textContent = updateDate;
-    
-    const timeEl = document.getElementById('update-time-hm');
-    if (timeEl) timeEl.textContent = updateTime;
-    
-    // Render all sections
-    renderCountryGrid();
-    renderSectorGrid();
-    renderStockGrid();
-    renderIndiaGrid();
-    renderStockZones();
-    setupZoneToggle();
-    
-    // Event listeners
-    document.getElementById('toggle-country')?.addEventListener('click', toggleCountryView);
-    document.getElementById('toggle-sector')?.addEventListener('click', toggleSectorView);
-    document.getElementById('toggle-stock')?.addEventListener('click', toggleStockView);
-    document.getElementById('toggle-india')?.addEventListener('click', toggleIndiaView);
-    
-    // Start timers
-    updateChangeIndicator();
-    setInterval(updateChangeIndicator, 5 * 60 * 1000);
-    
-    updateFooterTime();
-    setInterval(updateFooterTime, 1000);
-    
-    updateLiveStatus();
-    setInterval(updateLiveStatus, 60000);
-    
-    console.log('✅ GFFI Dashboard Ready');
-});
-
-// ============================================
 // TABLE VIEW FUNCTIONS
 // ============================================
 
@@ -382,7 +517,7 @@ function renderCountryTable() {
     const container = document.getElementById('country-grid');
     if (!container || !countryData || countryData.length === 0) return;
     
-    let html = '<table class="data-table"><tr><th>Country</th><th>GFFI</th><th>Status</th><th>Risk Level</th></tr>';
+    let html = '<table class="data-table">Caption<th>Country</th><th>GFFI</th><th>Status</th><th>Risk Level</th> </tr>';
     countryData.forEach(c => {
         let risk = c.gffi >= 70 ? '🔴 HIGH' : c.gffi >= 65 ? '🟠 ALERT' : c.gffi >= 58 ? '🟡 WATCH' : '🟢 LOW';
         html += `<tr><td><strong>${c.flag} ${c.name}</strong></td><td>${c.gffi}</td><td class="status-${c.status}">${c.status.toUpperCase()}</td><td>${risk}</td></tr>`;
@@ -394,7 +529,7 @@ function renderSectorTable() {
     const container = document.getElementById('sector-grid');
     if (!container || !sectorData || sectorData.length === 0) return;
     
-    let html = '<table class="data-table"><tr><th>Sector</th><th>GFFI</th><th>Status</th><th>Trend</th><th>Stocks</th></tr>';
+    let html = '<table class="data-table"> <tr><th>Sector</th><th>GFFI</th><th>Status</th><th>Trend</th><th>Stocks</th></tr>';
     sectorData.forEach(s => {
         let status = s.gffi >= 70 ? 'CRITICAL' : s.gffi >= 65 ? 'ALERT' : s.gffi >= 58 ? 'WATCH' : 'SAFE';
         let trendIcon = s.trend === 'up' ? '📈' : s.trend === 'down' ? '📉' : '➡️';
@@ -407,7 +542,7 @@ function renderStockTable() {
     const container = document.querySelector('.picks-container');
     if (!container || !stockPicks) return;
     
-    let html = '<table class="data-table"><tr><th>Category</th><th>Symbol</th><th>GFFI</th><th>Action</th><th>Reason</th></tr>';
+    let html = '<table class="data-table"> <tr><th>Category</th><th>Symbol</th><th>GFFI</th><th>Action</th><th>Reason</th></tr>';
     if (stockPicks.safe) stockPicks.safe.forEach(s => html += `<tr><td>🟢 SAFE</td><td>${s.symbol}</td><td>${s.gffi}</td><td class="buy">${s.action}</td><td>${s.reason}</td></tr>`);
     if (stockPicks.risky) stockPicks.risky.forEach(s => html += `<tr><td>🔴 RISKY</td><td>${s.symbol}</td><td>${s.gffi}</td><td class="sell">${s.action}</td><td>${s.reason}</td></tr>`);
     if (stockPicks.watch) stockPicks.watch.forEach(s => html += `<tr><td>🟡 WATCH</td><td>${s.symbol}</td><td>${s.gffi}</td><td class="watch">${s.action}</td><td>${s.reason}</td></tr>`);
@@ -418,7 +553,7 @@ function renderIndiaTable() {
     const container = document.querySelector('.india-cards');
     if (!container || !indiaMarketData) return;
     
-    let html = '<table class="data-table"><tr><th>Indicator</th><th>Value</th><th>Change</th></tr>';
+    let html = '<table class="data-table"> <tr><th>Indicator</th><th>Value</th><th>Change</th></tr>';
     if (indiaMarketData.nifty) html += `<tr><td>📈 Nifty</td><td>${indiaMarketData.nifty.toLocaleString()}</td><td>${indiaMarketData.nifty_change ? indiaMarketData.nifty_change + '%' : 'N/A'}</td></tr>`;
     if (indiaMarketData.sensex) html += `<tr><td>📊 Sensex</td><td>${indiaMarketData.sensex.toLocaleString()}</td><td>${indiaMarketData.sensex_change ? indiaMarketData.sensex_change + '%' : 'N/A'}</td></tr>`;
     container.innerHTML = html + '</table>';
@@ -483,243 +618,49 @@ function toggleIndiaView() {
         renderIndiaGrid();
     }
 }
+
 // ============================================
-// CRISIS PROBABILITY TIMELINE
+// INITIALIZATION
 // ============================================
 
-function renderCrisisTimeline() {
-    const container = document.getElementById('crisis-timeline');
-    if (!container || !crisisData) return;
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 GFFI Dashboard Initializing...');
     
-    let color = '#28a745';
-    let statusClass = 'normal';
+    // Update global display
+    const gffiEl = document.getElementById('global-gffi');
+    if (gffiEl && globalGFFI) gffiEl.textContent = globalGFFI;
     
-    if (crisisData.probability >= 80) {
-        color = '#dc3545';
-        statusClass = 'critical';
-    } else if (crisisData.probability >= 60) {
-        color = '#fd7e14';
-        statusClass = 'high';
-    } else if (crisisData.probability >= 40) {
-        color = '#ffc107';
-        statusClass = 'elevated';
-    } else if (crisisData.probability >= 20) {
-        color = '#28a745';
-        statusClass = 'moderate';
-    }
+    const dateEl = document.getElementById('update-time');
+    if (dateEl) dateEl.textContent = updateDate;
     
-    let html = `
-        <div class="crisis-timeline-card ${statusClass}">
-            <h4>⚠️ Crisis Probability Timeline</h4>
-            <div class="probability-gauge">
-                <div class="probability-bar" style="width: ${crisisData.probability}%; background: ${color};"></div>
-                <span class="probability-value">${crisisData.probability}%</span>
-            </div>
-            
-            <div class="timeline-stats">
-                <div class="stat">
-                    <span class="stat-label">Expected Crisis Window</span>
-                    <span class="stat-value">${crisisData.lead_time_min} - ${crisisData.lead_time_max} months</span>
-                </div>
-                <div class="stat">
-                    <span class="stat-label">Average Lead Time</span>
-                    <span class="stat-value">${crisisData.lead_time_avg} months</span>
-                </div>
-                <div class="stat">
-                    <span class="stat-label">Current Status</span>
-                    <span class="stat-value status-${crisisData.status.toLowerCase()}">${crisisData.status}</span>
-                </div>
-            </div>
-            
-            <div class="crisis-message ${statusClass}">
-                ${crisisData.message}
-            </div>
-            
-            <div class="timeline-visual">
-                <div class="timeline-bar">
-                    <div class="timeline-marker" style="left: ${(crisisData.lead_time_avg / 24) * 100}%"></div>
-                    <div class="timeline-range" style="left: ${(crisisData.lead_time_min / 24) * 100}%; width: ${((crisisData.lead_time_max - crisisData.lead_time_min) / 24) * 100}%"></div>
-                    <div class="timeline-labels">
-                        <span>Now</span>
-                        <span>3mo</span>
-                        <span>6mo</span>
-                        <span>12mo</span>
-                        <span>18mo</span>
-                        <span>24mo</span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="crisis-note">
-                <small>⚠️ Based on historical data: 2008 (24mo), 2020 (24mo), 2022 (6mo), 2023 (3mo)</small>
-            </div>
-        </div>
-    `;
+    const timeEl = document.getElementById('update-time-hm');
+    if (timeEl) timeEl.textContent = updateTime;
     
-    container.innerHTML = html;
-}
-// ============================================
-// STOCKS ZONE RENDER FUNCTIONS (IMPROVED)
-// ============================================
-
-function renderStockZones() {
-    if (!stockPicks || !stockPicks.safe || !stockPicks.risky) return;
+    // Render all sections
+    renderCountryGrid();
+    renderSectorGrid();
+    renderStockGrid();
+    renderIndiaGrid();
+    renderStockZones();
     
-    // 1. सभी स्टॉक्स को एक साथ लें, लेकिन उनकी कैटेगरी (action) के साथ
-    const allStocksWithCategory = [
-        ...stockPicks.safe.map(s => ({ ...s, category: 'safe' })),
-        ...stockPicks.risky.map(s => ({ ...s, category: 'risky' })),
-        ...stockPicks.watch.map(s => ({ ...s, category: 'watch' }))
-    ];
+    // Setup zone toggle
+    setupZoneToggle();
     
-    // 2. डुप्लीकेट स्टॉक्स हटाने के लिए Map का इस्तेमाल करें
-    //    (एक ही स्टॉक एक से ज्यादा बार आ सकता है)
-    const uniqueStocksMap = new Map();
-    for (const stock of allStocksWithCategory) {
-        // अगर यह स्टॉक पहले से मैप में नहीं है, तो डालें
-        if (!uniqueStocksMap.has(stock.symbol)) {
-            uniqueStocksMap.set(stock.symbol, stock);
-        }
-    }
+    // Event listeners
+    document.getElementById('toggle-country')?.addEventListener('click', toggleCountryView);
+    document.getElementById('toggle-sector')?.addEventListener('click', toggleSectorView);
+    document.getElementById('toggle-stock')?.addEventListener('click', toggleStockView);
+    document.getElementById('toggle-india')?.addEventListener('click', toggleIndiaView);
     
-    // 3. मैप से यूनिक स्टॉक्स की लिस्ट बनाएं
-    const uniqueStocks = Array.from(uniqueStocksMap.values());
+    // Start timers
+    updateChangeIndicator();
+    setInterval(updateChangeIndicator, 5 * 60 * 1000);
     
-    // 4. अब स्टॉक्स को उनकी GFFI और कैटेगरी के हिसाब से अलग-अलग जोन में बांटें
-    const safeStocks = uniqueStocks.filter(s => 
-        (s.category === 'safe') && (s.gffi < 37)
-    ).sort((a,b) => a.gffi - b.gffi);
+    updateFooterTime();
+    setInterval(updateFooterTime, 1000);
     
-    const riskyStocks = uniqueStocks.filter(s => 
-        (s.category === 'risky') && (s.gffi > 38)
-    ).sort((a,b) => a.gffi - b.gffi);
+    updateLiveStatus();
+    setInterval(updateLiveStatus, 60000);
     
-    const moderateStocks = uniqueStocks.filter(s => 
-        (s.category === 'watch') && (s.gffi >= 37 && s.gffi <= 38)
-    ).sort((a,b) => a.gffi - b.gffi);
-    
-    // 5. SAFE ZONE रेंडर करें
-    const safeContainer = document.getElementById('safe-zone-stocks');
-    if (safeContainer) {
-        if (safeStocks.length > 0) {
-            safeContainer.innerHTML = safeStocks.map(s => `
-                <div class="stock-item-compare">
-                    <div class="stock-info">
-                        <span class="stock-symbol">${s.symbol}</span>
-                        <span class="stock-name">${s.name || s.symbol}</span>
-                        <span class="stock-gffi-compare stock-gffi-safe">GFFI: ${s.gffi}</span>
-                    </div>
-                    <span class="stock-action-badge action-buy">${s.action}</span>
-                </div>
-            `).join('');
-        } else {
-            safeContainer.innerHTML = '<div class="no-data">No stocks in safe zone</div>';
-        }
-    }
-    
-    // 6. HIGH RISK ZONE रेंडर करें
-    const riskyContainer = document.getElementById('risky-zone-stocks');
-    if (riskyContainer) {
-        if (riskyStocks.length > 0) {
-            riskyContainer.innerHTML = riskyStocks.map(s => `
-                <div class="stock-item-compare">
-                    <div class="stock-info">
-                        <span class="stock-symbol">${s.symbol}</span>
-                        <span class="stock-name">${s.name || s.symbol}</span>
-                        <span class="stock-gffi-compare stock-gffi-risky">GFFI: ${s.gffi}</span>
-                    </div>
-                    <span class="stock-action-badge action-sell">${s.action}</span>
-                </div>
-            `).join('');
-        } else {
-            riskyContainer.innerHTML = '<div class="no-data">No stocks in high risk zone</div>';
-        }
-    }
-    
-    // 7. MODERATE ZONE (WATCHLIST) रेंडर करें
-    const moderateContainer = document.getElementById('moderate-zone-stocks');
-    if (moderateContainer) {
-        if (moderateStocks.length > 0) {
-            moderateContainer.innerHTML = moderateStocks.map(s => `
-                <div class="stock-item-compare">
-                    <div class="stock-info">
-                        <span class="stock-symbol">${s.symbol}</span>
-                        <span class="stock-name">${s.name || s.symbol}</span>
-                        <span class="stock-gffi-compare stock-gffi-moderate">GFFI: ${s.gffi}</span>
-                    </div>
-                    <span class="stock-action-badge action-watch">${s.action}</span>
-                </div>
-            `).join('');
-        } else {
-            moderateContainer.innerHTML = '<div class="no-data">No stocks in moderate zone</div>';
-        }
-    }
-}
-// ============================================
-// ZONE TOGGLE FUNCTION
-// ============================================
-
-function setupZoneToggle() {
-    const allBtn = document.getElementById('zone-toggle-all');
-    const safeBtn = document.getElementById('zone-toggle-safe');
-    const moderateBtn = document.getElementById('zone-toggle-moderate');
-    const riskyBtn = document.getElementById('zone-toggle-risky');
-    
-    // Agar buttons hi nahi hain to function se bahar nikal jao
-    if (!allBtn) {
-        console.log('Zone toggle buttons not found in DOM');
-        return;
-    }
-    
-    const safeCard = document.querySelector('.zone-card[data-zone-type="safe"]');
-    const moderateCard = document.querySelector('.zone-card[data-zone-type="moderate"]');
-    const riskyCard = document.querySelector('.zone-card[data-zone-type="risky"]');
-    
-    // Function to update active button style
-    function setActiveButton(activeBtn) {
-        [allBtn, safeBtn, moderateBtn, riskyBtn].forEach(btn => {
-            if (btn) btn.classList.remove('active');
-        });
-        if (activeBtn) activeBtn.classList.add('active');
-    }
-    
-    // Show all zones
-    allBtn.addEventListener('click', () => {
-        setActiveButton(allBtn);
-        if (safeCard) safeCard.classList.remove('hidden');
-        if (moderateCard) moderateCard.classList.remove('hidden');
-        if (riskyCard) riskyCard.classList.remove('hidden');
-    });
-    
-    // Show only safe zone
-    if (safeBtn) {
-        safeBtn.addEventListener('click', () => {
-            setActiveButton(safeBtn);
-            if (safeCard) safeCard.classList.remove('hidden');
-            if (moderateCard) moderateCard.classList.add('hidden');
-            if (riskyCard) riskyCard.classList.add('hidden');
-        });
-    }
-    
-    // Show only moderate zone
-    if (moderateBtn) {
-        moderateBtn.addEventListener('click', () => {
-            setActiveButton(moderateBtn);
-            if (safeCard) safeCard.classList.add('hidden');
-            if (moderateCard) moderateCard.classList.remove('hidden');
-            if (riskyCard) riskyCard.classList.add('hidden');
-        });
-    }
-    
-    // Show only risky zone
-    if (riskyBtn) {
-        riskyBtn.addEventListener('click', () => {
-            setActiveButton(riskyBtn);
-            if (safeCard) safeCard.classList.add('hidden');
-            if (moderateCard) moderateCard.classList.add('hidden');
-            if (riskyCard) riskyCard.classList.remove('hidden');
-        });
-    }
-    
-    console.log('✅ Zone toggle setup complete');
-}
+    console.log('✅ GFFI Dashboard Ready');
+});
