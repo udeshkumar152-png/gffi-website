@@ -558,21 +558,46 @@ function renderCrisisTimeline() {
     container.innerHTML = html;
 }
 // ============================================
-// STOCKS ZONE RENDER FUNCTIONS
+// STOCKS ZONE RENDER FUNCTIONS (IMPROVED)
 // ============================================
 
 function renderStockZones() {
     if (!stockPicks || !stockPicks.safe || !stockPicks.risky) return;
     
-    // Get all stocks from stockPicks
-    const allStocks = [...stockPicks.safe, ...stockPicks.risky, ...stockPicks.watch];
+    // 1. सभी स्टॉक्स को एक साथ लें, लेकिन उनकी कैटेगरी (action) के साथ
+    const allStocksWithCategory = [
+        ...stockPicks.safe.map(s => ({ ...s, category: 'safe' })),
+        ...stockPicks.risky.map(s => ({ ...s, category: 'risky' })),
+        ...stockPicks.watch.map(s => ({ ...s, category: 'watch' }))
+    ];
     
-    // Filter stocks by GFFI
-    const safeStocks = allStocks.filter(s => s.gffi < 37).sort((a,b) => a.gffi - b.gffi);
-    const riskyStocks = allStocks.filter(s => s.gffi > 38).sort((a,b) => a.gffi - b.gffi);
-    const moderateStocks = allStocks.filter(s => s.gffi >= 37 && s.gffi <= 38).sort((a,b) => a.gffi - b.gffi);
+    // 2. डुप्लीकेट स्टॉक्स हटाने के लिए Map का इस्तेमाल करें
+    //    (एक ही स्टॉक एक से ज्यादा बार आ सकता है)
+    const uniqueStocksMap = new Map();
+    for (const stock of allStocksWithCategory) {
+        // अगर यह स्टॉक पहले से मैप में नहीं है, तो डालें
+        if (!uniqueStocksMap.has(stock.symbol)) {
+            uniqueStocksMap.set(stock.symbol, stock);
+        }
+    }
     
-    // Render Safe Zone
+    // 3. मैप से यूनिक स्टॉक्स की लिस्ट बनाएं
+    const uniqueStocks = Array.from(uniqueStocksMap.values());
+    
+    // 4. अब स्टॉक्स को उनकी GFFI और कैटेगरी के हिसाब से अलग-अलग जोन में बांटें
+    const safeStocks = uniqueStocks.filter(s => 
+        (s.category === 'safe') && (s.gffi < 37)
+    ).sort((a,b) => a.gffi - b.gffi);
+    
+    const riskyStocks = uniqueStocks.filter(s => 
+        (s.category === 'risky') && (s.gffi > 38)
+    ).sort((a,b) => a.gffi - b.gffi);
+    
+    const moderateStocks = uniqueStocks.filter(s => 
+        (s.category === 'watch') && (s.gffi >= 37 && s.gffi <= 38)
+    ).sort((a,b) => a.gffi - b.gffi);
+    
+    // 5. SAFE ZONE रेंडर करें
     const safeContainer = document.getElementById('safe-zone-stocks');
     if (safeContainer) {
         if (safeStocks.length > 0) {
@@ -580,7 +605,7 @@ function renderStockZones() {
                 <div class="stock-item-compare">
                     <div class="stock-info">
                         <span class="stock-symbol">${s.symbol}</span>
-                        <span class="stock-name">${s.name}</span>
+                        <span class="stock-name">${s.name || s.symbol}</span>
                         <span class="stock-gffi-compare stock-gffi-safe">GFFI: ${s.gffi}</span>
                     </div>
                     <span class="stock-action-badge action-buy">${s.action}</span>
@@ -591,7 +616,7 @@ function renderStockZones() {
         }
     }
     
-    // Render Risky Zone
+    // 6. HIGH RISK ZONE रेंडर करें
     const riskyContainer = document.getElementById('risky-zone-stocks');
     if (riskyContainer) {
         if (riskyStocks.length > 0) {
@@ -599,7 +624,7 @@ function renderStockZones() {
                 <div class="stock-item-compare">
                     <div class="stock-info">
                         <span class="stock-symbol">${s.symbol}</span>
-                        <span class="stock-name">${s.name}</span>
+                        <span class="stock-name">${s.name || s.symbol}</span>
                         <span class="stock-gffi-compare stock-gffi-risky">GFFI: ${s.gffi}</span>
                     </div>
                     <span class="stock-action-badge action-sell">${s.action}</span>
@@ -610,7 +635,7 @@ function renderStockZones() {
         }
     }
     
-    // Render Moderate Zone
+    // 7. MODERATE ZONE (WATCHLIST) रेंडर करें
     const moderateContainer = document.getElementById('moderate-zone-stocks');
     if (moderateContainer) {
         if (moderateStocks.length > 0) {
@@ -618,7 +643,7 @@ function renderStockZones() {
                 <div class="stock-item-compare">
                     <div class="stock-info">
                         <span class="stock-symbol">${s.symbol}</span>
-                        <span class="stock-name">${s.name}</span>
+                        <span class="stock-name">${s.name || s.symbol}</span>
                         <span class="stock-gffi-compare stock-gffi-moderate">GFFI: ${s.gffi}</span>
                     </div>
                     <span class="stock-action-badge action-watch">${s.action}</span>
