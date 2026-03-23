@@ -655,3 +655,71 @@ function renderStockZones() {
         }
     }
 }
+// ============================================
+// ZONE TOGGLE FUNCTION
+// ============================================
+
+function setupZoneToggle() {
+    const allBtn = document.getElementById('zone-toggle-all');
+    const safeBtn = document.getElementById('zone-toggle-safe');
+    const moderateBtn = document.getElementById('zone-toggle-moderate');
+    const riskyBtn = document.getElementById('zone-toggle-risky');
+    
+    // Agar buttons hi nahi hain to function se bahar nikal jao
+    if (!allBtn) {
+        console.log('Zone toggle buttons not found in DOM');
+        return;
+    }
+    
+    const safeCard = document.querySelector('.zone-card[data-zone-type="safe"]');
+    const moderateCard = document.querySelector('.zone-card[data-zone-type="moderate"]');
+    const riskyCard = document.querySelector('.zone-card[data-zone-type="risky"]');
+    
+    // Function to update active button style
+    function setActiveButton(activeBtn) {
+        [allBtn, safeBtn, moderateBtn, riskyBtn].forEach(btn => {
+            if (btn) btn.classList.remove('active');
+        });
+        if (activeBtn) activeBtn.classList.add('active');
+    }
+    
+    // Show all zones
+    allBtn.addEventListener('click', () => {
+        setActiveButton(allBtn);
+        if (safeCard) safeCard.classList.remove('hidden');
+        if (moderateCard) moderateCard.classList.remove('hidden');
+        if (riskyCard) riskyCard.classList.remove('hidden');
+    });
+    
+    // Show only safe zone
+    if (safeBtn) {
+        safeBtn.addEventListener('click', () => {
+            setActiveButton(safeBtn);
+            if (safeCard) safeCard.classList.remove('hidden');
+            if (moderateCard) moderateCard.classList.add('hidden');
+            if (riskyCard) riskyCard.classList.add('hidden');
+        });
+    }
+    
+    // Show only moderate zone
+    if (moderateBtn) {
+        moderateBtn.addEventListener('click', () => {
+            setActiveButton(moderateBtn);
+            if (safeCard) safeCard.classList.add('hidden');
+            if (moderateCard) moderateCard.classList.remove('hidden');
+            if (riskyCard) riskyCard.classList.add('hidden');
+        });
+    }
+    
+    // Show only risky zone
+    if (riskyBtn) {
+        riskyBtn.addEventListener('click', () => {
+            setActiveButton(riskyBtn);
+            if (safeCard) safeCard.classList.add('hidden');
+            if (moderateCard) moderateCard.classList.add('hidden');
+            if (riskyCard) riskyCard.classList.remove('hidden');
+        });
+    }
+    
+    console.log('✅ Zone toggle setup complete');
+}
