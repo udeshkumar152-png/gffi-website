@@ -556,3 +556,75 @@ function renderCrisisTimeline() {
     
     container.innerHTML = html;
 }
+// ============================================
+// STOCKS ZONE RENDER FUNCTIONS
+// ============================================
+
+function renderStockZones() {
+    if (!stockPicks || !stockPicks.safe || !stockPicks.risky) return;
+    
+    // Get all stocks from stockPicks
+    const allStocks = [...stockPicks.safe, ...stockPicks.risky, ...stockPicks.watch];
+    
+    // Filter stocks by GFFI
+    const safeStocks = allStocks.filter(s => s.gffi < 37).sort((a,b) => a.gffi - b.gffi);
+    const riskyStocks = allStocks.filter(s => s.gffi > 38).sort((a,b) => a.gffi - b.gffi);
+    const moderateStocks = allStocks.filter(s => s.gffi >= 37 && s.gffi <= 38).sort((a,b) => a.gffi - b.gffi);
+    
+    // Render Safe Zone
+    const safeContainer = document.getElementById('safe-zone-stocks');
+    if (safeContainer) {
+        if (safeStocks.length > 0) {
+            safeContainer.innerHTML = safeStocks.map(s => `
+                <div class="stock-item-compare">
+                    <div class="stock-info">
+                        <span class="stock-symbol">${s.symbol}</span>
+                        <span class="stock-name">${s.name}</span>
+                        <span class="stock-gffi-compare stock-gffi-safe">GFFI: ${s.gffi}</span>
+                    </div>
+                    <span class="stock-action-badge action-buy">${s.action}</span>
+                </div>
+            `).join('');
+        } else {
+            safeContainer.innerHTML = '<div class="no-data">No stocks in safe zone</div>';
+        }
+    }
+    
+    // Render Risky Zone
+    const riskyContainer = document.getElementById('risky-zone-stocks');
+    if (riskyContainer) {
+        if (riskyStocks.length > 0) {
+            riskyContainer.innerHTML = riskyStocks.map(s => `
+                <div class="stock-item-compare">
+                    <div class="stock-info">
+                        <span class="stock-symbol">${s.symbol}</span>
+                        <span class="stock-name">${s.name}</span>
+                        <span class="stock-gffi-compare stock-gffi-risky">GFFI: ${s.gffi}</span>
+                    </div>
+                    <span class="stock-action-badge action-sell">${s.action}</span>
+                </div>
+            `).join('');
+        } else {
+            riskyContainer.innerHTML = '<div class="no-data">No stocks in high risk zone</div>';
+        }
+    }
+    
+    // Render Moderate Zone
+    const moderateContainer = document.getElementById('moderate-zone-stocks');
+    if (moderateContainer) {
+        if (moderateStocks.length > 0) {
+            moderateContainer.innerHTML = moderateStocks.map(s => `
+                <div class="stock-item-compare">
+                    <div class="stock-info">
+                        <span class="stock-symbol">${s.symbol}</span>
+                        <span class="stock-name">${s.name}</span>
+                        <span class="stock-gffi-compare stock-gffi-moderate">GFFI: ${s.gffi}</span>
+                    </div>
+                    <span class="stock-action-badge action-watch">${s.action}</span>
+                </div>
+            `).join('');
+        } else {
+            moderateContainer.innerHTML = '<div class="no-data">No stocks in moderate zone</div>';
+        }
+    }
+}
