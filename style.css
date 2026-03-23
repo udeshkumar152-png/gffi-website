@@ -1559,6 +1559,201 @@ body {
         grid-template-columns: 1fr;
         gap: 10px;
     }
+    /* ============================================
+   STOCKS COMPARISON - SAFE VS HIGH RISK ZONE
+   ============================================ */
+
+.stocks-comparison-container {
+    margin: 40px 0;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 20px;
+    padding: 25px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+}
+
+.comparison-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.comparison-header h3 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 5px;
+}
+
+.comparison-subtitle {
+    color: #64748b;
+    font-size: 0.9rem;
+}
+
+.stocks-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 25px;
+    margin-bottom: 25px;
+}
+
+.safe-zone-card, .risky-zone-card, .moderate-zone-card {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    transition: transform 0.3s ease;
+}
+
+.safe-zone-card:hover, .risky-zone-card:hover, .moderate-zone-card:hover {
+    transform: translateY(-3px);
+}
+
+.zone-header {
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 2px solid;
+}
+
+.zone-header.safe {
+    background: linear-gradient(135deg, #10b98120 0%, #05966920 100%);
+    border-bottom-color: #10b981;
+}
+
+.zone-header.risky {
+    background: linear-gradient(135deg, #ef444420 0%, #dc262620 100%);
+    border-bottom-color: #ef4444;
+}
+
+.zone-header.moderate {
+    background: linear-gradient(135deg, #f59e0b20 0%, #d9770620 100%);
+    border-bottom-color: #f59e0b;
+}
+
+.zone-header i {
+    font-size: 1.8rem;
+}
+
+.zone-header.safe i { color: #10b981; }
+.zone-header.risky i { color: #ef4444; }
+.zone-header.moderate i { color: #f59e0b; }
+
+.zone-header h4 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    flex: 1;
+}
+
+.zone-badge {
+    font-size: 0.8rem;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: rgba(0,0,0,0.05);
+    font-weight: 500;
+}
+
+.stocks-list {
+    padding: 15px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.stock-item-compare {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 15px;
+    border-bottom: 1px solid #e2e8f0;
+    transition: background 0.2s ease;
+}
+
+.stock-item-compare:hover {
+    background: #f8fafc;
+}
+
+.stock-info {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.stock-symbol {
+    font-weight: 700;
+    font-size: 1rem;
+    color: #1e293b;
+    min-width: 80px;
+}
+
+.stock-name {
+    font-size: 0.85rem;
+    color: #64748b;
+}
+
+.stock-gffi-compare {
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+}
+
+.stock-gffi-safe {
+    background: #10b98120;
+    color: #10b981;
+}
+
+.stock-gffi-risky {
+    background: #ef444420;
+    color: #ef4444;
+}
+
+.stock-gffi-moderate {
+    background: #f59e0b20;
+    color: #f59e0b;
+}
+
+.stock-action-badge {
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 20px;
+}
+
+.action-buy {
+    background: #10b98120;
+    color: #10b981;
+}
+
+.action-sell {
+    background: #ef444420;
+    color: #ef4444;
+}
+
+.action-watch {
+    background: #f59e0b20;
+    color: #f59e0b;
+}
+
+.moderate-zone-card {
+    margin-top: 25px;
+}
+
+@media (max-width: 768px) {
+    .stocks-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .stock-item-compare {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .stock-action-badge {
+        align-self: flex-start;
+    }
+}
     
     .probability-value {
         font-size: 1rem;
