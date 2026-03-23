@@ -353,6 +353,7 @@ document.addEventListener('DOMContentLoaded', function() {
     renderStockGrid();
     renderIndiaGrid();
     renderStockZones();
+    setupZoneToggle();
     
     // Event listeners
     document.getElementById('toggle-country')?.addEventListener('click', toggleCountryView);
