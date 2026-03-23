@@ -1759,3 +1759,72 @@ body {
         font-size: 1rem;
     }
 }
+/* ============================================
+   ZONE TOGGLE BUTTONS STYLES
+   ============================================ */
+
+.zone-toggle-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin: 20px 0 30px;
+    flex-wrap: wrap;
+}
+
+.zone-btn {
+    background: transparent;
+    border: 2px solid #e2e8f0;
+    padding: 8px 20px;
+    border-radius: 40px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #1e293b;
+    background: white;
+}
+
+.zone-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.zone-btn.active {
+    border-color: #3b82f6;
+    background: #3b82f6;
+    color: white;
+}
+
+.zone-btn.active[data-zone="safe"] {
+    border-color: #10b981;
+    background: #10b981;
+}
+
+.zone-btn.active[data-zone="moderate"] {
+    border-color: #f59e0b;
+    background: #f59e0b;
+}
+
+.zone-btn.active[data-zone="risky"] {
+    border-color: #ef4444;
+    background: #ef4444;
+}
+
+.zone-btn.active[data-zone="all"] {
+    border-color: #3b82f6;
+    background: #3b82f6;
+}
+
+/* Hide/show zones based on toggle */
+.zone-card {
+    transition: all 0.3s ease;
+}
+
+.zone-card.hidden {
+    display: none;
+}
+
+/* When showing all, all cards are visible */
+#zone-cards-container .zone-card {
+    display: block;
+}
