@@ -133,6 +133,51 @@
                     </div>
                 </div>
             </div>
+            <!-- NIFTY & SENSEX STOCKS - SAFE VS HIGH RISK ZONE -->
+<div class="stocks-comparison-container">
+    <div class="comparison-header">
+        <h3>📊 Nifty & Sensex Stocks: Safe Zone vs High Risk Zone</h3>
+        <p class="comparison-subtitle">Based on real-time GFFI values (Lower GFFI = Safer)</p>
+    </div>
+    
+    <div class="stocks-grid">
+        <!-- SAFE ZONE STOCKS -->
+        <div class="safe-zone-card">
+            <div class="zone-header safe">
+                <i class="fas fa-shield-alt"></i>
+                <h4>🟢 SAFE ZONE STOCKS</h4>
+                <span class="zone-badge">Low Risk &nbsp; GFFI &lt; 37</span>
+            </div>
+            <div class="stocks-list" id="safe-zone-stocks">
+                <!-- Safe stocks will be loaded here -->
+            </div>
+        </div>
+        
+        <!-- HIGH RISK ZONE STOCKS -->
+        <div class="risky-zone-card">
+            <div class="zone-header risky">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h4>🔴 HIGH RISK ZONE STOCKS</h4>
+                <span class="zone-badge">High Risk &nbsp; GFFI > 38</span>
+            </div>
+            <div class="stocks-list" id="risky-zone-stocks">
+                <!-- Risky stocks will be loaded here -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- MODERATE ZONE STOCKS -->
+    <div class="moderate-zone-card">
+        <div class="zone-header moderate">
+            <i class="fas fa-chart-line"></i>
+            <h4>🟡 MODERATE ZONE STOCKS (WATCHLIST)</h4>
+            <span class="zone-badge">Moderate Risk &nbsp; GFFI 37-38</span>
+        </div>
+        <div class="stocks-list" id="moderate-zone-stocks">
+            <!-- Moderate stocks will be loaded here -->
+        </div>
+    </div>
+</div>
 <!-- CRISIS PROBABILITY TIMELINE -->
 <div id="crisis-timeline" class="crisis-timeline-container"></div>
             <!-- Global Metrics Cards -->
