@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
-GFFI Live Calculator - ONLY 17 COUNTRIES LIVE DATA
-No stock picks, no sector data - only country-wise GFFI
+GFFI Daily Calculator - Alpha Vantage + FRED
+Fetches market data from Alpha Vantage and capital data from FRED
+Runs once daily to respect API rate limits
 """
 
 import os
@@ -15,7 +16,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 print("="*80)
-print("🚀 GFFI LIVE CALCULATOR - ONLY 17 COUNTRIES")
+print("🚀 GFFI DAILY CALCULATOR - ALPHA VANTAGE + FRED")
 print("="*80)
 print(f"📅 Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
@@ -29,30 +30,27 @@ if not ALPHA_VANTAGE_KEY:
     print("❌ ALPHA_VANTAGE_KEY not found in environment variables!")
     exit(1)
 
-if not FRED_API_KEY:
-    print("⚠️ FRED_API_KEY not found - will use capital proxy for all countries")
-
 # ============================================
 # ALL 17 COUNTRIES WITH FRED SERIES
 # ============================================
 COUNTRIES = [
     {'code': 'US', 'name': 'USA', 'flag': '🇺🇸', 'av_symbol': 'SPX', 'fred_series': 'RCTRWAMXM163N'},
-    {'code': 'Germany', 'name': 'Germany', 'flag': '🇩🇪', 'av_symbol': 'GDAXI', 'fred_series': None},
-    {'code': 'France', 'name': 'France', 'flag': '🇫🇷', 'av_symbol': 'FCHI', 'fred_series': None},
-    {'code': 'Japan', 'name': 'Japan', 'flag': '🇯🇵', 'av_symbol': 'NIKKEI225', 'fred_series': None},
-    {'code': 'UK', 'name': 'UK', 'flag': '🇬🇧', 'av_symbol': 'FTSE', 'fred_series': None},
-    {'code': 'China', 'name': 'China', 'flag': '🇨🇳', 'av_symbol': 'SSEC', 'fred_series': None},
-    {'code': 'India', 'name': 'India', 'flag': '🇮🇳', 'av_symbol': 'NSEI', 'fred_series': None},
-    {'code': 'Brazil', 'name': 'Brazil', 'flag': '🇧🇷', 'av_symbol': 'BVSP', 'fred_series': None},
-    {'code': 'Canada', 'name': 'Canada', 'flag': '🇨🇦', 'av_symbol': 'GSPTSE', 'fred_series': None},
-    {'code': 'Australia', 'name': 'Australia', 'flag': '🇦🇺', 'av_symbol': 'AXJO', 'fred_series': None},
-    {'code': 'SouthKorea', 'name': 'S. Korea', 'flag': '🇰🇷', 'av_symbol': 'KS11', 'fred_series': None},
-    {'code': 'Singapore', 'name': 'Singapore', 'flag': '🇸🇬', 'av_symbol': 'STI', 'fred_series': None},
-    {'code': 'SouthAfrica', 'name': 'S. Africa', 'flag': '🇿🇦', 'av_symbol': 'JN0U.JO', 'fred_series': None},
-    {'code': 'Mexico', 'name': 'Mexico', 'flag': '🇲🇽', 'av_symbol': 'MXX', 'fred_series': None},
-    {'code': 'Italy', 'name': 'Italy', 'flag': '🇮🇹', 'av_symbol': 'FTSEMIB', 'fred_series': None},
-    {'code': 'Argentina', 'name': 'Argentina', 'flag': '🇦🇷', 'av_symbol': 'MERV', 'fred_series': None},
-    {'code': 'Russia', 'name': 'Russia', 'flag': '🇷🇺', 'av_symbol': 'IMOEX', 'fred_series': None},
+    {'code': 'Germany', 'name': 'Germany', 'flag': '🇩🇪', 'av_symbol': 'GDAXI', 'fred_series': 'DDSI03DEA156NWDB'},
+    {'code': 'France', 'name': 'France', 'flag': '🇫🇷', 'av_symbol': 'FCHI', 'fred_series': 'DDSI03FRA156NWDB'},
+    {'code': 'Japan', 'name': 'Japan', 'flag': '🇯🇵', 'av_symbol': 'NIKKEI225', 'fred_series': 'DDSI03JPA156NWDB'},
+    {'code': 'UK', 'name': 'UK', 'flag': '🇬🇧', 'av_symbol': 'FTSE', 'fred_series': 'DDSI03GBA156NWDB'},
+    {'code': 'China', 'name': 'China', 'flag': '🇨🇳', 'av_symbol': 'SSEC', 'fred_series': 'DDSI03CNA156NWDB'},
+    {'code': 'India', 'name': 'India', 'flag': '🇮🇳', 'av_symbol': 'NSEI', 'fred_series': 'DDSI03INA156NWDB'},
+    {'code': 'Brazil', 'name': 'Brazil', 'flag': '🇧🇷', 'av_symbol': 'BVSP', 'fred_series': 'DDSI03BRA156NWDB'},
+    {'code': 'Canada', 'name': 'Canada', 'flag': '🇨🇦', 'av_symbol': 'GSPTSE', 'fred_series': 'DDSI03CAA156NWDB'},
+    {'code': 'Australia', 'name': 'Australia', 'flag': '🇦🇺', 'av_symbol': 'AXJO', 'fred_series': 'DDSI03AUA156NWDB'},
+    {'code': 'SouthKorea', 'name': 'S. Korea', 'flag': '🇰🇷', 'av_symbol': 'KS11', 'fred_series': 'DDSI03KRA156NWDB'},
+    {'code': 'Singapore', 'name': 'Singapore', 'flag': '🇸🇬', 'av_symbol': 'STI', 'fred_series': 'DDSI03SGA156NWDB'},
+    {'code': 'SouthAfrica', 'name': 'S. Africa', 'flag': '🇿🇦', 'av_symbol': 'JN0U.JO', 'fred_series': 'DDSI03ZAA156NWDB'},
+    {'code': 'Mexico', 'name': 'Mexico', 'flag': '🇲🇽', 'av_symbol': 'MXX', 'fred_series': 'DDSI03MXA156NWDB'},
+    {'code': 'Italy', 'name': 'Italy', 'flag': '🇮🇹', 'av_symbol': 'FTSEMIB', 'fred_series': 'DDSI03ITA156NWDB'},
+    {'code': 'Argentina', 'name': 'Argentina', 'flag': '🇦🇷', 'av_symbol': 'MERV', 'fred_series': 'DDSI03ARA156NWDB'},
+    {'code': 'Russia', 'name': 'Russia', 'flag': '🇷🇺', 'av_symbol': 'IMOEX', 'fred_series': 'DDSI03RUA156NWDB'},
 ]
 
 # ============================================
@@ -78,7 +76,7 @@ def calculate_entropy(returns_series):
     if len(returns) < 20:
         return None
     
-    # Remove outliers
+    # Remove outliers (returns > 5% or < -5% are abnormal)
     returns = returns[(returns > -5) & (returns < 5)]
     
     if len(returns) < 15:
@@ -100,7 +98,7 @@ def calculate_entropy(returns_series):
     return max(0.2, min(0.8, entropy))
 
 def calculate_capital_proxy(returns_series):
-    """Calculate capital proxy from volatility"""
+    """Calculate capital proxy from volatility (fallback when FRED not available)"""
     if len(returns_series) < 30:
         return 18.0
     
@@ -113,28 +111,37 @@ def calculate_capital_proxy(returns_series):
     return max(12, min(25, capital_proxy))
 
 # ============================================
-# REAL FRED CAPITAL DATA FETCHING (USA ONLY)
+# FRED CAPITAL DATA FETCHING (REAL DATA)
 # ============================================
 
 def fetch_fred_capital_data(series_id):
-    """Fetch REAL bank capital ratio from FRED API"""
+    """
+    Fetch REAL bank capital ratio from FRED API
+    This is what the research paper uses
+    """
     if not FRED_API_KEY:
+        print(f"   ⚠️ No FRED API key available")
+        return None
+    
+    if series_id is None:
         return None
     
     try:
         from pandas_datareader import data as web
         
         end = datetime.now()
-        start = end - timedelta(days=3*365)
+        start = end - timedelta(days=3*365)  # Last 3 years
         
         print(f"   📥 Fetching REAL capital data from FRED: {series_id}...")
         
+        # Fetch data from FRED
         data = web.DataReader(series_id, 'fred', start, end, api_key=FRED_API_KEY)
         
         if data.empty:
             print(f"   ⚠️ No FRED data for {series_id}")
             return None
         
+        # Get latest value (most recent available)
         latest_value = float(data.iloc[-1, 0])
         latest_date = data.index[-1].strftime('%Y-%m-%d')
         
@@ -151,11 +158,11 @@ def fetch_fred_capital_data(series_id):
         return None
 
 # ============================================
-# ALPHA VANTAGE DATA FETCHING
+# ALPHA VANTAGE MARKET DATA FETCHING
 # ============================================
 
 def fetch_alphavantage_data(symbol, max_retries=2):
-    """Fetch data from Alpha Vantage"""
+    """Fetch market data from Alpha Vantage"""
     for attempt in range(max_retries):
         try:
             url = f"https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={symbol}&apikey={ALPHA_VANTAGE_KEY}&outputsize=compact"
@@ -175,12 +182,14 @@ def fetch_alphavantage_data(symbol, max_retries=2):
                 return pd.Series(prices, index=dates)
             
             elif 'Note' in data:
+                print(f"   ⚠️ API Note: {data['Note'][:100]}")
                 if attempt < max_retries - 1:
                     time.sleep(15)
             else:
                 return None
                 
-        except Exception:
+        except Exception as e:
+            print(f"   ⚠️ Attempt {attempt+1} failed: {str(e)[:50]}")
             if attempt < max_retries - 1:
                 time.sleep(10)
     
@@ -207,7 +216,7 @@ def calculate_country_gffi(country):
         print(f"   ❌ Could not calculate entropy for {country['name']}")
         return None
     
-    # Try to get REAL capital data from FRED (only USA has data)
+    # Try to get REAL capital data from FRED
     capital = None
     capital_source = "PROXY"
     
@@ -237,7 +246,10 @@ def calculate_country_gffi(country):
         'flag': country['flag'],
         'name': country['name'],
         'gffi': gffi,
-        'status': get_status(gffi)
+        'status': get_status(gffi),
+        'entropy': round(entropy, 3),
+        'capital': round(capital, 2),
+        'capital_source': capital_source
     }
     
     print(f"   ✅ GFFI: {gffi} ({result['status']}) [Capital: {capital_source}]")
@@ -248,24 +260,30 @@ def calculate_country_gffi(country):
 # ============================================
 
 def main():
-    """Main function to generate data.js with only country data"""
+    """Main function to generate data.js with real data"""
     print("\n" + "="*80)
     print("🌍 FETCHING GFFI DATA FOR ALL 17 COUNTRIES")
     print("="*80)
-    print("📌 USA will use REAL FRED bank capital data")
-    print("📌 Other countries will use capital proxy")
-    print("📌 Stock picks and sector data are REMOVED")
+    print("📌 Capital Data Sources:")
+    print("   • FRED API for countries with available data")
+    print("   • Capital proxy (volatility-based) for others")
     print("="*80)
     
     # Calculate GFFI for all countries
     country_data = []
     gffi_values = []
+    fred_count = 0
+    proxy_count = 0
     
     for country in COUNTRIES:
         result = calculate_country_gffi(country)
         if result:
             country_data.append(result)
             gffi_values.append(result['gffi'])
+            if result.get('capital_source') == 'FRED (REAL)':
+                fred_count += 1
+            else:
+                proxy_count += 1
         
         # Rate limiting - 15 seconds between countries
         # This ensures we don't exceed Alpha Vantage's 5 calls per minute
@@ -284,18 +302,15 @@ def main():
     # Current time
     now = datetime.now()
     
-    # Generate data.js - ONLY COUNTRY DATA, NO SECTORS, NO STOCK PICKS
+    # Generate data.js
     js_lines = [
         "// ============================================",
-        "// DATA.JS - Auto-generated by GFFI Live Calculator",
+        "// DATA.JS - Auto-generated by GFFI Daily Calculator",
         f"// Last Updated: {now.strftime('%Y-%m-%d %H:%M:%S')}",
         "// ============================================",
         "// CAPITAL DATA SOURCES:",
-        "//   USA: REAL FRED bank capital ratio (RCTRWAMXM163N)",
-        "//   Other countries: Capital proxy (volatility-based)",
-        "// ============================================",
-        "// NOTE: Stock picks and sector data have been removed",
-        "// Only country-wise GFFI data is included",
+        f"//   • FRED (REAL): {fred_count} countries",
+        f"//   • Proxy (volatility-based): {proxy_count} countries",
         "// ============================================",
         "",
         f"const countryData = {json.dumps(country_data, indent=2, ensure_ascii=False)};",
@@ -322,15 +337,16 @@ def main():
         f.write("\n".join(js_lines))
     
     print("\n" + "="*80)
-    print("✅ DATA.JS UPDATED - ONLY 17 COUNTRIES")
+    print("✅ DATA.JS UPDATED")
     print("="*80)
     print(f"   🌍 Countries with data: {len(country_data)}/{len(COUNTRIES)}")
     print(f"   📊 Global GFFI: {global_gffi}")
     print(f"   🇮🇳 India GFFI: {india_gffi}")
+    print(f"   📌 Capital sources: FRED={fred_count}, Proxy={proxy_count}")
     print("="*80)
     print("\n📊 Country-wise GFFI values:")
     for c in country_data:
-        print(f"   {c['flag']} {c['name']}: {c['gffi']} ({c['status']})")
+        print(f"   {c['flag']} {c['name']}: {c['gffi']} ({c['status']}) - {c.get('capital_source', 'Unknown')}")
     print("="*80)
 
 if __name__ == "__main__":
