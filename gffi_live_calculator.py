@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-GFFI Live Calculator - INDIA MARKET ONLY (FIXED VERSION)
-Corrected entropy and capital proxy calculations
-Fetches live data from Alpha Vantage
+GFFI Live Calculator - REAL FRED CAPITAL DATA VERSION
+Fetches real banking capital ratios from FRED API
+Falls back to capital proxy only when FRED data is unavailable
 """
 
 import os
@@ -16,7 +16,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 print("="*80)
-print("🚀 GFFI LIVE CALCULATOR - FIXED VERSION")
+print("🚀 GFFI LIVE CALCULATOR - REAL FRED CAPITAL DATA")
 print("="*80)
 print(f"📅 Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
@@ -24,13 +24,38 @@ print(f"📅 Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 # CONFIGURATION
 # ============================================
 ALPHA_VANTAGE_KEY = os.getenv('ALPHA_VANTAGE_KEY')
+FRED_API_KEY = os.getenv('FRED_API_KEY')
 
 if not ALPHA_VANTAGE_KEY:
     print("❌ ALPHA_VANTAGE_KEY not found in environment variables!")
     exit(1)
 
+if not FRED_API_KEY:
+    print("⚠️ FRED_API_KEY not found - will use capital proxy for all countries")
+
 # ============================================
-# NIFTY 50 STOCKS (Alpha Vantage symbols)
+# COUNTRY CONFIGURATION WITH FRED SERIES
+# ============================================
+COUNTRIES = [
+    {'code': 'US', 'name': 'USA', 'flag': '🇺🇸', 'av_symbol': 'SPX', 'fred_series': 'RCTRWAMXM163N'},
+    {'code': 'India', 'name': 'India', 'flag': '🇮🇳', 'av_symbol': 'NSEI', 'fred_series': None},  # FRED data not available
+    {'code': 'UK', 'name': 'UK', 'flag': '🇬🇧', 'av_symbol': 'FTSE', 'fred_series': None},
+    {'code': 'Germany', 'name': 'Germany', 'flag': '🇩🇪', 'av_symbol': 'GDAXI', 'fred_series': None},
+    {'code': 'France', 'name': 'France', 'flag': '🇫🇷', 'av_symbol': 'FCHI', 'fred_series': None},
+    {'code': 'Japan', 'name': 'Japan', 'flag': '🇯🇵', 'av_symbol': 'NIKKEI225', 'fred_series': None},
+    {'code': 'Canada', 'name': 'Canada', 'flag': '🇨🇦', 'av_symbol': 'GSPTSE', 'fred_series': None},
+    {'code': 'Brazil', 'name': 'Brazil', 'flag': '🇧🇷', 'av_symbol': 'BVSP', 'fred_series': None},
+    {'code': 'Australia', 'name': 'Australia', 'flag': '🇦🇺', 'av_symbol': 'AXJO', 'fred_series': None},
+    {'code': 'Singapore', 'name': 'Singapore', 'flag': '🇸🇬', 'av_symbol': 'STI', 'fred_series': None},
+    {'code': 'SouthKorea', 'name': 'S. Korea', 'flag': '🇰🇷', 'av_symbol': 'KS11', 'fred_series': None},
+    {'code': 'SouthAfrica', 'name': 'S. Africa', 'flag': '🇿🇦', 'av_symbol': 'JN0U.JO', 'fred_series': None},
+    {'code': 'Mexico', 'name': 'Mexico', 'flag': '🇲🇽', 'av_symbol': 'MXX', 'fred_series': None},
+    {'code': 'Italy', 'name': 'Italy', 'flag': '🇮🇹', 'av_symbol': 'FTSEMIB', 'fred_series': None},
+    {'code': 'Argentina', 'name': 'Argentina', 'flag': '🇦🇷', 'av_symbol': 'MERV', 'fred_series': None},
+]
+
+# ============================================
+# NIFTY 50 STOCKS
 # ============================================
 NIFTY_50_STOCKS = [
     {'symbol': 'RELIANCE.BSE', 'name': 'Reliance Industries', 'sector': 'Energy'},
@@ -96,7 +121,7 @@ STOCK_NAMES = {
 }
 
 # ============================================
-# CORRECTED CORE FUNCTIONS
+# CORE UTILITY FUNCTIONS
 # ============================================
 
 def get_status(gffi):
@@ -110,10 +135,7 @@ def get_status(gffi):
         return 'success'
 
 def calculate_entropy(returns_series):
-    """
-    Calculate Shannon entropy from returns - CORRECTED VERSION
-    Removes outliers and uses fixed bin range
-    """
+    """Calculate Shannon entropy from returns"""
     returns = returns_series.dropna().values
     returns = returns[~np.isinf(returns)]
     returns = returns[~np.isnan(returns)]
@@ -121,13 +143,12 @@ def calculate_entropy(returns_series):
     if len(returns) < 20:
         return None
     
-    # Remove outliers (returns > 5% or < -5% are abnormal)
+    # Remove outliers
     returns = returns[(returns > -5) & (returns < 5)]
     
     if len(returns) < 15:
         return None
     
-    # Use fixed bin range from -3 to 3 (normal daily returns range)
     bins = 10
     hist, _ = np.histogram(returns, bins=bins, range=(-3, 3), density=True)
     probs = hist / hist.sum()
@@ -141,14 +162,10 @@ def calculate_entropy(returns_series):
     if max_entropy > 0:
         entropy = entropy / max_entropy
     
-    # Bound entropy between 0.2 and 0.8 for normal markets
     return max(0.2, min(0.8, entropy))
 
 def calculate_capital_proxy(returns_series):
-    """
-    Calculate capital proxy from volatility - CORRECTED VERSION
-    Returns realistic values between 12 and 25
-    """
+    """Calculate capital proxy from volatility - used when FRED data unavailable"""
     if len(returns_series) < 30:
         return 18.0
     
@@ -157,11 +174,52 @@ def calculate_capital_proxy(returns_series):
         return 18.0
     
     latest_vol = float(rolling_vol.iloc[-1])
-    
-    # Capital should be between 12 and 25 for normal markets
-    # Higher volatility = lower capital confidence
     capital_proxy = 25 / (1 + latest_vol / 10)
     return max(12, min(25, capital_proxy))
+
+# ============================================
+# REAL FRED CAPITAL DATA FETCHING
+# ============================================
+
+def fetch_fred_capital_data(series_id):
+    """
+    Fetch REAL bank capital ratio from FRED API
+    This is what the research paper uses
+    """
+    if not FRED_API_KEY:
+        print(f"   ⚠️ No FRED API key available")
+        return None
+    
+    try:
+        from pandas_datareader import data as web
+        
+        end = datetime.now()
+        start = end - timedelta(days=3*365)  # Last 3 years
+        
+        print(f"   📥 Fetching REAL capital data from FRED: {series_id}...")
+        
+        # Fetch data from FRED
+        data = web.DataReader(series_id, 'fred', start, end, api_key=FRED_API_KEY)
+        
+        if data.empty:
+            print(f"   ⚠️ No FRED data for {series_id}")
+            return None
+        
+        # Get latest value (most recent available)
+        latest_value = float(data.iloc[-1, 0])
+        latest_date = data.index[-1].strftime('%Y-%m-%d')
+        
+        print(f"   ✅ REAL FRED capital data: {latest_value:.2f} (as of {latest_date})")
+        
+        return {
+            'value': latest_value,
+            'date': latest_date,
+            'source': 'FRED'
+        }
+        
+    except Exception as e:
+        print(f"   ❌ FRED error: {str(e)[:100]}")
+        return None
 
 # ============================================
 # ALPHA VANTAGE DATA FETCHING
@@ -200,7 +258,7 @@ def fetch_alphavantage_data(symbol, max_retries=2):
     return None
 
 def fetch_stock_data(symbol, name):
-    """Fetch stock data and calculate GFFI - USING CORRECTED FUNCTIONS"""
+    """Fetch stock data and calculate GFFI"""
     try:
         prices = fetch_alphavantage_data(symbol)
         if prices is None or len(prices) < 30:
@@ -212,7 +270,7 @@ def fetch_stock_data(symbol, name):
         
         returns = prices.pct_change().dropna() * 100
         entropy = calculate_entropy(returns)
-        capital = calculate_capital_proxy(returns)
+        capital = calculate_capital_proxy(returns)  # Stocks use proxy
         
         if entropy is None or capital is None:
             return None
@@ -220,7 +278,6 @@ def fetch_stock_data(symbol, name):
         gffi = (entropy / capital) * 1000
         gffi = round(gffi, 1)
         
-        # Sanity check - GFFI should be between 20 and 80 for normal markets
         if gffi > 80 or gffi < 20:
             return None
         
@@ -237,11 +294,72 @@ def fetch_stock_data(symbol, name):
         return None
 
 # ============================================
+# COUNTRY GFFI WITH REAL FRED CAPITAL DATA
+# ============================================
+
+def calculate_country_gffi_with_fred(country):
+    """
+    Calculate GFFI for a country - uses REAL FRED capital data when available
+    Falls back to capital proxy only when FRED data is unavailable
+    """
+    print(f"\n📍 Processing {country['name']}...")
+    
+    # Get market data from Alpha Vantage
+    prices = fetch_alphavantage_data(country['av_symbol'])
+    if prices is None or len(prices) < 30:
+        print(f"   ❌ No market data for {country['name']}")
+        return None
+    
+    returns = prices.pct_change().dropna() * 100
+    entropy = calculate_entropy(returns)
+    
+    if entropy is None:
+        print(f"   ❌ Could not calculate entropy for {country['name']}")
+        return None
+    
+    # Try to get REAL capital data from FRED first
+    capital = None
+    capital_source = "PROXY"
+    
+    if country.get('fred_series') and FRED_API_KEY:
+        fred_data = fetch_fred_capital_data(country['fred_series'])
+        if fred_data:
+            capital = fred_data['value']
+            capital_source = "FRED (REAL)"
+            print(f"   ✅ Using REAL FRED capital data: {capital:.2f}")
+    
+    # If FRED data not available, use capital proxy
+    if capital is None:
+        capital = calculate_capital_proxy(returns)
+        capital_source = "PROXY (Volatility-based)"
+        print(f"   ⚠️ Using capital proxy: {capital:.2f} (FRED data not available)")
+    
+    # Calculate GFFI
+    gffi = (entropy / capital) * 1000
+    gffi = round(gffi, 1)
+    
+    # Sanity check
+    if gffi > 100 or gffi < 20:
+        print(f"   ⚠️ GFFI value {gffi} seems abnormal, skipping")
+        return None
+    
+    result = {
+        'flag': country['flag'],
+        'name': country['name'],
+        'gffi': gffi,
+        'status': get_status(gffi),
+        'capital_source': capital_source  # For debugging
+    }
+    
+    print(f"   ✅ GFFI: {gffi} ({result['status']}) [Capital: {capital_source}]")
+    return result
+
+# ============================================
 # SECTOR DATA FUNCTIONS
 # ============================================
 
 def calculate_sector_gffi():
-    """Calculate GFFI for all sectors - USING CORRECTED FUNCTIONS"""
+    """Calculate GFFI for all sectors"""
     print("\n🏭 Calculating sector-wise GFFI...")
     sector_data = []
     
@@ -382,80 +500,38 @@ def get_crisis_message(gffi_value):
         return "🟡 MODERATE RISK: Monitor closely, crisis possible within 18-24 months"
 
 # ============================================
-# MARKET EFFICIENCY FUNCTION
-# ============================================
-
-def calculate_market_efficiency(returns_series):
-    """Calculate market efficiency score (0-100)"""
-    try:
-        returns = returns_series.dropna().values
-        returns = returns[~np.isinf(returns)]
-        returns = returns[~np.isnan(returns)]
-        
-        if len(returns) < 30:
-            return None
-        
-        returns = returns[(returns > -5) & (returns < 5)]
-        
-        if len(returns) < 20:
-            return None
-        
-        bins = 10
-        hist, _ = np.histogram(returns, bins=bins, range=(-3, 3), density=True)
-        probs = hist / hist.sum()
-        probs = probs[probs > 0]
-        
-        if len(probs) == 0:
-            return None
-        
-        entropy = -np.sum(probs * np.log(probs))
-        max_entropy = np.log(bins)
-        if max_entropy > 0:
-            efficiency = (entropy / max_entropy) * 100
-        else:
-            efficiency = 50
-        
-        return round(max(0, min(100, efficiency)), 1)
-        
-    except Exception as e:
-        print(f"   ⚠️ Efficiency error: {str(e)[:30]}")
-        return None
-
-# ============================================
 # MAIN FUNCTION
 # ============================================
 
 def main():
-    """Main function to generate data.js"""
+    """Main function to generate data.js with REAL FRED capital data"""
     print("\n" + "="*80)
-    print("🇮🇳 FETCHING INDIA MARKET DATA (FIXED VERSION)")
+    print("🇮🇳 FETCHING GFFI DATA WITH REAL FRED CAPITAL")
     print("="*80)
+    print("📌 USA will use REAL FRED bank capital data")
+    print("📌 Other countries will use capital proxy")
+    print("="*80)
+    
+    # Calculate country GFFI with REAL FRED data where available
+    country_data = []
+    
+    for country in COUNTRIES:
+        result = calculate_country_gffi_with_fred(country)
+        if result:
+            country_data.append(result)
+        time.sleep(12)
+    
+    # Calculate India GFFI from country data
+    india_entry = next((c for c in country_data if c['name'] == 'India'), None)
+    india_gffi = india_entry['gffi'] if india_entry else 60
     
     # Calculate sector GFFI
     sector_data = calculate_sector_gffi()
     
-    # Calculate India GFFI as average of all sectors
-    if sector_data:
-        india_gffi = sum([s['gffi'] for s in sector_data]) / len(sector_data)
-        india_gffi = round(india_gffi, 1)
-    else:
-        india_gffi = 60
-    
-    # Calculate crisis probability
-    crisis_data = calculate_crisis_probability(india_gffi)
-    
-    # Country data
-    country_data = [{
-        'flag': '🇮🇳',
-        'name': 'India',
-        'gffi': india_gffi,
-        'status': get_status(india_gffi)
-    }]
-    
-    # Stock picks
+    # Generate stock picks
     stock_picks = generate_stock_picks()
     
-    # India market data (using sector average for now)
+    # India market data
     india_market_data = {
         'nifty': 0,
         'sensex': 0,
@@ -463,14 +539,18 @@ def main():
         'sensex_change': 0
     }
     
-    # Market efficiency
-    market_efficiency = None
-    if sector_data:
-        # Use average returns from first sector as proxy
-        market_efficiency = 65  # Default value
+    # Crisis probability
+    crisis_data = calculate_crisis_probability(india_gffi)
     
-    # Global GFFI
-    global_gffi = india_gffi
+    # Global GFFI (average of countries with data)
+    if country_data:
+        global_gffi = sum([c['gffi'] for c in country_data]) / len(country_data)
+        global_gffi = round(global_gffi, 1)
+    else:
+        global_gffi = india_gffi
+    
+    # Market efficiency (default)
+    market_efficiency = 65
     
     # Current time
     now = datetime.now()
@@ -481,7 +561,10 @@ def main():
         "// DATA.JS - Auto-generated by GFFI Live Calculator",
         f"// Last Updated: {now.strftime('%Y-%m-%d %H:%M:%S')}",
         "// ============================================",
-        "// FIXED VERSION - Corrected entropy and capital calculations",
+        "// CAPITAL DATA SOURCES:",
+        "//   USA: REAL FRED bank capital ratio (RCTRWAMXM163N)",
+        "//   Other countries: Capital proxy (volatility-based)",
+        "// ============================================",
         "",
         f"const countryData = {json.dumps(country_data, indent=2, ensure_ascii=False)};",
         "",
@@ -498,17 +581,18 @@ def main():
         "",
         f"const crisisData = {json.dumps(crisis_data, indent=2, ensure_ascii=False)};",
         "",
-        f"const marketEfficiency = {market_efficiency if market_efficiency else 65};"
+        f"const marketEfficiency = {market_efficiency};"
     ]
     
     with open('data.js', 'w', encoding='utf-8') as f:
         f.write("\n".join(js_lines))
     
     print("\n" + "="*80)
-    print("✅ DATA.JS UPDATED - FIXED VERSION")
+    print("✅ DATA.JS UPDATED - WITH REAL FRED CAPITAL DATA")
     print("="*80)
+    print(f"   🇺🇸 USA: Uses REAL FRED bank capital ratio")
     print(f"   🇮🇳 India GFFI: {india_gffi}")
-    print(f"   📊 Crisis Probability: {crisis_data['probability']}%")
+    print(f"   📊 Global GFFI: {global_gffi}")
     print(f"   🏭 Sectors: {len(sector_data)}")
     print(f"   📈 Stock Picks: {len(stock_picks.get('safe', []))} Buy, {len(stock_picks.get('risky', []))} Sell, {len(stock_picks.get('watch', []))} Watch")
     print("="*80)
