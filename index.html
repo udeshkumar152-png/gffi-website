@@ -13,11 +13,30 @@
 
 <h2 id="status"></h2>
 
+<script src="data.js"></script>
 <script>
-fetch("data.json")
-.then(res => res.json())
-.then(data => {
+  
+// Direct use (NO fetch)
 
+console.log(countryData);
+
+const container = document.getElementById("output");
+
+let html = "";
+
+countryData.forEach(c => {
+    html += `
+    <div>
+        <h3>${c.flag} ${c.name}</h3>
+        <p>GFFI: ${c.gffi}</p>
+        <p>Status: ${c.status}</p>
+    </div>
+    `;
+});
+
+container.innerHTML = html;
+
+</script>
   const labels = data.map(d => d.date);
   const values = data.map(d => d.gffi);
 
