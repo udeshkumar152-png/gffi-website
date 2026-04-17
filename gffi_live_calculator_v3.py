@@ -1,29 +1,15 @@
 #!/usr/bin/env python3
-"""
-GFFI LIVE CALCULATOR V3 (FINAL - WEBSITE READY)
-"""
 
-import os
 import json
 import time
 import numpy as np
-import pandas as pd
 import yfinance as yf
 from datetime import datetime
+from sklearn.linear_model import LinearRegression
 
-print("="*80)
-print("🚀 GFFI LIVE CALCULATOR V3")
-print("="*80)
-
-# =========================
-# CONFIG
-# =========================
 WINDOW = 30
 FALLBACK_CAPITAL = 15
 
-# =========================
-# COUNTRIES
-# =========================
 COUNTRIES = [
     {'name': 'USA', 'flag': '🇺🇸', 'symbol': '^GSPC'},
     {'name': 'India', 'flag': '🇮🇳', 'symbol': '^NSEI'},
@@ -34,71 +20,64 @@ COUNTRIES = [
 # STATUS
 # =========================
 def get_status(gffi):
-    if gffi >= 15:
-        return "critical"
-    elif gffi >= 10:
-        return "warning"
-    elif gffi >= 5:
-        return "moderate"
-    else:
-        return "safe"
+    if gffi >= 15: return "critical"
+    elif gffi >= 10: return "warning"
+    elif gffi >= 5: return "moderate"
+    else: return "safe"
 
 # =========================
-# FETCH DATA
+# DATA
 # =========================
 def fetch_prices(symbol):
-    try:
-        df = yf.download(symbol, period="3mo", interval="1d", progress=False)
-        if df.empty:
-            return None
-        return df['Close']
-    except Exception as e:
-        print(f"❌ Error fetching {symbol}: {e}")
-        return None
+    df = yf.download(symbol, period="6mo", interval="1d", progress=False)
+    return df['Close'] if not df.empty else None
 
 # =========================
 # VOLATILITY
 # =========================
 def calculate_volatility(prices):
-    returns = np.log(prices / prices.shift(1)) * 100
-    returns = returns.dropna()
-
-    if len(returns) < WINDOW:
-        return None
-
+    returns = np.log(prices / prices.shift(1)).dropna() * 100
     vol = returns.rolling(WINDOW).std().dropna()
-    if len(vol) == 0:
+    return vol.iloc[-1].item()
+
+# =========================
+# AI TREND MODEL
+# =========================
+def predict_trend(gffi_list):
+    if len(gffi_list) < 3:
+        return None
+    trend = (gffi_list[-1] - gffi_list[-3]) / 2
+    return round(gffi_list[-1] + trend, 2)
+
+# =========================
+# ML MODEL
+# =========================
+def predict_ml(gffi_list):
+    if len(gffi_list) < 5:
         return None
 
-    return float(vol.iloc[-1])
+    X = np.arange(len(gffi_list)).reshape(-1,1)
+    y = np.array(gffi_list)
+
+    model = LinearRegression()
+    model.fit(X, y)
+
+    pred = model.predict([[len(gffi_list)]])[0]
+    return round(float(pred), 2)
 
 # =========================
-# CAPITAL
+# COUNTRY
 # =========================
-def get_capital():
-    return FALLBACK_CAPITAL
-
-# =========================
-# COUNTRY CALC
-# =========================
-def calculate_country(country):
-    print(f"\n🌍 {country['name']}")
-
-    prices = fetch_prices(country['symbol'])
-    if prices is None:
-        return None
+def calculate_country(c):
+    prices = fetch_prices(c['symbol'])
+    if prices is None: return None
 
     vol = calculate_volatility(prices)
-    if vol is None:
-        return None
-
-    capital = get_capital()
-
-    gffi = round((vol * 100) / capital, 2)
+    gffi = round((vol * 100) / FALLBACK_CAPITAL, 2)
 
     return {
-        "name": country["name"],
-        "flag": country["flag"],
+        "name": c["name"],
+        "flag": c["flag"],
         "gffi": gffi,
         "status": get_status(gffi)
     }
@@ -110,19 +89,18 @@ def main():
     results = []
 
     for c in COUNTRIES:
-        res = calculate_country(c)
-        if res:
-            results.append(res)
+        r = calculate_country(c)
+        if r: results.append(r)
         time.sleep(1)
 
-    if not results:
-        print("❌ No data")
-        return
+    gffi_series = [x['gffi'] for x in results]
 
-    global_gffi = round(np.mean([x['gffi'] for x in results]), 2)
+    global_gffi = round(np.mean(gffi_series), 2)
+    trend_pred = predict_trend(gffi_series)
+    ml_pred = predict_ml(gffi_series)
 
     # =========================
-    # SAVE AS data.js (IMPORTANT)
+    # SAVE data.js
     # =========================
     with open("data.js", "w") as f:
         f.write("const countryData = ")
@@ -130,13 +108,12 @@ def main():
         f.write(";\n\n")
 
         f.write(f"const globalGFFI = {global_gffi};\n")
+        f.write(f"const trendPrediction = {trend_pred};\n")
+        f.write(f"const mlPrediction = {ml_pred};\n")
         f.write(f"const updateDate = '{datetime.now().strftime('%d %b %Y')}';\n")
         f.write(f"const updateTime = '{datetime.now().strftime('%I:%M %p')}';\n")
 
-    print("\n✅ data.js updated successfully")
+    print("✅ AI + ML data.js updated")
 
-# =========================
-# RUN
-# =========================
 if __name__ == "__main__":
     main()
