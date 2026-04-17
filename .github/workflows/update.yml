@@ -1,0 +1,32 @@
+name: Update GFFI
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Install packages
+        run: pip install yfinance pandas numpy
+
+      - name: Run script
+        run: python gffi_live_calculator_v3.py
+
+      - name: Commit & push
+        run: |
+          git config --global user.name "gffi-bot"
+          git config --global user.email "bot@gffi.com"
+          git add data.js
+          git commit -m "Auto update GFFI" || echo "No changes"
+          git push
