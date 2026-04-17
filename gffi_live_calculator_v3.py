@@ -23,65 +23,74 @@ COUNTRIES = [
 # STATUS
 # =========================
 def get_status(gffi):
-    if gffi >= 15: return "critical"
-    elif gffi >= 10: return "warning"
-    elif gffi >= 5: return "moderate"
+    if gffi >= 15:
+        return "critical"
+    elif gffi >= 10:
+        return "warning"
+    elif gffi >= 5:
+        return "moderate"
     return "safe"
 
 # =========================
-# DATA
+# FETCH DATA
 # =========================
 def fetch_prices(symbol):
     df = yf.download(symbol, period="6mo", interval="1d", progress=False)
-    return df['Close'] if not df.empty else None
+    if df.empty:
+        return None
+    return df['Close']
 
 # =========================
 # VOLATILITY
 # =========================
 def calc_vol(prices):
-    r = np.log(prices / prices.shift(1)).dropna() * 100
-    v = r.rolling(WINDOW).std().dropna()
-    return v.iloc[-1].item()
+    returns = np.log(prices / prices.shift(1)).dropna() * 100
+    vol = returns.rolling(WINDOW).std().dropna()
+    return vol.iloc[-1].item()
 
 # =========================
 # AI TREND
 # =========================
-def predict_trend(x):
-    if len(x) < 3: return None
-    return round(x[-1] + (x[-1] - x[-3]) / 2, 2)
+def predict_trend(series):
+    if len(series) < 3:
+        return 0
+    return round(series[-1] + (series[-1] - series[-3]) / 2, 2)
 
 # =========================
 # ML MODEL
 # =========================
-def predict_ml(x):
-    if len(x) < 5: return None
-    X = np.arange(len(x)).reshape(-1,1)
-    y = np.array(x)
-    model = LinearRegression().fit(X, y)
-    return round(float(model.predict([[len(x)]])[0]), 2)
+def predict_ml(series):
+    if len(series) < 5:
+        return 0
+    X = np.arange(len(series)).reshape(-1, 1)
+    y = np.array(series)
+    model = LinearRegression()
+    model.fit(X, y)
+    return round(float(model.predict([[len(series)]])[0]), 2)
 
 # =========================
-# SAFE LSTM (fallback)
+# SAFE LSTM (OPTIONAL)
 # =========================
-def predict_lstm_safe(x):
+def predict_lstm_safe(series):
     try:
         from tensorflow.keras.models import Sequential
         from tensorflow.keras.layers import LSTM, Dense
         from sklearn.preprocessing import MinMaxScaler
 
-        if len(x) < 10:
-            return None
+        if len(series) < 10:
+            return 0
 
-        data = np.array(x).reshape(-1,1)
+        data = np.array(series).reshape(-1, 1)
         scaler = MinMaxScaler()
-        d = scaler.fit_transform(data)
+        scaled = scaler.fit_transform(data)
 
         X, y = [], []
-        for i in range(3, len(d)):
-            X.append(d[i-3:i])
-            y.append(d[i])
+        for i in range(3, len(scaled)):
+            X.append(scaled[i-3:i])
+            y.append(scaled[i])
 
-        X, y = np.array(X), np.array(y)
+        X = np.array(X)
+        y = np.array(y)
 
         model = Sequential()
         model.add(LSTM(20, input_shape=(3,1)))
@@ -90,20 +99,21 @@ def predict_lstm_safe(x):
 
         model.fit(X, y, epochs=5, verbose=0)
 
-        pred = model.predict(d[-3:].reshape(1,3,1), verbose=0)
+        pred = model.predict(scaled[-3:].reshape(1,3,1), verbose=0)
         return round(float(scaler.inverse_transform(pred)[0][0]), 2)
 
     except:
-        return None
+        return 0
 
 # =========================
-# COUNTRY
+# COUNTRY CALCULATION
 # =========================
 def calc_country(c):
-    p = fetch_prices(c['symbol'])
-    if p is None: return None
+    prices = fetch_prices(c['symbol'])
+    if prices is None:
+        return None
 
-    vol = calc_vol(p)
+    vol = calc_vol(prices)
     gffi = round((vol * 100) / CAPITAL, 2)
 
     return {
@@ -121,25 +131,32 @@ def main():
 
     for c in COUNTRIES:
         r = calc_country(c)
-        if r: results.append(r)
+        if r:
+            results.append(r)
         time.sleep(1)
 
     if not results:
         print("❌ No data")
         return
 
+    # =========================
+    # CALCULATIONS
+    # =========================
     series = [x['gffi'] for x in results]
 
     global_gffi = round(np.mean(series), 2)
     trend = predict_trend(series)
     ml = predict_ml(series)
     lstm = predict_lstm_safe(series)
-    # STOCK SIGNAL
-signal = "BUY 📈" if ml > trend else "SELL 📉"
-confidence = round(abs(ml - trend) * 10, 2)
-    
+
     # =========================
-    # SAVE JS (SAFE)
+    # STOCK SIGNAL
+    # =========================
+    signal = "BUY 📈" if ml > trend else "SELL 📉"
+    confidence = round(abs(ml - trend) * 10, 2)
+
+    # =========================
+    # SAVE FILE (IMPORTANT)
     # =========================
     with open("data.js", "w") as f:
         f.write("const countryData = ")
@@ -147,13 +164,20 @@ confidence = round(abs(ml - trend) * 10, 2)
         f.write(";\n\n")
 
         f.write(f"const globalGFFI = {global_gffi};\n")
-        f.write(f"const trendPrediction = {trend if trend else 0};\n")
-        f.write(f"const mlPrediction = {ml if ml else 0};\n")
-        f.write(f"const lstmPrediction = {lstm if lstm else 0};\n")
+        f.write(f"const trendPrediction = {trend};\n")
+        f.write(f"const mlPrediction = {ml};\n")
+        f.write(f"const lstmPrediction = {lstm};\n")
+
+        f.write(f"const stockSignal = '{signal}';\n")
+        f.write(f"const confidence = {confidence};\n")
+
         f.write(f"const updateDate = '{datetime.now().strftime('%d %b %Y')}';\n")
         f.write(f"const updateTime = '{datetime.now().strftime('%I:%M %p')}';\n")
 
-    print("✅ AI + ML + LSTM data.js updated")
+    print("✅ data.js updated successfully")
 
+# =========================
+# RUN
+# =========================
 if __name__ == "__main__":
     main()
