@@ -1,84 +1,26 @@
-<!DOCTYPE html>
-<html>
-<head>
-<title>GFFI AI Dashboard</title>
-<link rel="stylesheet" href="style.css">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
-
-<body>
-
-<div class="container">
-
-<h1>🌍 GFFI AI Dashboard</h1>
-
-<h2 id="global"></h2>
-<h3 id="trend"></h3>
-<h3 id="ml"></h3>
-
-<canvas id="chart"></canvas>
-
-<div id="grid"></div>
-
-<p id="update"></p>
-
-</div>
-
-<script src="data.js"></script>
-
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-
-document.getElementById("global").innerText =
-"Global GFFI: " + globalGFFI;
-
-document.getElementById("trend").innerText =
-"📈 Trend Prediction: " + trendPrediction;
-
-document.getElementById("ml").innerText =
-"🤖 ML Prediction: " + mlPrediction;
-
-const grid = document.getElementById("grid");
-
-let html = "";
-
-countryData.forEach(c => {
-
-let color =
-c.gffi >= 15 ? "red" :
-c.gffi >= 10 ? "orange" :
-c.gffi >= 5 ? "gold" : "green";
-
-html += `
-<div class="card" style="border-left:5px solid ${color}">
-<h3>${c.flag} ${c.name}</h3>
-<p>${c.gffi}</p>
-</div>
-`;
-});
-
-grid.innerHTML = html;
-
-// chart
-new Chart(document.getElementById("chart"), {
-type: "bar",
-data: {
-labels: countryData.map(c => c.name),
-datasets: [{
-data: countryData.map(c => c.gffi)
-}]
+body {
+font-family: Arial;
+background: #0f172a;
+color: white;
+margin: 0;
 }
-});
 
-document.getElementById("update").innerText =
-"Updated: " + updateDate + " " + updateTime;
+.container {
+max-width: 1000px;
+margin: auto;
+padding: 20px;
+text-align: center;
+}
 
-// ALERT
-if (mlPrediction >= 15) alert("🚨 ML: Crisis Likely");
-else if (mlPrediction >= 10) alert("⚠️ ML: Risk Rising");
+#grid {
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+gap: 15px;
+margin-top: 20px;
+}
 
-});
-</script>
-
-</body>
-</html>
+.card {
+background: #1e293b;
+padding: 15px;
+border-radius: 10px;
+}
