@@ -1,71 +1,73 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-  <title>GFFI Dashboard</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GFFI Dashboard</title>
+
+    <link rel="stylesheet" href="style.css">
 </head>
 
-<body style="font-family: Arial; text-align: center;">
+<body>
 
-<h1>📊 Global Financial Fragility Index</h1>
+    <!-- HEADER -->
+    <div class="container">
+        <div class="header">
+            <h1>🌍 Global Financial Fragility Index (GFFI)</h1>
+            <p>Live Financial Risk Dashboard</p>
+        </div>
 
-<canvas id="chart" width="800" height="400"></canvas>
+        <!-- GLOBAL GFFI -->
+        <div class="global-box">
+            <h2 id="global-gffi">Loading...</h2>
+            <p>Global Risk Level</p>
+        </div>
 
-<h2 id="status"></h2>
+        <!-- TOGGLE BUTTON -->
+        <button id="toggle-view" class="btn-toggle">Toggle View</button>
 
-<script src="data.js"></script>
-<script>
-  
-// Direct use (NO fetch)
+        <!-- COUNTRY DATA -->
+        <div id="country-grid" class="country-grid"></div>
 
-console.log(countryData);
+        <!-- INDIA CARD -->
+        <div class="india-cards"></div>
 
-const container = document.getElementById("output");
-
-let html = "";
-
-countryData.forEach(c => {
-    html += `
-    <div>
-        <h3>${c.flag} ${c.name}</h3>
-        <p>GFFI: ${c.gffi}</p>
-        <p>Status: ${c.status}</p>
+        <!-- CHANGE INDICATOR -->
+        <div class="footer">
+            <p id="change-indicator">Loading...</p>
+            <p id="update-time">Updating...</p>
+        </div>
     </div>
-    `;
-});
 
-container.innerHTML = html;
+    <!-- LOAD DATA -->
+    <script src="data.js"></script>
 
-</script>
-  const labels = data.map(d => d.date);
-  const values = data.map(d => d.gffi);
+    <!-- MAIN LOGIC -->
+    <script src="functions.js"></script>
 
-  const ctx = document.getElementById("chart").getContext("2d");
+    <!-- SAFE INIT -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
 
-  new Chart(ctx, {
-    type: "line",
-    data: {
-      labels: labels,
-      datasets: [{
-        label: "GFFI",
-        data: values,
-        borderWidth: 2
-      }]
-    }
-  });
+            // Global GFFI
+            const globalEl = document.getElementById("global-gffi");
+            if (globalEl && typeof globalGFFI !== "undefined") {
+                globalEl.innerText = globalGFFI;
+            }
 
-  const latest = values[values.length - 1];
+            // Update time
+            const timeEl = document.getElementById("update-time");
+            if (timeEl && typeof updateDate !== "undefined") {
+                timeEl.innerText = "Last Updated: " + updateDate + " " + updateTime;
+            }
 
-  let status = "";
-  if (latest < 5) status = "✅ LOW RISK";
-  else if (latest < 10) status = "⚠️ MODERATE RISK";
-  else if (latest < 15) status = "🚨 HIGH RISK";
-  else status = "🔥 EXTREME RISK";
+            console.log("✅ Dashboard Loaded");
+            console.log("📊 Data:", countryData);
 
-  document.getElementById("status").innerText = "Current GFFI: " + latest.toFixed(2) + " → " + status;
-
-});
-</script>
+        });
+    </script>
 
 </body>
+
 </html>
