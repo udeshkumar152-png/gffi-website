@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>GFFI AI Dashboard</title>
+<title>GFFI AI Pro</title>
 <link rel="stylesheet" href="style.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -10,11 +10,12 @@
 
 <div class="container">
 
-<h1>🌍 GFFI AI Dashboard</h1>
+<h1>🌍 GFFI AI PRO</h1>
 
 <h2 id="global"></h2>
 <h3 id="trend"></h3>
 <h3 id="ml"></h3>
+<h3 id="lstm"></h3>
 
 <canvas id="chart"></canvas>
 
@@ -29,54 +30,42 @@
 <script>
 document.addEventListener("DOMContentLoaded", () => {
 
+const safe = (v) => (typeof v !== "undefined" ? v : "N/A");
+
 document.getElementById("global").innerText =
-"Global GFFI: " + globalGFFI;
+"Global GFFI: " + safe(globalGFFI);
 
 document.getElementById("trend").innerText =
-"📈 Trend Prediction: " + trendPrediction;
+"📈 Trend: " + safe(trendPrediction);
 
 document.getElementById("ml").innerText =
-"🤖 ML Prediction: " + mlPrediction;
+"🤖 ML: " + safe(mlPrediction);
 
-const grid = document.getElementById("grid");
+document.getElementById("lstm").innerText =
+"🧠 LSTM: " + safe(lstmPrediction);
 
+// GRID
 let html = "";
-
 countryData.forEach(c => {
-
-let color =
-c.gffi >= 15 ? "red" :
-c.gffi >= 10 ? "orange" :
-c.gffi >= 5 ? "gold" : "green";
-
-html += `
-<div class="card" style="border-left:5px solid ${color}">
-<h3>${c.flag} ${c.name}</h3>
-<p>${c.gffi}</p>
-</div>
-`;
+    html += `<div class="card">${c.flag} ${c.name}<br>${c.gffi}</div>`;
 });
+document.getElementById("grid").innerHTML = html;
 
-grid.innerHTML = html;
-
-// chart
+// CHART
 new Chart(document.getElementById("chart"), {
 type: "bar",
 data: {
-labels: countryData.map(c => c.name),
-datasets: [{
-data: countryData.map(c => c.gffi)
-}]
+labels: countryData.map(c=>c.name),
+datasets: [{ data: countryData.map(c=>c.gffi) }]
 }
 });
 
+// UPDATE
 document.getElementById("update").innerText =
 "Updated: " + updateDate + " " + updateTime;
 
 // ALERT
-if (mlPrediction >= 15) alert("🚨 ML: Crisis Likely");
-else if (mlPrediction >= 10) alert("⚠️ ML: Risk Rising");
-
+if (safe(mlPrediction) >= 15) alert("🚨 ML Risk!");
 });
 </script>
 
