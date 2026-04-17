@@ -7,8 +7,11 @@ import yfinance as yf
 from datetime import datetime
 from sklearn.linear_model import LinearRegression
 
+# =========================
+# CONFIG
+# =========================
 WINDOW = 30
-FALLBACK_CAPITAL = 15
+CAPITAL = 15
 
 COUNTRIES = [
     {'name': 'USA', 'flag': '🇺🇸', 'symbol': '^GSPC'},
@@ -23,7 +26,7 @@ def get_status(gffi):
     if gffi >= 15: return "critical"
     elif gffi >= 10: return "warning"
     elif gffi >= 5: return "moderate"
-    else: return "safe"
+    return "safe"
 
 # =========================
 # DATA
@@ -35,45 +38,73 @@ def fetch_prices(symbol):
 # =========================
 # VOLATILITY
 # =========================
-def calculate_volatility(prices):
-    returns = np.log(prices / prices.shift(1)).dropna() * 100
-    vol = returns.rolling(WINDOW).std().dropna()
-    return vol.iloc[-1].item()
+def calc_vol(prices):
+    r = np.log(prices / prices.shift(1)).dropna() * 100
+    v = r.rolling(WINDOW).std().dropna()
+    return v.iloc[-1].item()
 
 # =========================
-# AI TREND MODEL
+# AI TREND
 # =========================
-def predict_trend(gffi_list):
-    if len(gffi_list) < 3:
-        return None
-    trend = (gffi_list[-1] - gffi_list[-3]) / 2
-    return round(gffi_list[-1] + trend, 2)
+def predict_trend(x):
+    if len(x) < 3: return None
+    return round(x[-1] + (x[-1] - x[-3]) / 2, 2)
 
 # =========================
 # ML MODEL
 # =========================
-def predict_ml(gffi_list):
-    if len(gffi_list) < 5:
+def predict_ml(x):
+    if len(x) < 5: return None
+    X = np.arange(len(x)).reshape(-1,1)
+    y = np.array(x)
+    model = LinearRegression().fit(X, y)
+    return round(float(model.predict([[len(x)]])[0]), 2)
+
+# =========================
+# SAFE LSTM (fallback)
+# =========================
+def predict_lstm_safe(x):
+    try:
+        from tensorflow.keras.models import Sequential
+        from tensorflow.keras.layers import LSTM, Dense
+        from sklearn.preprocessing import MinMaxScaler
+
+        if len(x) < 10:
+            return None
+
+        data = np.array(x).reshape(-1,1)
+        scaler = MinMaxScaler()
+        d = scaler.fit_transform(data)
+
+        X, y = [], []
+        for i in range(3, len(d)):
+            X.append(d[i-3:i])
+            y.append(d[i])
+
+        X, y = np.array(X), np.array(y)
+
+        model = Sequential()
+        model.add(LSTM(20, input_shape=(3,1)))
+        model.add(Dense(1))
+        model.compile(optimizer='adam', loss='mse')
+
+        model.fit(X, y, epochs=5, verbose=0)
+
+        pred = model.predict(d[-3:].reshape(1,3,1), verbose=0)
+        return round(float(scaler.inverse_transform(pred)[0][0]), 2)
+
+    except:
         return None
-
-    X = np.arange(len(gffi_list)).reshape(-1,1)
-    y = np.array(gffi_list)
-
-    model = LinearRegression()
-    model.fit(X, y)
-
-    pred = model.predict([[len(gffi_list)]])[0]
-    return round(float(pred), 2)
 
 # =========================
 # COUNTRY
 # =========================
-def calculate_country(c):
-    prices = fetch_prices(c['symbol'])
-    if prices is None: return None
+def calc_country(c):
+    p = fetch_prices(c['symbol'])
+    if p is None: return None
 
-    vol = calculate_volatility(prices)
-    gffi = round((vol * 100) / FALLBACK_CAPITAL, 2)
+    vol = calc_vol(p)
+    gffi = round((vol * 100) / CAPITAL, 2)
 
     return {
         "name": c["name"],
@@ -89,18 +120,23 @@ def main():
     results = []
 
     for c in COUNTRIES:
-        r = calculate_country(c)
+        r = calc_country(c)
         if r: results.append(r)
         time.sleep(1)
 
-    gffi_series = [x['gffi'] for x in results]
+    if not results:
+        print("❌ No data")
+        return
 
-    global_gffi = round(np.mean(gffi_series), 2)
-    trend_pred = predict_trend(gffi_series)
-    ml_pred = predict_ml(gffi_series)
+    series = [x['gffi'] for x in results]
+
+    global_gffi = round(np.mean(series), 2)
+    trend = predict_trend(series)
+    ml = predict_ml(series)
+    lstm = predict_lstm_safe(series)
 
     # =========================
-    # SAVE data.js
+    # SAVE JS (SAFE)
     # =========================
     with open("data.js", "w") as f:
         f.write("const countryData = ")
@@ -108,12 +144,13 @@ def main():
         f.write(";\n\n")
 
         f.write(f"const globalGFFI = {global_gffi};\n")
-        f.write(f"const trendPrediction = {trend_pred};\n")
-        f.write(f"const mlPrediction = {ml_pred};\n")
+        f.write(f"const trendPrediction = {trend if trend else 0};\n")
+        f.write(f"const mlPrediction = {ml if ml else 0};\n")
+        f.write(f"const lstmPrediction = {lstm if lstm else 0};\n")
         f.write(f"const updateDate = '{datetime.now().strftime('%d %b %Y')}';\n")
         f.write(f"const updateTime = '{datetime.now().strftime('%I:%M %p')}';\n")
 
-    print("✅ AI + ML data.js updated")
+    print("✅ AI + ML + LSTM data.js updated")
 
 if __name__ == "__main__":
     main()
