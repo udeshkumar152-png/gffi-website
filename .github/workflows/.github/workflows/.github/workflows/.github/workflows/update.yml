@@ -21,7 +21,7 @@ jobs:
         run: pip install yfinance pandas numpy
 
       - name: Run script
-        run: python generate_gffi.py
+        run: python gffi_live_calculator_v3.py
 
       - name: Commit & push
         run: |
