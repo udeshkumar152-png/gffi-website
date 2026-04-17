@@ -19,12 +19,14 @@ jobs:
 
       - name: Install packages
         run: pip install yfinance pandas numpy
+             pip install yfinance numpy scikit-learn
 
       - name: Run script
         run: python gffi_live_calculator_v3.py
 
       - name: Commit & push
         run: |
+        
           git config --global user.name "gffi-bot"
           git config --global user.email "bot@gffi.com"
           git add data.js
