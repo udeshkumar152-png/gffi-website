@@ -25,3 +25,5 @@ const mlPrediction = 0;
 const lstmPrediction = 0;
 const updateDate = '17 Apr 2026';
 const updateTime = '05:14 AM';
+f.write(f"const stockSignal = '{signal}';\n")
+f.write(f"const confidence = {confidence};\n")
