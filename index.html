@@ -1,127 +1,81 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GFFI Pro Dashboard</title>
-
+<title>GFFI AI Dashboard</title>
 <link rel="stylesheet" href="style.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 </head>
 
 <body>
 
 <div class="container">
 
-    <!-- HEADER -->
-    <div class="header">
-        <h1>🌍 GFFI Pro Dashboard</h1>
-        <p>Global Financial Risk Monitor</p>
-    </div>
+<h1>🌍 GFFI AI Dashboard</h1>
 
-    <!-- GLOBAL CARD -->
-    <div class="global-box">
-        <h2 id="global-gffi">Loading...</h2>
-        <p>Global Risk Level</p>
-    </div>
+<h2 id="global"></h2>
+<h3 id="trend"></h3>
+<h3 id="ml"></h3>
 
-    <!-- ALERT -->
-    <div id="alert-box" class="alert-box"></div>
+<canvas id="chart"></canvas>
 
-    <!-- CHART -->
-    <canvas id="gffiChart"></canvas>
+<div id="grid"></div>
 
-    <!-- COUNTRY GRID -->
-    <div id="country-grid" class="grid"></div>
-
-    <!-- FOOTER -->
-    <div class="footer">
-        <p id="update-time"></p>
-    </div>
+<p id="update"></p>
 
 </div>
 
-<!-- DATA -->
 <script src="data.js"></script>
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
 
-    // =====================
-    // GLOBAL VALUE
-    // =====================
-    document.getElementById("global-gffi").innerText =
-        "GFFI: " + globalGFFI;
+document.getElementById("global").innerText =
+"Global GFFI: " + globalGFFI;
 
-    // =====================
-    // ALERT SYSTEM
-    // =====================
-    let max = Math.max(...countryData.map(c => c.gffi));
-    let alertBox = document.getElementById("alert-box");
+document.getElementById("trend").innerText =
+"📈 Trend Prediction: " + trendPrediction;
 
-    if (max >= 15) {
-        alertBox.innerText = "🚨 CRITICAL RISK!";
-        alertBox.className = "alert critical";
-    } else if (max >= 10) {
-        alertBox.innerText = "⚠️ WARNING";
-        alertBox.className = "alert warning";
-    } else {
-        alertBox.innerText = "✅ STABLE";
-        alertBox.className = "alert safe";
-    }
+document.getElementById("ml").innerText =
+"🤖 ML Prediction: " + mlPrediction;
 
-    // =====================
-    // COUNTRY CARDS
-    // =====================
-    const grid = document.getElementById("country-grid");
+const grid = document.getElementById("grid");
 
-    let html = "";
+let html = "";
 
-    countryData.forEach(c => {
+countryData.forEach(c => {
 
-        let statusClass =
-            c.gffi >= 15 ? "critical" :
-            c.gffi >= 10 ? "warning" :
-            c.gffi >= 5 ? "moderate" : "safe";
+let color =
+c.gffi >= 15 ? "red" :
+c.gffi >= 10 ? "orange" :
+c.gffi >= 5 ? "gold" : "green";
 
-        html += `
-        <div class="card ${statusClass}">
-            <h3>${c.flag} ${c.name}</h3>
-            <p class="value">${c.gffi}</p>
-            <span class="badge">${statusClass.toUpperCase()}</span>
-        </div>
-        `;
-    });
+html += `
+<div class="card" style="border-left:5px solid ${color}">
+<h3>${c.flag} ${c.name}</h3>
+<p>${c.gffi}</p>
+</div>
+`;
+});
 
-    grid.innerHTML = html;
+grid.innerHTML = html;
 
-    // =====================
-    // CHART
-    // =====================
-    const ctx = document.getElementById('gffiChart');
+// chart
+new Chart(document.getElementById("chart"), {
+type: "bar",
+data: {
+labels: countryData.map(c => c.name),
+datasets: [{
+data: countryData.map(c => c.gffi)
+}]
+}
+});
 
-    new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: countryData.map(c => c.name),
-            datasets: [{
-                label: 'GFFI',
-                data: countryData.map(c => c.gffi),
-                backgroundColor: countryData.map(c =>
-                    c.gffi >= 15 ? 'red' :
-                    c.gffi >= 10 ? 'orange' :
-                    c.gffi >= 5 ? 'yellow' : 'green'
-                )
-            }]
-        }
-    });
+document.getElementById("update").innerText =
+"Updated: " + updateDate + " " + updateTime;
 
-    // =====================
-    // UPDATE TIME
-    // =====================
-    document.getElementById("update-time").innerText =
-        "Last Updated: " + updateDate + " " + updateTime;
+// ALERT
+if (mlPrediction >= 15) alert("🚨 ML: Crisis Likely");
+else if (mlPrediction >= 10) alert("⚠️ ML: Risk Rising");
 
 });
 </script>
