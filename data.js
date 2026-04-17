@@ -1,25 +1,24 @@
 const countryData = [
   {
-    flag: "🇺🇸",
-    name: "USA",
-    gffi: 9.2,
-    status: "moderate"
+    "name": "USA",
+    "flag": "\ud83c\uddfa\ud83c\uddf8",
+    "gffi": 7.54,
+    "status": "moderate"
   },
   {
-    flag: "🇮🇳",
-    name: "India",
-    gffi: 7.8,
-    status: "moderate"
+    "name": "India",
+    "flag": "\ud83c\uddee\ud83c\uddf3",
+    "gffi": 10.91,
+    "status": "warning"
   },
   {
-    flag: "🇩🇪",
-    name: "Germany",
-    gffi: 11.3,
-    status: "warning"
+    "name": "Germany",
+    "flag": "\ud83c\udde9\ud83c\uddea",
+    "gffi": 10.68,
+    "status": "warning"
   }
 ];
 
-const globalGFFI = 9.43;
-
-const updateDate = "17 Apr 2026";
-const updateTime = "10:30 AM";
+const globalGFFI = 9.71;
+const updateDate = '17 Apr 2026';
+const updateTime = '04:04 AM';
