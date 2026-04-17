@@ -1,60 +1,47 @@
-name: Hourly GFFI Live Update
+import numpy as np
+import pandas as pd
+import yfinance as yf
+import json
 
-on:
-  schedule:
-    - cron: '*/60 * * * *'  # Runs every 60 minutes
-  workflow_dispatch:          # Allows manual trigger
+# =========================
+# DOWNLOAD DATA
+# =========================
+sp500 = yf.download("^GSPC", start="2020-01-01")
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+sp500['returns'] = np.log(sp500['Close'] / sp500['Close'].shift(1)) * 100
+returns = sp500['returns'].dropna()
 
-jobs:
-  update-gffi-data:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
+# =========================
+# VOLATILITY
+# =========================
+volatility = returns.rolling(30).std()
 
-    steps:
-      - name: 📥 Checkout repository
-        uses: actions/checkout@v4
+# =========================
+# CAPITAL (STATIC OR CSV)
+# =========================
+capital = 12.5  # manually set OR load from CSV
 
-      - name: 🐍 Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
+# =========================
+# GFFI CALCULATION
+# =========================
+gffi = (volatility * 100) / capital
 
-      - name: 📦 Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install yfinance pandas numpy pandas-datareader requests
+# =========================
+# CLEAN DATA
+# =========================
+df = pd.DataFrame({
+    "date": volatility.index,
+    "gffi": gffi
+}).dropna()
 
-      - name: 🔄 Run GFFI Live Calculator
-        env:
-          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
-          ALPHA_VANTAGE_KEY: ${{ secrets.ALPHA_VANTAGE_KEY }}
-        run: python gffi_live_calculator.py
+# =========================
+# SAVE JSON
+# =========================
+df['date'] = df['date'].astype(str)
 
-      - name: 💾 Commit and push changes
-        run: |
-          git config --global user.name 'GFFI Bot'
-          git config --global user.email 'gffi-bot@users.noreply.github.com'
-          git add data.js
-          if git diff --quiet && git diff --staged --quiet; then
-            echo "✅ No changes to commit"
-          else
-            git commit -m "🤖 Live GFFI update - $(date +'%Y-%m-%d %H:%M')"
-            git pull --rebase origin main
-            git push origin main
-          fi
+data = df.tail(100).to_dict(orient="records")
 
-      - name: 📊 Show summary
-        run: |
-          echo "✅ GFFI Update Completed!"
-          echo "📅 Time: $(date)"
-          if [ -f data.js ]; then
-            echo "📁 data.js updated successfully"
-            LINES=$(wc -l < data.js)
-            echo "📄 File size: $LINES lines"
-          else
-            echo "❌ data.js not found"
-          fi
+with open("data.json", "w") as f:
+    json.dump(data, f, indent=4)
+
+print("✅ data.json updated")
