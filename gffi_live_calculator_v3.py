@@ -134,7 +134,10 @@ def main():
     trend = predict_trend(series)
     ml = predict_ml(series)
     lstm = predict_lstm_safe(series)
-
+    # STOCK SIGNAL
+signal = "BUY 📈" if ml > trend else "SELL 📉"
+confidence = round(abs(ml - trend) * 10, 2)
+    
     # =========================
     # SAVE JS (SAFE)
     # =========================
