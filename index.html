@@ -1,72 +1,152 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>GFFI AI Pro</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GFFI AI PRO Dashboard</title>
+
 <link rel="stylesheet" href="style.css">
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 </head>
 
 <body>
 
 <div class="container">
 
-<h1>🌍 GFFI AI PRO</h1>
+    <!-- HEADER -->
+    <h1>🌍 GFFI AI PRO Dashboard</h1>
 
-<h2 id="global"></h2>
-<h3 id="trend"></h3>
-<h3 id="ml"></h3>
-<h3 id="lstm"></h3>
+    <!-- GLOBAL -->
+    <h2 id="global"></h2>
 
-<canvas id="chart"></canvas>
+    <!-- AI + ML -->
+    <h3 id="trend"></h3>
+    <h3 id="ml"></h3>
+    <h3 id="lstm"></h3>
 
-<div id="grid"></div>
+    <!-- STOCK SIGNAL -->
+    <h2 id="signal"></h2>
 
-<p id="update"></p>
+    <!-- CHART -->
+    <canvas id="chart" height="100"></canvas>
+
+    <!-- COUNTRY GRID -->
+    <div id="grid"></div>
+
+    <!-- UPDATE -->
+    <p id="update"></p>
 
 </div>
 
-<script src="data.js"></script>
+<!-- LOAD DATA (ANTI CACHE) -->
+<script>
+document.write('<script src="data.js?v=' + Date.now() + '"><\/script>');
+</script>
 
 <script>
+
 document.addEventListener("DOMContentLoaded", () => {
 
-const safe = (v) => (typeof v !== "undefined" ? v : "N/A");
+    // =========================
+    // SAFE FUNCTION
+    // =========================
+    const safe = (v) => (typeof v !== "undefined" && v !== null ? v : "N/A");
 
-document.getElementById("global").innerText =
-"Global GFFI: " + safe(globalGFFI);
+    // =========================
+    // GLOBAL
+    // =========================
+    document.getElementById("global").innerText =
+        "🌐 Global GFFI: " + safe(globalGFFI);
 
-document.getElementById("trend").innerText =
-"📈 Trend: " + safe(trendPrediction);
+    // =========================
+    // AI + ML
+    // =========================
+    document.getElementById("trend").innerText =
+        "📈 Trend Prediction: " + safe(trendPrediction);
 
-document.getElementById("ml").innerText =
-"🤖 ML: " + safe(mlPrediction);
+    document.getElementById("ml").innerText =
+        "🤖 ML Prediction: " + safe(mlPrediction);
 
-document.getElementById("lstm").innerText =
-"🧠 LSTM: " + safe(lstmPrediction);
+    document.getElementById("lstm").innerText =
+        "🧠 LSTM Prediction: " + safe(lstmPrediction);
 
-// GRID
-let html = "";
-countryData.forEach(c => {
-    html += `<div class="card">${c.flag} ${c.name}<br>${c.gffi}</div>`;
+    // =========================
+    // STOCK SIGNAL
+    // =========================
+    document.getElementById("signal").innerText =
+        "📊 Signal: " + safe(stockSignal) + 
+        " (" + safe(confidence) + "%)";
+
+    // =========================
+    // GRID
+    // =========================
+    const grid = document.getElementById("grid");
+
+    let html = "";
+
+    countryData.forEach(c => {
+
+        let color =
+            c.gffi >= 15 ? "red" :
+            c.gffi >= 10 ? "orange" :
+            c.gffi >= 5 ? "gold" : "green";
+
+        html += `
+        <div class="card" style="border-left:5px solid ${color}">
+            <h3>${c.flag} ${c.name}</h3>
+            <p>GFFI: ${c.gffi}</p>
+            <p>Status: ${c.status}</p>
+        </div>
+        `;
+    });
+
+    grid.innerHTML = html;
+
+    // =========================
+    // CHART
+    // =========================
+    new Chart(document.getElementById("chart"), {
+        type: "bar",
+        data: {
+            labels: countryData.map(c => c.name),
+            datasets: [{
+                label: "GFFI",
+                data: countryData.map(c => c.gffi),
+                backgroundColor: countryData.map(c =>
+                    c.gffi >= 15 ? "red" :
+                    c.gffi >= 10 ? "orange" :
+                    c.gffi >= 5 ? "yellow" : "green"
+                )
+            }]
+        }
+    });
+
+    // =========================
+    // UPDATE TIME
+    // =========================
+    document.getElementById("update").innerText =
+        "🕒 Updated: " + safe(updateDate) + " " + safe(updateTime);
+
+    // =========================
+    // ALERT SYSTEM
+    // =========================
+    if (safe(mlPrediction) >= 15) {
+        alert("🚨 ML ALERT: High Risk!");
+    } else if (safe(mlPrediction) >= 10) {
+        alert("⚠️ ML ALERT: Rising Risk");
+    }
+
+    // =========================
+    // AUTO REFRESH
+    // =========================
+    setInterval(() => {
+        location.reload();
+    }, 60000);
+
 });
-document.getElementById("grid").innerHTML = html;
 
-// CHART
-new Chart(document.getElementById("chart"), {
-type: "bar",
-data: {
-labels: countryData.map(c=>c.name),
-datasets: [{ data: countryData.map(c=>c.gffi) }]
-}
-});
-
-// UPDATE
-document.getElementById("update").innerText =
-"Updated: " + updateDate + " " + updateTime;
-
-// ALERT
-if (safe(mlPrediction) >= 15) alert("🚨 ML Risk!");
-});
 </script>
 
 </body>
