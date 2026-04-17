@@ -18,8 +18,8 @@ jobs:
           python-version: "3.10"
 
       - name: Install packages
-        run: pip install yfinance pandas numpy
-             pip install yfinance numpy scikit-learn
+        run: pip install yfinance pandas numpy scikit-learn
+            
 
       - name: Run script
         run: python gffi_live_calculator_v3.py
