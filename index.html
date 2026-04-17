@@ -1,479 +1,52 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GFFI - Global Financial Fragility Index</title>
-    
-    <!-- Open Graph / LinkedIn Meta Tags -->
-    <meta property="og:title" content="GFFI - Global Financial Fragility Index Dashboard" />
-    <meta property="og:description" content="Live dashboard tracking financial fragility across 17 countries using entropy-based AI. Predict market crises 24 months in advance with 0.921 AUC accuracy. Real-time GFFI scores, sector analysis, and stock recommendations based on published research (DOI: 10.5281/zenodo.18859370)." />
-    <meta property="og:image" content="https://raw.githubusercontent.com/udeshkumar152-png/gffi-website/main/gffi-preview.png" />
-    <meta property="og:url" content="https://gffi.online" />
-    <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="GFFI Analytics" />
-    
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="GFFI Dashboard - Predict Financial Crises 24 Months in Advance" />
-    <meta name="twitter:description" content="Real-time Global Financial Fragility Index with 0.921 AUC accuracy. Track 17 countries, sector analysis, and stock picks." />
-    <meta name="twitter:image" content="https://gffi.online/gffi-preview.png" />
-    
-    <!-- Regular meta tags -->
-    <meta name="description" content="Real-time financial fragility index based on entropy. Predict market crises 24 months in advance.">
-    <meta name="keywords" content="GFFI, financial crisis prediction, entropy finance, stock market risk, Nifty analysis">
-    
-    <!-- Stylesheets -->
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <title>GFFI Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body>
-    <!-- Navigation Bar -->
-    <nav class="navbar">
-        <div class="container nav-container">
-            <a href="/" class="logo">
-                <span class="logo-gffi">GFFI</span>
-                <span class="logo-text">Analytics</span>
-            </a>
-            <ul class="nav-menu">
-                <li><a href="index.html" class="active">Home</a></li>
-                <li><a href="#gffi-data">Live Data</a></li>
-                <li><a href="#sector-analysis">Sectors</a></li>
-                <li><a href="#stock-picks">Stock Picks</a></li>
-            </ul>
-        </div>
-    </nav>
 
-    <!-- Hero Section -->
-    <section class="hero">
-        <div class="container hero-container">
-            <div class="hero-content">
-                <span class="hero-badge">Published Research · AUC 0.921</span>
-                <h1>Predict Financial Crises <span class="highlight">24 Months</span> in Advance</h1>
-                <p class="hero-text">GFFI (Global Financial Fragility Index) uses entropy-based AI to detect market fragility before crashes. Trusted by researchers and validated on 2008, 2020, and 2022 crises.</p>
-                <div class="hero-buttons">
-                    <a href="#gffi-data" class="btn btn-primary"><i class="fas fa-chart-line"></i> View Live Dashboard</a>
-                </div>
-                <div class="hero-stats">
-                    <div class="stat">
-                        <span class="stat-number">0.921</span>
-                        <span class="stat-label">AUC Score</span>
-                    </div>
-                    <div class="stat">
-                        <span class="stat-number">24</span>
-                        <span class="stat-label">Months Lead Time</span>
-                    </div>
-                    <div class="stat">
-                        <span class="stat-number">17</span>
-                        <span class="stat-label">Countries</span>
-                    </div>
-                    <div class="stat">
-                        <span class="stat-number">High Accuracy</span>
-                        <span class="stat-label">Crisis Detection</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+<body style="font-family: Arial; text-align: center;">
 
-    <!-- Country Section with Toggle Button -->
-    <div class="section-header">
-        <h3>🌎 Country-wise GFFI</h3>
-        <button id="toggle-country" class="btn-toggle">📊 Switch to Table View</button>
-    </div>
-    <div id="country-grid" class="country-grid"></div>
+<h1>📊 Global Financial Fragility Index</h1>
 
-    <!-- Live GFFI Dashboard Section -->
-    <section id="gffi-data" class="dashboard-section">
-        <div class="container">
-            <div class="section-header">
-                <span class="section-badge">Live Data</span>
-                <h2>🌍 Global Financial Fragility Index</h2>
-                <p>Real-time GFFI values based on market entropy and banking capital ratios</p>
-            </div>
+<canvas id="chart" width="800" height="400"></canvas>
 
-            <!-- CORE METRICS PANEL -->
-            <div class="metrics-grid">
-                <div class="metric-card main-gffi">
-                    <div class="metric-icon"><i class="fas fa-globe"></i></div>
-                    <div class="metric-content">
-                        <span class="metric-label">GFFI SCORE</span>
-                        <span class="metric-value" id="global-gffi">63.5</span>
-                    </div>
-                </div>
-                
-                <div class="metric-card risk-level">
-                    <div class="metric-icon"><i class="fas fa-shield-alt"></i></div>
-                    <div class="metric-content">
-                        <span class="metric-label">RISK LEVEL</span>
-                        <span class="metric-value" id="risk-level-text">WATCH</span>
-                        <span class="risk-badge" id="risk-badge">🟡</span>
-                    </div>
-                </div>
-                
-                <div class="metric-card probability">
-                    <div class="metric-icon"><i class="fas fa-chart-pie"></i></div>
-                    <div class="metric-content">
-                        <span class="metric-label">PROBABILITY</span>
-                        <span class="metric-value" id="crisis-probability">38%</span>
-                        <span class="metric-sub">next 12 months</span>
-                    </div>
-                </div>
-                
-                <div class="metric-card trend">
-                    <div class="metric-icon"><i class="fas fa-chart-line"></i></div>
-                    <div class="metric-content">
-                        <span class="metric-label">TREND</span>
-                        <span class="metric-value" id="trend-text">↑ Rising</span>
-                        <span class="metric-change" id="trend-change">+4.2%</span>
-                    </div>
-                </div>
-            </div>
-            <!-- NIFTY & SENSEX STOCKS - SAFE VS HIGH RISK ZONE -->
-<div class="stocks-comparison-container">
-    <div class="comparison-header">
-        <h3>📊 Nifty & Sensex Stocks: Safe Zone vs High Risk Zone</h3>
-        <p class="comparison-subtitle">Based on real-time GFFI values (Lower GFFI = Safer)</p>
-    </div>
-    
-    <div class="stocks-grid">
-        <!-- SAFE ZONE STOCKS -->
-        <div class="safe-zone-card">
-            <div class="zone-header safe">
-                <i class="fas fa-shield-alt"></i>
-                <h4>🟢 SAFE ZONE STOCKS</h4>
-                <span class="zone-badge">Low Risk &nbsp; GFFI &lt; 37</span>
-            </div>
-            <div class="stocks-list" id="safe-zone-stocks">
-                <!-- Safe stocks will be loaded here -->
-            </div>
-        </div>
-        
-        <!-- HIGH RISK ZONE STOCKS -->
-        <div class="risky-zone-card">
-            <div class="zone-header risky">
-                <i class="fas fa-exclamation-triangle"></i>
-                <h4>🔴 HIGH RISK ZONE STOCKS</h4>
-                <span class="zone-badge">High Risk &nbsp; GFFI > 38</span>
-            </div>
-            <div class="stocks-list" id="risky-zone-stocks">
-                <!-- Risky stocks will be loaded here -->
-            </div>
-        </div>
-    </div>
-    
-    <!-- MODERATE ZONE STOCKS -->
-    <div class="moderate-zone-card">
-        <div class="zone-header moderate">
-            <i class="fas fa-chart-line"></i>
-            <h4>🟡 MODERATE ZONE STOCKS (WATCHLIST)</h4>
-            <span class="zone-badge">Moderate Risk &nbsp; GFFI 37-38</span>
-        </div>
-        <div class="stocks-list" id="moderate-zone-stocks">
-            <!-- Moderate stocks will be loaded here -->
-        </div>
-    </div>
-</div>
-<!-- CRISIS PROBABILITY TIMELINE -->
-<div id="crisis-timeline" class="crisis-timeline-container"></div>
-            <!-- Global Metrics Cards -->
-            <div class="global-metrics">
-                <div class="metric-card">
-                    <div class="metric-icon"><i class="fas fa-chart-line"></i></div>
-                    <div class="metric-content">
-                        <span class="metric-label">Market Status</span>
-                        <span class="metric-value">Bullish 📈</span>
-                        <span class="metric-date" id="current-date"></span>
-                    </div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-icon"><i class="fas fa-clock"></i></div>
-                    <div class="metric-content">
-                        <span class="metric-label">Last Update</span>
-                        <span class="metric-value" id="update-time">17 Mar 2026</span>
-                        <span class="metric-date" id="update-time-hm">02:07 AM</span>
-                    </div>
-                </div>
-            </div>
-<!-- CORE METRICS PANEL (पहले से है) -->
-<div class="metrics-grid">
-    <!-- ... आपका मौजूदा CORE METRICS PANEL ... -->
-</div>
+<h2 id="status"></h2>
 
-<!-- CHANGE INDICATOR PANEL - नया जोड़ें -->
-<div class="change-indicator-container">
-    <div class="change-indicator-card">
-        <div class="change-icon">
-            <i class="fas fa-chart-line"></i>
-        </div>
-        <div class="change-content">
-            <div class="change-header">
-                <span class="change-label">3-MONTH CHANGE</span>
-                <span class="change-badge" id="change-badge">Medium</span>
-            </div>
-            <div class="change-main">
-                <span class="change-value" id="change-value">4.2%</span>
-                <span class="change-direction" id="change-direction">↑ Rising</span>
-            </div>
-            <div class="change-meter">
-                <div class="change-meter-bar" id="change-meter-bar" style="width: 60%;"></div>
-            </div>
-            <div class="change-footer">
-                <span class="change-interpretation" id="change-interpretation">Risk Increasing</span>
-                <span class="change-update">Updated just now</span>
-            </div>
-        </div>
-    </div>
-</div>
-            <!-- Country Grid -->
-            <h3 class="section-subtitle">🌎 Country-wise GFFI</h3>
-            <div class="country-grid" id="country-grid"></div>
-        </div>
-    </section>
+<script>
+fetch("data.json")
+.then(res => res.json())
+.then(data => {
 
-    <!-- Sector Section with Toggle Button -->
-    <div class="section-header">
-        <h3>🏭 Sector-wise GFFI Analysis</h3>
-        <button id="toggle-sector" class="btn-toggle">📊 Switch to Table View</button>
-    </div>
-    <div id="sector-grid" class="sector-grid"></div>
+  const labels = data.map(d => d.date);
+  const values = data.map(d => d.gffi);
 
-    <!-- Sector Analysis Section -->
-    <section id="sector-analysis" class="sector-analysis-section">
-        <div class="container">
-            <h3>🏭 Sector-wise GFFI Analysis</h3>
-            <div class="sector-grid" id="sector-grid"></div>
-        </div>
-    </section>
+  const ctx = document.getElementById("chart").getContext("2d");
 
-    <!-- Stock Picks with Toggle Button -->
-    <div class="section-header">
-        <h3>📈 Top Stock Picks based on GFFI</h3>
-        <button id="toggle-stock" class="btn-toggle">📊 Switch to Table View</button>
-    </div>
-    <div class="picks-container" id="stock-picks-container"></div>
+  new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: labels,
+      datasets: [{
+        label: "GFFI",
+        data: values,
+        borderWidth: 2
+      }]
+    }
+  });
 
-    <!-- Stock Picks Section -->
-    <section id="stock-picks" class="stock-picks-section">
-        <div class="container">
-            <h3>📈 Top Stock Picks based on GFFI</h3>
-            <div class="picks-container">
-                <div class="picks-box safe-picks">
-                    <h4>🟢 SAFE PICKS (Low GFFI)</h4>
-                    <div id="safe-picks" class="picks-list"></div>
-                </div>
-                <div class="picks-box risky-picks">
-                    <h4>🔴 RISKY PICKS (High GFFI)</h4>
-                    <div id="risky-picks" class="picks-list"></div>
-                </div>
-                <div class="picks-box watch-picks">
-                    <h4>🟡 WATCHLIST (Momentum Stocks)</h4>
-                    <div id="watch-picks" class="picks-list"></div>
-                </div>
-            </div>
-        </div>
-    </section>
+  const latest = values[values.length - 1];
 
-    <!-- India Market with Toggle Button -->
-    <div class="section-header">
-        <h3>🇮🇳 India Market Dashboard</h3>
-        <button id="toggle-india" class="btn-toggle">📊 Switch to Table View</button>
-    </div>
-    <div class="india-cards"></div>
+  let status = "";
+  if (latest < 5) status = "✅ LOW RISK";
+  else if (latest < 10) status = "⚠️ MODERATE RISK";
+  else if (latest < 15) status = "🚨 HIGH RISK";
+  else status = "🔥 EXTREME RISK";
 
-    <!-- India Market Dashboard -->
-    <section class="india-market-section">
-        <div class="container"></div>
-    </section>
+  document.getElementById("status").innerText = "Current GFFI: " + latest.toFixed(2) + " → " + status;
 
-    <script src="data.js"></script>
-    <script src="functions.js"></script>
-    <!-- FOOTER SECTION - Data Sources & Disclaimer -->
-<footer class="gffi-footer">
-    <div class="container">
-        <!-- मुख्य फुटर ग्रिड -->
-        <div class="footer-grid">
-            <!-- कॉलम 1: डेटा सोर्सेस -->
-            <div class="footer-col">
-                <div class="footer-logo">
-                    <span class="footer-logo-gffi">GFFI</span>
-                    <span class="footer-logo-text">Analytics</span>
-                </div>
-                <p class="footer-tagline">Real-time financial fragility index based on entropy-capacity framework</p>
-                
-                <h4 class="footer-heading"><i class="fas fa-database"></i> Data Sources</h4>
-                <ul class="footer-list">
-                    <li>
-                        <i class="fas fa-check-circle" style="color: #4ade80;"></i>
-                        <span><strong>FRED</strong> (Federal Reserve Economic Data) - Banking capital ratios</span>
-                    </li>
-                    <li>
-                        <i class="fas fa-check-circle" style="color: #4ade80;"></i>
-                        <span><strong>Alpha Vantage</strong> - Real-time market data</span>
-                    </li>
-                    <li>
-                        <i class="fas fa-check-circle" style="color: #4ade80;"></i>
-                        <span><strong>Yahoo Finance</strong> - Historical price data</span>
-                    </li>
-                    <li>
-                        <i class="fas fa-check-circle" style="color: #4ade80;"></i>
-                        <span><strong>World Bank</strong> - Cross-country validation data</span>
-                    </li>
-                </ul>
-                
-                <div class="footer-badges">
-                    <span class="badge">AUC 0.921</span>
-                    <span class="badge">24mo Lead Time</span>
-                    <span class="badge">17 Countries</span>
-                </div>
-            </div>
-            
-            <!-- कॉलम 2: मेथडोलॉजी और रिसर्च -->
-            <div class="footer-col">
-                <h4 class="footer-heading"><i class="fas fa-flask"></i> Methodology</h4>
-                <div class="methodology-box">
-                    <p class="methodology-formula">GFFI = (Entropy / Capital) × 1000</p>
-                    <p class="methodology-desc">Based on the Entropy-Capacity Imbalance Framework from Bhatriya (2026).</p>
-                    
-                    <div class="research-card">
-                        <i class="fas fa-file-alt"></i>
-                        <div>
-                            <strong>Published Research</strong>
-                            <a href="https://doi.org/10.5281/zenodo.18859370" target="_blank" class="doi-link">
-                                DOI: 10.5281/zenodo.18859370
-                            </a>
-                        </div>
-                    </div>
-                    
-                    <div class="validation-stats">
-                        <div class="stat-item">
-                            <span class="stat-value">6/6</span>
-                            <span class="stat-label">Crises Detected</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-value">14</span>
-                            <span class="stat-label">Countries Validated</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-value">17mo</span>
-                            <span class="stat-label">Avg Lead Time</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- कॉलम 3: डिस्क्लेमर और कॉपीराइट -->
-            <div class="footer-col">
-                <h4 class="footer-heading"><i class="fas fa-exclamation-triangle"></i> Disclaimer</h4>
-                <div class="disclaimer-box">
-                    <p class="disclaimer-text">
-                        ⚠️ This dashboard is for <strong>research and educational purposes only</strong>. 
-                        The GFFI is a statistical indicator based on historical patterns and should not 
-                        be considered as financial advice.
-                    </p>
-                    <p class="disclaimer-text">
-                        📊 Always conduct your own research and consult with qualified financial advisors 
-                        before making investment decisions. Past performance does not guarantee future results.
-                    </p>
-                    <p class="disclaimer-text">
-                        🔄 Data updates automatically every hour. Last update: 
-                        <span id="footer-update-time" style="font-weight: 600;"></span>
-                    </p>
-                </div>
-                
-                <div class="social-links">
-                    <h4 class="footer-heading"><i class="fas fa-share-alt"></i> Connect</h4>
-                    <div class="social-icons">
-                        <a href="https://www.linkedin.com/in/yourprofile" target="_blank" class="social-icon">
-                            <i class="fab fa-linkedin-in"></i>
-                        </a>
-                        <a href="https://github.com/udeshkumar152-png" target="_blank" class="social-icon">
-                            <i class="fab fa-github"></i>
-                        </a>
-                        <a href="mailto:udeshkumar152@gmail.com" class="social-icon">
-                            <i class="fas fa-envelope"></i>
-                        </a>
-                        <a href="https://doi.org/10.5281/zenodo.18859370" target="_blank" class="social-icon">
-                            <i class="fas fa-book"></i>
-                        </a>
-                    </div>
-                </div>
-                
-                <div class="copyright">
-                    <p>© 2026 GFFI Analytics. All rights reserved.</p>
-                    <p class="made-in">Made with ❤️ in Raipur, India</p>
-                </div>
-            </div>
-        </div>
-        
-        <!-- फुटर बॉटम (लाइसेंस और टर्म्स) -->
-        <div class="footer-bottom">
-            <div class="footer-links">
-                <a href="#">Privacy Policy</a>
-                <span class="separator">|</span>
-                <a href="#">Terms of Use</a>
-                <span class="separator">|</span>
-                <a href="#">Contact</a>
-                <span class="separator">|</span>
-                <a href="https://github.com/udeshkumar152-png/gffi-website" target="_blank">GitHub</a>
-            </div>
-            <p class="version">Version 2.0.0 | Research-grade systemic risk indicator</p>
-        </div>
-    </div>
-</footer>
+});
+</script>
+
 </body>
 </html>
-<!-- NIFTY & SENSEX STOCKS - ZONE TOGGLE -->
-<div class="stocks-comparison-container">
-    <div class="comparison-header">
-        <h3>📊 Nifty & Sensex Stocks: Safe Zone vs High Risk Zone</h3>
-        <p class="comparison-subtitle">Based on real-time GFFI values (Lower GFFI = Safer)</p>
-    </div>
-    
-    <!-- ZONE TOGGLE BUTTONS -->
-    <div class="zone-toggle-buttons">
-        <button id="zone-toggle-all" class="zone-btn active" data-zone="all">🌍 All Zones</button>
-        <button id="zone-toggle-safe" class="zone-btn" data-zone="safe">🟢 Safe Zone (GFFI &lt; 37)</button>
-        <button id="zone-toggle-moderate" class="zone-btn" data-zone="moderate">🟡 Moderate Zone (37-38)</button>
-        <button id="zone-toggle-risky" class="zone-btn" data-zone="risky">🔴 High Risk Zone (GFFI > 38)</button>
-    </div>
-    
-    <!-- ZONE CARDS CONTAINER -->
-    <div id="zone-cards-container">
-        <div class="stocks-grid">
-            <!-- SAFE ZONE CARD -->
-            <div class="safe-zone-card zone-card" data-zone-type="safe">
-                <div class="zone-header safe">
-                    <i class="fas fa-shield-alt"></i>
-                    <h4>🟢 SAFE ZONE STOCKS</h4>
-                    <span class="zone-badge">Low Risk &nbsp; GFFI &lt; 37</span>
-                </div>
-                <div class="stocks-list" id="safe-zone-stocks"></div>
-            </div>
-            
-            <!-- RISKY ZONE CARD -->
-            <div class="risky-zone-card zone-card" data-zone-type="risky">
-                <div class="zone-header risky">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    <h4>🔴 HIGH RISK ZONE STOCKS</h4>
-                    <span class="zone-badge">High Risk &nbsp; GFFI > 38</span>
-                </div>
-                <div class="stocks-list" id="risky-zone-stocks"></div>
-            </div>
-        </div>
-        
-        <!-- MODERATE ZONE CARD -->
-        <div class="moderate-zone-card zone-card" data-zone-type="moderate">
-            <div class="zone-header moderate">
-                <i class="fas fa-chart-line"></i>
-                <h4>🟡 MODERATE ZONE STOCKS (WATCHLIST)</h4>
-                <span class="zone-badge">Moderate Risk &nbsp; GFFI 37-38</span>
-            </div>
-            <div class="stocks-list" id="moderate-zone-stocks"></div>
-        </div>
-    </div>
-</div>
