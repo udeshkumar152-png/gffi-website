@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
-GFFI LIVE CALCULATOR V3 (PRODUCTION READY)
-Volatility-Based Validated Model
+GFFI LIVE CALCULATOR V3 (FINAL - WEBSITE READY)
 """
 
 import os
@@ -19,11 +18,11 @@ print("="*80)
 # =========================
 # CONFIG
 # =========================
-WINDOW = 30  # rolling window
+WINDOW = 30
 FALLBACK_CAPITAL = 15
 
 # =========================
-# COUNTRIES (FIXED SYMBOLS)
+# COUNTRIES
 # =========================
 COUNTRIES = [
     {'name': 'USA', 'flag': '🇺🇸', 'symbol': '^GSPC'},
@@ -32,7 +31,7 @@ COUNTRIES = [
 ]
 
 # =========================
-# STATUS FUNCTION
+# STATUS
 # =========================
 def get_status(gffi):
     if gffi >= 15:
@@ -45,81 +44,64 @@ def get_status(gffi):
         return "safe"
 
 # =========================
-# FETCH MARKET DATA (STABLE)
+# FETCH DATA
 # =========================
 def fetch_prices(symbol):
     try:
         df = yf.download(symbol, period="3mo", interval="1d", progress=False)
-        
         if df.empty:
             return None
-        
         return df['Close']
-    
     except Exception as e:
         print(f"❌ Error fetching {symbol}: {e}")
         return None
 
 # =========================
-# VOLATILITY CALCULATION
+# VOLATILITY
 # =========================
 def calculate_volatility(prices):
     returns = np.log(prices / prices.shift(1)) * 100
     returns = returns.dropna()
-    
+
     if len(returns) < WINDOW:
         return None
-    
+
     vol = returns.rolling(WINDOW).std().dropna()
-    
     if len(vol) == 0:
         return None
-    
+
     return float(vol.iloc[-1])
 
 # =========================
-# CAPITAL (STATIC / FUTURE API)
+# CAPITAL
 # =========================
-def get_capital(country_name):
-    # Future: connect FRED here
+def get_capital():
     return FALLBACK_CAPITAL
 
 # =========================
-# MAIN COUNTRY CALCULATION
+# COUNTRY CALC
 # =========================
 def calculate_country(country):
     print(f"\n🌍 {country['name']}")
 
     prices = fetch_prices(country['symbol'])
-
     if prices is None:
-        print("❌ No price data")
         return None
 
     vol = calculate_volatility(prices)
-
     if vol is None:
-        print("❌ Volatility error")
         return None
 
-    capital = get_capital(country['name'])
+    capital = get_capital()
 
-    # 🔥 CORE MODEL
-    gffi = (vol * 100) / capital
-    gffi = round(gffi, 2)
+    gffi = round((vol * 100) / capital, 2)
 
-    result = {
+    return {
         "name": country["name"],
         "flag": country["flag"],
         "gffi": gffi,
-        "volatility": round(vol, 2),
-        "capital": capital,
         "status": get_status(gffi)
     }
-
-    print(f"✅ GFFI = {gffi} ({result['status']})")
-
-    return result
 
 # =========================
 # MAIN
@@ -131,29 +113,27 @@ def main():
         res = calculate_country(c)
         if res:
             results.append(res)
-        time.sleep(2)
+        time.sleep(1)
 
-    if len(results) == 0:
-        print("❌ No results generated")
+    if not results:
+        print("❌ No data")
         return
 
-    # Global GFFI
     global_gffi = round(np.mean([x['gffi'] for x in results]), 2)
 
-    # Output JSON (WEBSITE READY)
-    output = {
-        "date": datetime.now().strftime("%Y-%m-%d %H:%M"),
-        "global_gffi": global_gffi,
-        "countries": results,
-        "model": "Volatility-Based GFFI (Validated)"
-    }
+    # =========================
+    # SAVE AS data.js (IMPORTANT)
+    # =========================
+    with open("data.js", "w") as f:
+        f.write("const countryData = ")
+        f.write(json.dumps(results, indent=2))
+        f.write(";\n\n")
 
-    with open("data.json", "w") as f:
-        json.dump(output, f, indent=2)
+        f.write(f"const globalGFFI = {global_gffi};\n")
+        f.write(f"const updateDate = '{datetime.now().strftime('%d %b %Y')}';\n")
+        f.write(f"const updateTime = '{datetime.now().strftime('%I:%M %p')}';\n")
 
-    print("\n📊 FINAL OUTPUT")
-    print(json.dumps(output, indent=2))
-    print("\n✅ data.json updated successfully")
+    print("\n✅ data.js updated successfully")
 
 # =========================
 # RUN
