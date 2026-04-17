@@ -20,5 +20,7 @@ const countryData = [
 ];
 
 const globalGFFI = 9.71;
+const trendPrediction = 12.25;
+const mlPrediction = None;
 const updateDate = '17 Apr 2026';
-const updateTime = '04:50 AM';
+const updateTime = '05:07 AM';
