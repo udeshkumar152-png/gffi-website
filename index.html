@@ -1,73 +1,82 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GFFI Dashboard</title>
-
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-    <!-- HEADER -->
-    <div class="container">
-        <div class="header">
-            <h1>🌍 Global Financial Fragility Index (GFFI)</h1>
-            <p>Live Financial Risk Dashboard</p>
+<div class="container">
+
+    <h1>🌍 Global Financial Fragility Index (GFFI)</h1>
+
+    <h2 id="global">Loading...</h2>
+
+    <div id="country-grid"></div>
+
+    <p id="update"></p>
+
+</div>
+
+<!-- DATA -->
+<script src="data.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+    // =============================
+    // GLOBAL VALUE
+    // =============================
+    document.getElementById("global").innerText =
+        "Global GFFI: " + globalGFFI;
+
+    // =============================
+    // COUNTRY RENDER
+    // =============================
+    const container = document.getElementById("country-grid");
+
+    let html = "";
+
+    countryData.forEach(c => {
+
+        let color = "green";
+        let label = "SAFE";
+
+        if (c.gffi >= 15) {
+            color = "red";
+            label = "CRITICAL";
+        }
+        else if (c.gffi >= 10) {
+            color = "orange";
+            label = "WARNING";
+        }
+        else if (c.gffi >= 5) {
+            color = "gold";
+            label = "MODERATE";
+        }
+
+        html += `
+        <div class="card" style="border-left:5px solid ${color}">
+            <h3>${c.flag} ${c.name}</h3>
+            <p>GFFI: ${c.gffi}</p>
+            <p style="color:${color}">${label}</p>
         </div>
+        `;
+    });
 
-        <!-- GLOBAL GFFI -->
-        <div class="global-box">
-            <h2 id="global-gffi">Loading...</h2>
-            <p>Global Risk Level</p>
-        </div>
+    container.innerHTML = html;
 
-        <!-- TOGGLE BUTTON -->
-        <button id="toggle-view" class="btn-toggle">Toggle View</button>
+    // =============================
+    // UPDATE TIME
+    // =============================
+    document.getElementById("update").innerText =
+        "Last Updated: " + updateDate + " " + updateTime;
 
-        <!-- COUNTRY DATA -->
-        <div id="country-grid" class="country-grid"></div>
-
-        <!-- INDIA CARD -->
-        <div class="india-cards"></div>
-
-        <!-- CHANGE INDICATOR -->
-        <div class="footer">
-            <p id="change-indicator">Loading...</p>
-            <p id="update-time">Updating...</p>
-        </div>
-    </div>
-
-    <!-- LOAD DATA -->
-    <script src="data.js"></script>
-
-    <!-- MAIN LOGIC -->
-    <script src="functions.js"></script>
-
-    <!-- SAFE INIT -->
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-
-            // Global GFFI
-            const globalEl = document.getElementById("global-gffi");
-            if (globalEl && typeof globalGFFI !== "undefined") {
-                globalEl.innerText = globalGFFI;
-            }
-
-            // Update time
-            const timeEl = document.getElementById("update-time");
-            if (timeEl && typeof updateDate !== "undefined") {
-                timeEl.innerText = "Last Updated: " + updateDate + " " + updateTime;
-            }
-
-            console.log("✅ Dashboard Loaded");
-            console.log("📊 Data:", countryData);
-
-        });
-    </script>
+});
+</script>
 
 </body>
-
 </html>
