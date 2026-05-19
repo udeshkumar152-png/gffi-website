@@ -2,7 +2,7 @@ const countryData = [
   {
     "name": "USA",
     "flag": "\ud83c\uddfa\ud83c\uddf8",
-    "gffi": 5.25,
+    "gffi": 5.24,
     "status": "moderate"
   },
   {
@@ -14,16 +14,16 @@ const countryData = [
   {
     "name": "Germany",
     "flag": "\ud83c\udde9\ud83c\uddea",
-    "gffi": 9.6,
+    "gffi": 9.59,
     "status": "moderate"
   }
 ];
 
-const globalGFFI = 7.42;
+const globalGFFI = 7.41;
 const trendPrediction = 11.77;
 const mlPrediction = 0;
 const lstmPrediction = 0;
 const stockSignal = 'SELL 📉';
 const confidence = 117.7;
 const updateDate = '19 May 2026';
-const updateTime = '03:37 PM';
+const updateTime = '07:58 PM';
