@@ -26,4 +26,4 @@ const lstmPrediction = 0;
 const stockSignal = 'SELL 📉';
 const confidence = 55.1;
 const updateDate = '29 Jun 2026';
-const updateTime = '11:10 AM';
+const updateTime = '03:56 PM';
