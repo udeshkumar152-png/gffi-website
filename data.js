@@ -8,8 +8,8 @@ const countryData = [
   {
     "name": "India",
     "flag": "\ud83c\uddee\ud83c\uddf3",
-    "gffi": 3.97,
-    "status": "safe"
+    "gffi": 5.16,
+    "status": "moderate"
   },
   {
     "name": "Germany",
@@ -19,11 +19,11 @@ const countryData = [
   }
 ];
 
-const globalGFFI = 4.48;
+const globalGFFI = 4.88;
 const trendPrediction = 3.78;
 const mlPrediction = 0;
 const lstmPrediction = 0;
 const stockSignal = 'SELL 📉';
 const confidence = 37.8;
 const updateDate = '20 Aug 2026';
-const updateTime = '06:54 AM';
+const updateTime = '12:57 PM';
