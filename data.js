@@ -2,13 +2,13 @@ const countryData = [
   {
     "name": "USA",
     "flag": "\ud83c\uddfa\ud83c\uddf8",
-    "gffi": 5.28,
+    "gffi": 5.18,
     "status": "moderate"
   },
   {
     "name": "India",
     "flag": "\ud83c\uddee\ud83c\uddf3",
-    "gffi": 3.8,
+    "gffi": 3.79,
     "status": "safe"
   },
   {
@@ -19,11 +19,11 @@ const countryData = [
   }
 ];
 
-const globalGFFI = 4.44;
-const trendPrediction = 3.72;
+const globalGFFI = 4.4;
+const trendPrediction = 3.77;
 const mlPrediction = 0;
 const lstmPrediction = 0;
 const stockSignal = 'SELL 📉';
-const confidence = 37.2;
+const confidence = 37.7;
 const updateDate = '24 Aug 2026';
-const updateTime = '12:59 PM';
+const updateTime = '06:47 PM';
