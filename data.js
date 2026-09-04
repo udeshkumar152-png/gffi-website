@@ -2,7 +2,7 @@ const countryData = [
   {
     "name": "USA",
     "flag": "\ud83c\uddfa\ud83c\uddf8",
-    "gffi": 4.91,
+    "gffi": 4.95,
     "status": "safe"
   },
   {
@@ -19,11 +19,11 @@ const countryData = [
   }
 ];
 
-const globalGFFI = 4.13;
-const trendPrediction = 3.56;
+const globalGFFI = 4.15;
+const trendPrediction = 3.54;
 const mlPrediction = 0;
 const lstmPrediction = 0;
 const stockSignal = 'SELL 📉';
-const confidence = 35.6;
+const confidence = 35.4;
 const updateDate = '04 Sep 2026';
-const updateTime = '10:58 AM';
+const updateTime = '04:05 PM';
