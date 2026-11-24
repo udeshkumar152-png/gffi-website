@@ -14,16 +14,16 @@ const countryData = [
   {
     "name": "Germany",
     "flag": "\ud83c\udde9\ud83c\uddea",
-    "gffi": 8.11,
+    "gffi": 8.23,
     "status": "moderate"
   }
 ];
 
-const globalGFFI = 8.66;
-const trendPrediction = 6.55;
+const globalGFFI = 8.7;
+const trendPrediction = 6.74;
 const mlPrediction = 0;
 const lstmPrediction = 0;
 const stockSignal = 'SELL 📉';
-const confidence = 65.5;
+const confidence = 67.4;
 const updateDate = '24 Nov 2026';
-const updateTime = '09:18 AM';
+const updateTime = '10:10 PM';
